@@ -4,7 +4,7 @@ class ChatbotProvider extends ChangeNotifier {
   final Map<String, List<String>> _appContent = {
     'navigation': [
       'The app has several main sections:',
-      '• 🏠 Home - View stories and episodes',
+      '• 🏠 Home - View courses and chapters',
       '• 🎬 Shorts - Watch and create short videos',
       '• 🛍️ Shop - Browse and purchase products',
       '• 👤 Profile - Manage your account',

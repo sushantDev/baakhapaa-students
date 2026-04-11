@@ -303,7 +303,7 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
           isDark ? const Color(0xFF0F0F0F) : const Color(0xFFF5F5F7),
       appBar: header(
         context: context,
-        titleText: 'Storytellers',
+        titleText: 'Teachers',
       ),
       body: RefreshIndicator(
         onRefresh: _loadCreators,
@@ -361,7 +361,7 @@ class _SubHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Discover Storytellers',
+                  'Discover Teachers',
                   style: GoogleFonts.poppins(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -371,7 +371,7 @@ class _SubHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Find creators you\'ll love',
+                  'Find teachers you\'ll love',
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     color: isDark ? Colors.white38 : Colors.black38,
@@ -451,7 +451,7 @@ class _SearchSection extends StatelessWidget {
             fontSize: 15,
           ),
           decoration: InputDecoration(
-            hintText: '${context.l10n.search} storytellers...',
+            hintText: '${context.l10n.search} teachers...',
             hintStyle: TextStyle(
               color: isDark ? Colors.white30 : Colors.black26,
               fontSize: 15,
@@ -925,7 +925,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No storytellers found',
+            'No teachers found',
             style: GoogleFonts.inter(
               color: isDark ? Colors.white38 : Colors.black38,
               fontSize: 16,

@@ -731,8 +731,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         ),
                         // Storytellers Section
                         _buildSectionHeader(
-                          context.l10n.storytellers,
-                          context.l10n.storyTellersInfo,
+                          context.l10n.teachers,
+                          context.l10n.creators,
                           FontAwesomeIcons.video,
                           () {
                             Navigator.pushNamed(
@@ -767,7 +767,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                                       ),
                                       SizedBox(height: 12),
                                       Text(
-                                        'No storytellers available',
+                                        'No teachers available',
                                         style: TextStyle(
                                           color: Colors.grey[600],
                                           fontSize: 16,

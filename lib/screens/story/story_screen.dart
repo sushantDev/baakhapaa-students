@@ -2893,7 +2893,7 @@ class _StoryScreenState extends State<StoryScreen>
                   if (auth.isGuest) {
                     await GuestAuthHelper.showGuestLoginDialog(
                       context,
-                      'browse storytellers',
+                      'browse teachers',
                     );
                     return;
                   }
@@ -2922,7 +2922,7 @@ class _StoryScreenState extends State<StoryScreen>
                   height: 80,
                   child: Center(
                     child: Text(
-                      'No storytellers available',
+                      'No teachers available',
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                   ),

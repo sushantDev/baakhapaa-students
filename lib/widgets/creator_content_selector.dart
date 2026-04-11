@@ -171,7 +171,7 @@ class _CreatorContentSelectorState extends State<CreatorContentSelector> {
   String _getImageUrl(AffiliateProduct product) {
     String imagePath = product.image ?? '';
     if (imagePath.isEmpty) {
-      return 'https://baakhapaa.com/images/logo.png';
+      return 'https://school.baakhapaa.com/images/logo.png';
     }
 
     // If it's already a full URL, return it
@@ -186,7 +186,7 @@ class _CreatorContentSelectorState extends State<CreatorContentSelector> {
         RegExp(r'^(storage/storage/)+'), 'storage/');
     normalizedPath = normalizedPath.replaceFirst(RegExp(r'^storage/'), '');
 
-    return 'https://app.baakhapaa.com/storage/storage/$normalizedPath';
+    return 'https://school.baakhapaa.com/storage/storage/$normalizedPath';
   }
 
   @override

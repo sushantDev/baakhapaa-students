@@ -2353,7 +2353,7 @@ class _SeasonDetailsState extends State<SeasonDetails> {
                 if (auth.isGuest) {
                   await GuestAuthHelper.showGuestLoginDialog(
                     context,
-                    'view storyteller profile',
+                    'view teachers profile',
                   );
                   return;
                 }
@@ -2367,7 +2367,7 @@ class _SeasonDetailsState extends State<SeasonDetails> {
                   // User image with fallback and debug logging
 
                   Text(
-                    'Storyteller: ',
+                    'Teacher: ',
                     style: AppTextStyles.inter(
                       color: AppColors.textSecondary(context),
                       fontSize: 13,
@@ -4205,7 +4205,7 @@ class EpisodesSection extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(_isReadable ? 'Chapters' : 'Episodes',
+                  Text(_isReadable ? 'Chapters' : 'Chapters',
                       style: Theme.of(context).textTheme.titleMedium!.copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary(context))),
@@ -4221,7 +4221,7 @@ class EpisodesSection extends StatelessWidget {
 
                       String genreText = _isReadable
                           ? 'Read insightful chapters'
-                          : 'Watch amazing episodes';
+                          : 'Watch amazing lessons';
                       if (genres.isNotEmpty) {
                         genreText = genres.take(3).join(' • ');
                         if (genres.length > 3) genreText += ' & more';
@@ -4345,7 +4345,7 @@ class EpisodeThumbnailCard extends StatelessWidget {
 
         // If guest, show login dialog and stop
         if (auth.isGuest) {
-          GuestAuthHelper.showGuestLoginDialog(context, 'watch episodes');
+          GuestAuthHelper.showGuestLoginDialog(context, 'watch lessons');
           return;
         }
 

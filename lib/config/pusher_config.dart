@@ -3,10 +3,10 @@ class PusherConfig {
   static const String appKey = '09f62fb26d288c955778';
   static const String cluster = 'ap2';
   static const String authEndpoint =
-      'https://app.baakhapaa.com/broadcasting/auth';
+      'https://school.baakhapaa.com/broadcasting/auth';
 
   // API endpoints
-  static const String apiBaseUrl = 'https://app.baakhapaa.com/api';
+  static const String apiBaseUrl = 'https://school.baakhapaa.com/api';
   static const String dashboardEndpoint = '/user/progress/dashboard';
   static const String pointsBreakdownEndpoint =
       '/user/progress/points-breakdown';

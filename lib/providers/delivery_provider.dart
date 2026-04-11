@@ -91,6 +91,7 @@ class DeliveryProvider with ChangeNotifier {
         // ResponseBuilder v9 wraps single models under 'item': { "data": {"item": {...}} }
         final rawData = result['data'];
         final addressMap =
+            // ignore: unnecessary_cast
             (rawData is Map && (rawData as Map).containsKey('item'))
                 ? rawData['item'] as Map<String, dynamic>
                 : rawData as Map<String, dynamic>;

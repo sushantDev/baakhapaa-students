@@ -411,7 +411,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                             index: 0,
                             imageUrl:
                                 'https://baakhapaa.com/assets/img/vector/tst-vector1.png',
-                            label: AppLocalizations.of(context)!.stories,
+                            label: AppLocalizations.of(context)!.courses,
                             isSelected: widget.index == 0,
                             tutorial: tutorial,
                             tutorialCondition:
@@ -424,7 +424,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                           child: _buildNavItem(
                             index: 1,
                             icon: Icons.play_circle_filled_rounded,
-                            label: AppLocalizations.of(context)!.sStories,
+                            label: AppLocalizations.of(context)!.shorts,
                             isSelected: widget.index == 1,
                             tutorial: tutorial,
                             tutorialCondition:

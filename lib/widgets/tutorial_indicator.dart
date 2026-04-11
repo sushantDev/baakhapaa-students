@@ -19,6 +19,7 @@ class TutorialIndicator extends StatefulWidget {
 class _TutorialIndicatorState extends State<TutorialIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  // ignore: unused_field
   late Animation<Offset> _slideAnimation;
 
   @override

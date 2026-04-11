@@ -1,3 +1,5 @@
+// ignore_for_file: duplicate_ignore, unused_element
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -68,6 +70,7 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
+  // ignore: unused_element
   void _loadCreatorCountsBatched() async {
     if (_isLoadingCounts) return;
     _isLoadingCounts = true;
@@ -635,6 +638,7 @@ class _CreatorsList extends StatelessWidget {
     required this.creators,
     required this.storyCount,
     required this.shortsCount,
+    // ignore: unused_element_parameter
     this.isLoading = _defaultIsLoading,
   });
 
@@ -705,6 +709,7 @@ class _CreatorCard extends StatelessWidget {
     final imageUrl = _image(creator);
     final name = (creator['name'] ?? creator['username'] ?? '').toString();
     final username = (creator['username'] ?? '').toString();
+    // ignore: unused_local_variable
     final totalPoints =
         int.tryParse(creator['total_points']?.toString() ?? '0') ?? 0;
 

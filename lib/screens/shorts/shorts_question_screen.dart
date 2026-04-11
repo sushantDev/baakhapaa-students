@@ -103,6 +103,7 @@ class _ShortsQuestionScreenState extends State<ShortsQuestionScreen>
   bool _isHintAdLoading = false;
 
   // Language toggle for Nepali support
+  // ignore: unused_field
   bool _useNepali = false;
 
   Future<void> secureScreen() async {

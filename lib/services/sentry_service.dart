@@ -18,6 +18,7 @@ class SentryService {
             1.0; // 100% in development, consider lowering in production
 
         // Set the sample rate for profiling
+        // ignore: experimental_member_use
         options.profilesSampleRate =
             1.0; // 100% in development, consider lowering in production
 

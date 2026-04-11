@@ -72,6 +72,14 @@
   "@creators": {
     "description": "A category for content creators."
   },
+  "courses": "Courses",
+  "@courses": {
+    "description": "A category for educational courses."
+  },
+  "teachers": "Teachers",
+  "@teachers": {
+    "description": "A category for instructors or educators."
+  },
   "shats": "Stat's",
   "@shats": {
     "description": "A specific type of content, possibly a blend of 'shorts' and 'chats'."

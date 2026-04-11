@@ -63,6 +63,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get creators => '크리에이터';
 
   @override
+  String get courses => '강좌';
+
+  @override
+  String get teachers => '선생님';
+
+  @override
   String get shats => 'Shats';
 
   @override
@@ -960,16 +966,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aboutOurCompany => '회사 소개';
 
   @override
-  String get companyMissionStatement =>
-      '스토리텔링 지식에 따라 참여를 수익화하는 다목적 콘텐츠 공유 앱입니다.';
+  String get companyMissionStatement => '스토리텔링 지식에 따라 참여를 수익화하는 다목적 콘텐츠 공유 앱입니다.';
 
   @override
-  String get companyDescription1 =>
-      'Baakhapaa IT and Marketing Solutions LLC는 고객을 위한 성공 스토리를 만들기 위해 노력하는 소프트웨어 개발 및 마케팅 회사입니다. 우리는 성공적인 브랜드가 되고 비즈니스를 새로운 차원으로 이끌고자 하는 조직에 유익한 멀티미디어 플랫폼을 제공하는 데 중점을 둡니다.';
+  String get companyDescription1 => 'Baakhapaa IT and Marketing Solutions LLC는 고객을 위한 성공 스토리를 만들기 위해 노력하는 소프트웨어 개발 및 마케팅 회사입니다. 우리는 성공적인 브랜드가 되고 비즈니스를 새로운 차원으로 이끌고자 하는 조직에 유익한 멀티미디어 플랫폼을 제공하는 데 중점을 둡니다.';
 
   @override
-  String get companyDescription2 =>
-      '저희 서비스를 통해 조직은 스토리텔링의 힘을 통해 사람들을 통합하고 문화를 홍보하며 영적 의식으로 나아가는 브랜드를 만들 수 있습니다.';
+  String get companyDescription2 => '저희 서비스를 통해 조직은 스토리텔링의 힘을 통해 사람들을 통합하고 문화를 홍보하며 영적 의식으로 나아가는 브랜드를 만들 수 있습니다.';
 
   @override
   String get getInTouch => '문의하기';
@@ -1143,8 +1146,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get unlockBadgesAndEarnRewards => '배지를 잠금 해제하고 보상 획득';
 
   @override
-  String get earnBadgesForRewards =>
-      'baakhapaa 앱에서 배지를 획득하여 보상을 받으세요. 업적은 진행 상황을 추적하는 데 도움이 되도록 유형별로 분류됩니다';
+  String get earnBadgesForRewards => 'baakhapaa 앱에서 배지를 획득하여 보상을 받으세요. 업적은 진행 상황을 추적하는 데 도움이 되도록 유형별로 분류됩니다';
 
   @override
   String get completed => '완료됨';
@@ -1159,8 +1161,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get noReferralCodeAvailable => '사용 가능한 추천 코드가 없습니다';
 
   @override
-  String get joinCreatorCommunity =>
-      '콘텐츠 크리에이터 커뮤니티에 가입하고 당신의 독특한 목소리를 세상과 공유하세요';
+  String get joinCreatorCommunity => '콘텐츠 크리에이터 커뮤니티에 가입하고 당신의 독특한 목소리를 세상과 공유하세요';
 
   @override
   String get creatorBenefits => '크리에이터 혜택';

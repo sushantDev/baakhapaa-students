@@ -63,6 +63,12 @@ class AppLocalizationsHi extends AppLocalizations {
   String get creators => 'क्रिएटर्स';
 
   @override
+  String get courses => 'कोर्स';
+
+  @override
+  String get teachers => 'शिक्षक';
+
+  @override
   String get shats => 'शाट्स';
 
   @override
@@ -513,15 +519,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get chooseYourContent => 'अपनी सामग्री चुनें';
 
   @override
-  String get chooseYourContentInfo =>
-      'अपनी गैलरी से एक वीडियो चुनें या नया रिकॉर्ड करें';
+  String get chooseYourContentInfo => 'अपनी गैलरी से एक वीडियो चुनें या नया रिकॉर्ड करें';
 
   @override
   String get creatorPortal => 'क्रिएटर पोर्टल';
 
   @override
-  String get creatorPortalInfo =>
-      'उन्नत क्रिएटर टूल और एनालिटिक्स तक पहुँच प्राप्त करें';
+  String get creatorPortalInfo => 'उन्नत क्रिएटर टूल और एनालिटिक्स तक पहुँच प्राप्त करें';
 
   @override
   String get recordInfo => 'नया वीडियो बनाएं';
@@ -647,12 +651,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get giftRewardsDescription => 'अपने पॉइंट्स से आकर्षक पुरस्कार पाएं';
 
   @override
-  String get storiesFromBaakhapaDescription =>
-      'रोमांचक कहानियाँ और रोमांच खोजें';
+  String get storiesFromBaakhapaDescription => 'रोमांचक कहानियाँ और रोमांच खोजें';
 
   @override
-  String get discoverMoreDescription =>
-      'और कहानीकार, चुनौतियाँ और बहुत कुछ खोजें';
+  String get discoverMoreDescription => 'और कहानीकार, चुनौतियाँ और बहुत कुछ खोजें';
 
   @override
   String get noCreatorsShatsFound => 'कोई क्रिएटर्स के शाट्स नहीं मिला';
@@ -667,8 +669,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get viewTransactionHistory => 'अपना लेनदेन इतिहास देखें।';
 
   @override
-  String get rewardsForWatchingAds =>
-      'अधिक पॉइंट्स कमाने के लिए विज्ञापन देखें!';
+  String get rewardsForWatchingAds => 'अधिक पॉइंट्स कमाने के लिए विज्ञापन देखें!';
 
   @override
   String get viewYourAvailablePoints => 'आपके उपलब्ध पॉइंट्स समाप्त होते हैं';
@@ -677,8 +678,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get dailyRewardClaimed => 'आपने आज का पुरस्कार दावा किया';
 
   @override
-  String get selectWithdrawalMethod =>
-      'कृपया नीचे दिए गए विकल्पों में से एक निकासी विधि चुनें।';
+  String get selectWithdrawalMethod => 'कृपया नीचे दिए गए विकल्पों में से एक निकासी विधि चुनें।';
 
   @override
   String get playLearnEarn => 'खेलें, सीखें, कमाएं';
@@ -765,8 +765,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get continueShopping => 'खरीदारी जारी रखें';
 
   @override
-  String get yourCartDescription =>
-      'अपने कार्ट में कुछ आकर्षक उत्पाद जोड़ें और खरीदारी शुरू करें!';
+  String get yourCartDescription => 'अपने कार्ट में कुछ आकर्षक उत्पाद जोड़ें और खरीदारी शुरू करें!';
 
   @override
   String get yourCartIsEmpty => 'आपका कार्ट खाली है';
@@ -922,8 +921,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get storyTellersInfo => 'रोमांचक कहानीकार खोजें';
 
   @override
-  String get challengesDescription =>
-      'रोमांचक चुनौतियों में शामिल हों और पुरस्कार जीतें';
+  String get challengesDescription => 'रोमांचक चुनौतियों में शामिल हों और पुरस्कार जीतें';
 
   @override
   String get findStorytellers => 'रोमांचक सामग्री क्रिएटर्स खोजें';
@@ -968,16 +966,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get aboutOurCompany => 'हमारी कंपनी के बारे में';
 
   @override
-  String get companyMissionStatement =>
-      'कहानी सुनाने के ज्ञान के अनुसार जुड़ाव को मुद्रीकृत करने वाला एक बहुउद्देश्यीय सामग्री साझाकरण ऐप।';
+  String get companyMissionStatement => 'कहानी सुनाने के ज्ञान के अनुसार जुड़ाव को मुद्रीकृत करने वाला एक बहुउद्देश्यीय सामग्री साझाकरण ऐप।';
 
   @override
-  String get companyDescription1 =>
-      'बाखपा आईटी एंड मार्केटिंग सॉल्यूशंस एलएलसी एक सॉफ्टवेयर डेवलपमेंट और मार्केटिंग कंपनी है जो अपने ग्राहकों के लिए सफलता की कहानियाँ बनाने का प्रयास करती है। हम उन संगठनों के लिए सूचनात्मक मल्टीमीडिया प्लेटफ़ॉर्म प्रदान करने पर ध्यान केंद्रित करते हैं जो एक सफल ब्रांड बनने और व्यवसाय को नई ऊंचाइयों पर ले जाने का प्रयास कर रहे हैं।';
+  String get companyDescription1 => 'बाखपा आईटी एंड मार्केटिंग सॉल्यूशंस एलएलसी एक सॉफ्टवेयर डेवलपमेंट और मार्केटिंग कंपनी है जो अपने ग्राहकों के लिए सफलता की कहानियाँ बनाने का प्रयास करती है। हम उन संगठनों के लिए सूचनात्मक मल्टीमीडिया प्लेटफ़ॉर्म प्रदान करने पर ध्यान केंद्रित करते हैं जो एक सफल ब्रांड बनने और व्यवसाय को नई ऊंचाइयों पर ले जाने का प्रयास कर रहे हैं।';
 
   @override
-  String get companyDescription2 =>
-      'हमारी सेवाओं के माध्यम से, संगठन लोगों को एकजुट करने, संस्कृति को बढ़ावा देने, और कहानी सुनाने की शक्ति के माध्यम से आध्यात्मिक चेतना की ओर बढ़ने का काम करने वाला एक ब्रांड बना सकते हैं।';
+  String get companyDescription2 => 'हमारी सेवाओं के माध्यम से, संगठन लोगों को एकजुट करने, संस्कृति को बढ़ावा देने, और कहानी सुनाने की शक्ति के माध्यम से आध्यात्मिक चेतना की ओर बढ़ने का काम करने वाला एक ब्रांड बना सकते हैं।';
 
   @override
   String get getInTouch => 'संपर्क में रहें';
@@ -1055,15 +1050,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get show => 'दिखाएं';
 
   @override
-  String get notificationsReadMessage =>
-      'आपने अपनी सभी सूचनाएं पढ़ ली हैं। व्यवस्थित रहने का बहुत अच्छा काम!';
+  String get notificationsReadMessage => 'आपने अपनी सभी सूचनाएं पढ़ ली हैं। व्यवस्थित रहने का बहुत अच्छा काम!';
 
   @override
   String get noNotificationsYet => 'अभी तक कोई सूचना नहीं';
 
   @override
-  String get notificationsAppearHere =>
-      'जब आपको सूचनाएं मिलेंगी, तो वे यहाँ दिखाई देंगी';
+  String get notificationsAppearHere => 'जब आपको सूचनाएं मिलेंगी, तो वे यहाँ दिखाई देंगी';
 
   @override
   String get refresh => 'रीफ्रेश करें';
@@ -1153,15 +1146,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get unlockBadgesAndEarnRewards => 'बैज अनलॉक करें और पुरस्कार कमाएं';
 
   @override
-  String get earnBadgesForRewards =>
-      'baakhapaa ऐप में पुरस्कार रिडीम करने के लिए बैज कमाएं। आपकी प्रगति को ट्रैक करने में मदद करने के लिए उपलब्धियों को प्रकार के अनुसार वर्गीकृत किया गया है';
+  String get earnBadgesForRewards => 'baakhapaa ऐप में पुरस्कार रिडीम करने के लिए बैज कमाएं। आपकी प्रगति को ट्रैक करने में मदद करने के लिए उपलब्धियों को प्रकार के अनुसार वर्गीकृत किया गया है';
 
   @override
   String get completed => 'पूरा हुआ';
 
   @override
-  String get shareCodeWithFriends =>
-      'यह कोड दोस्तों के साथ शेयर करें और जब वे जुड़ें तो पुरस्कार कमाएं!';
+  String get shareCodeWithFriends => 'यह कोड दोस्तों के साथ शेयर करें और जब वे जुड़ें तो पुरस्कार कमाएं!';
 
   @override
   String get copyCode => 'कोड कॉपी करें';
@@ -1170,36 +1161,31 @@ class AppLocalizationsHi extends AppLocalizations {
   String get noReferralCodeAvailable => 'कोई रेफरल कोड उपलब्ध नहीं है';
 
   @override
-  String get joinCreatorCommunity =>
-      'सामग्री क्रिएटर्स के समुदाय में शामिल हों और दुनिया के साथ अपनी अनूठी आवाज साझा करें';
+  String get joinCreatorCommunity => 'सामग्री क्रिएटर्स के समुदाय में शामिल हों और दुनिया के साथ अपनी अनूठी आवाज साझा करें';
 
   @override
   String get creatorBenefits => 'क्रिएटर लाभ';
 
   @override
-  String get whatYouCanAchieve =>
-      'एक क्रिएटर के रूप में आप क्या हासिल कर सकते हैं';
+  String get whatYouCanAchieve => 'एक क्रिएटर के रूप में आप क्या हासिल कर सकते हैं';
 
   @override
   String get contentCreation => 'सामग्री निर्माण';
 
   @override
-  String get createAndShareContent =>
-      'आकर्षक शॉर्ट्स और कहानियाँ बनाएं और शेयर करें';
+  String get createAndShareContent => 'आकर्षक शॉर्ट्स और कहानियाँ बनाएं और शेयर करें';
 
   @override
   String get buildFollowing => 'फॉलोअर्स बनाएं';
 
   @override
-  String get growYourAudience =>
-      'जुड़े हुए प्रशंसकों के साथ अपने दर्शकों को बढ़ाएं';
+  String get growYourAudience => 'जुड़े हुए प्रशंसकों के साथ अपने दर्शकों को बढ़ाएं';
 
   @override
   String get monetization => 'मुद्रीकरण';
 
   @override
-  String get earnThroughMonetization =>
-      'विभिन्न मुद्रीकरण चैनलों के माध्यम से कमाएं';
+  String get earnThroughMonetization => 'विभिन्न मुद्रीकरण चैनलों के माध्यम से कमाएं';
 
   @override
   String get recognition => 'मान्यता';
@@ -1211,8 +1197,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get requirements => 'आवश्यकताएं';
 
   @override
-  String get meetCreatorCriteria =>
-      'क्रिएटर बनने के लिए इन मानदंडों को पूरा करें';
+  String get meetCreatorCriteria => 'क्रिएटर बनने के लिए इन मानदंडों को पूरा करें';
 
   @override
   String get minimum => 'न्यूनतम';
@@ -1221,16 +1206,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get need => 'आवश्यक';
 
   @override
-  String get completeEpisodesToQualify =>
-      'योग्यता के लिए इन एपिसोडों को पूरा करें';
+  String get completeEpisodesToQualify => 'योग्यता के लिए इन एपिसोडों को पूरा करें';
 
   @override
-  String get requestUnderReview =>
-      'आपका अनुरोध समीक्षाधीन है। निर्णय होने के बाद आपको ईमेल सूचना मिलेगी।';
+  String get requestUnderReview => 'आपका अनुरोध समीक्षाधीन है। निर्णय होने के बाद आपको ईमेल सूचना मिलेगी।';
 
   @override
-  String get meetAllRequirements =>
-      'कृपया अपना अनुरोध सबमिट करने से पहले सभी आवश्यकताओं को पूरा करें।';
+  String get meetAllRequirements => 'कृपया अपना अनुरोध सबमिट करने से पहले सभी आवश्यकताओं को पूरा करें।';
 
   @override
   String get requestSubmitted => 'अनुरोध सबमिट किया गया';
@@ -1242,15 +1224,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get learn => 'सीखें';
 
   @override
-  String get learnDescription =>
-      'कहानियाँ देखें • वीडियो अपलोड करें • पुरस्कार कमाने के लिए चुनौतियाँ पूरी करें';
+  String get learnDescription => 'कहानियाँ देखें • वीडियो अपलोड करें • पुरस्कार कमाने के लिए चुनौतियाँ पूरी करें';
 
   @override
   String get monetizeYourSCREENTIME => 'अपने स्क्रीन समय का मुद्रीकरण करें';
 
   @override
-  String get storiesArePowerStoriesAreRewards =>
-      'कहानियाँ शक्ति हैं। कहानियाँ पुरस्कार हैं।';
+  String get storiesArePowerStoriesAreRewards => 'कहानियाँ शक्ति हैं। कहानियाँ पुरस्कार हैं।';
 
   @override
   String get storiesArePower => 'कहानियाँ शक्ति हैं।';
@@ -1259,12 +1239,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get storiesAreRewards => 'कहानियाँ पुरस्कार हैं।';
 
   @override
-  String get browseByVendorsAndCollections =>
-      'विक्रेताओं और संग्रहों के अनुसार ब्राउज़ करें';
+  String get browseByVendorsAndCollections => 'विक्रेताओं और संग्रहों के अनुसार ब्राउज़ करें';
 
   @override
-  String get startJourney =>
-      'शॉर्ट्स देखकर, गेम खेलकर और पुरस्कार अर्जित करने की अपनी यात्रा शुरू करें!';
+  String get startJourney => 'शॉर्ट्स देखकर, गेम खेलकर और पुरस्कार अर्जित करने की अपनी यात्रा शुरू करें!';
 
   @override
   String get iAgreeToThe => 'मैं सहमत हूँ';

@@ -2664,7 +2664,7 @@ class _StoryScreenState extends State<StoryScreen>
         key: _scaffoldKey,
         appBar: header(
           context: context,
-          titleText: context.l10n.stories,
+          titleText: context.l10n.courses,
           scaffoldKey: _scaffoldKey,
         ),
         drawer: NavBar(),
@@ -2686,7 +2686,7 @@ class _StoryScreenState extends State<StoryScreen>
         children: [
           // "For You" text on the left
           Text(
-            'For you',
+            'Featured Course',
             style: GoogleFonts.poppins(
               textStyle: Theme.of(context).textTheme.displayLarge,
               fontSize: 18,
@@ -2879,7 +2879,7 @@ class _StoryScreenState extends State<StoryScreen>
           Row(
             children: [
               Text(
-                context.l10n.storytellers,
+                context.l10n.teachers,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,

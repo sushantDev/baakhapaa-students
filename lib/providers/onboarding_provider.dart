@@ -31,37 +31,37 @@ class OnboardingProvider with ChangeNotifier {
   /// Hard-coded slides matching Figma design — 17 screens, 14 steps.
   static List<OnboardingSlide> get localSlides => [
         // ── id:0  Step 1/14 — Role selection ───────────────────────────
-        const OnboardingSlide(
-          id: 0,
-          order: 0,
-          title: 'What defines you?',
-          subtitle:
-              'Select a role to personalize your experience and unlock specific features.',
-          slideType: 'selection',
-          bgColor: '#0D0D0D',
-          stepNumber: 1,
-          totalSteps: 14,
-          ctaText: 'Continue',
-          isSkippable: false,
-          options: [
-            {
-              'label': 'Player',
-              'subtitle': 'Compete as a player',
-              'icon': 'gamepad',
-              'preselected': true,
-            },
-            {
-              'label': 'Creator',
-              'subtitle': 'Compete as a creator',
-              'icon': 'settings',
-            },
-            {
-              'label': 'Vendor',
-              'subtitle': 'Unlock vendor privilege',
-              'icon': 'store',
-            },
-          ],
-        ),
+        // const OnboardingSlide(
+        //   id: 0,
+        //   order: 0,
+        //   title: 'What defines you?',
+        //   subtitle:
+        //       'Select a role to personalize your experience and unlock specific features.',
+        //   slideType: 'selection',
+        //   bgColor: '#0D0D0D',
+        //   stepNumber: 1,
+        //   totalSteps: 14,
+        //   ctaText: 'Continue',
+        //   isSkippable: false,
+        //   options: [
+        //     {
+        //       'label': 'Player',
+        //       'subtitle': 'Compete as a player',
+        //       'icon': 'gamepad',
+        //       'preselected': true,
+        //     },
+        //     {
+        //       'label': 'Creator',
+        //       'subtitle': 'Compete as a creator',
+        //       'icon': 'settings',
+        //     },
+        //     {
+        //       'label': 'Vendor',
+        //       'subtitle': 'Unlock vendor privilege',
+        //       'icon': 'store',
+        //     },
+        //   ],
+        // ),
 
         // ── id:1  Step 2/14 — Time engagement ──────────────────────────
         const OnboardingSlide(

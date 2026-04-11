@@ -1,0 +1,72 @@
+buildscript {
+    ext.kotlin_version = '2.2.0'
+    repositories {
+        google()
+        // Use explicit Maven repo here because ScriptHandler in this Gradle setup
+        // doesn't expose the shorthand mavenCentral() helper.
+        maven {
+            url 'https://repo.maven.apache.org/maven2'
+        }
+        // Use explicit Maven repo here because ScriptHandler in this Gradle setup
+        // doesn't expose the shorthand mavenCentral() helper.
+        maven {
+            url 'https://repo.maven.apache.org/maven2'
+        }
+    }
+
+    dependencies {
+        // AGP 8.7.3+ provides automatic 16 KB page size alignment
+        classpath 'com.android.tools.build:gradle:8.13.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+// Force all subprojects (Flutter plugins) to use compileSdk 34+
+subprojects {
+    plugins.withId("com.android.library") {
+        android {
+            if (namespace == null) {
+                namespace = project.group.toString()
+            }
+            compileSdk = 34
+        }
+    }
+}
+
+subprojects {
+    project.configurations.all {
+        resolutionStrategy {
+            force 'androidx.camera:camera-core:1.4.0'
+            force 'androidx.camera:camera-camera2:1.4.0'
+            force 'androidx.camera:camera-lifecycle:1.4.0'
+            force 'androidx.camera:camera-video:1.4.0'
+            force 'androidx.core:core:1.13.0'
+            force 'androidx.core:core-ktx:1.13.0'
+            force 'androidx.camera:camera-view:1.4.0'
+            force 'androidx.camera:camera-extensions:1.4.0'
+            
+            // Force AndroidX Core 1.13.0 which includes setStylusHandwritingEnabled method
+            force 'androidx.core:core:1.13.0'
+            force 'androidx.core:core-ktx:1.13.0'
+        }
+    }
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

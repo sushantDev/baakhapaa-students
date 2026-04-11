@@ -1,0 +1,1670 @@
+{
+  "@@locale": "en",
+  "appTitle": "BAAKHAPAA",
+  "@appTitle": {
+    "description": "The title of the application."
+  },
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Text for a button to select a language."
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Label for language selection."
+  },
+  "currency": "Currency",
+  "@currency": {
+    "description": "Label for currency selection."
+  },
+  "pause": "Pause",
+  "@pause": {
+    "description": "Button to pause playback."
+  },
+  "play": "Play",
+  "@play": {
+    "description": "Button to start playback."
+  },
+  "loading":"loading",
+  "@loading": {
+    "description": "Message displayed while content is loading."
+  },
+  "error": "An error occurred",
+  "@error": {
+    "description": "A generic error message."
+  },
+  "app": "App",
+  "@app": {
+    "description": "A label for the application."
+  },
+  "shorts": "Shorts",
+  "@shorts": {
+    "description": "A category for short-form videos."
+  },
+  "shop": "Shop",
+  "@shop": {
+    "description": "A menu item to navigate to the shop."
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "A menu item to navigate to the settings page."
+  },
+  "messages": "Messages",
+  "@messages": {
+    "description": "A menu item to navigate to the messages or chat page."
+  },
+  "profile": "Profile",
+  "@profile": {
+    "description": "A menu item to navigate to the user profile page."
+  },
+  "story": "Story",
+  "@story": {
+    "description": "A label for a single story."
+  },
+  "stories": "Stories",
+  "@stories": {
+    "description": "A category for multiple stories."
+  },
+  "store": "Store",
+  "@store": {
+    "description": "A menu item for the application's store."
+  },
+  "creators": "Creators",
+  "@creators": {
+    "description": "A category for content creators."
+  },
+  "shats": "Stat's",
+  "@shats": {
+    "description": "A specific type of content, possibly a blend of 'shorts' and 'chats'."
+  },
+  "referral": "Referral",
+  "@referral": {
+    "description": "Label related to the referral program."
+  },
+  "code": "Code",
+  "@code": {
+    "description": "Label for a code, such as a referral code."
+  },
+  "notification": "Notification",
+  "@notification": {
+    "description": "A menu item to view notifications."
+  },
+  "wallet": "Wallet",
+  "@wallet": {
+    "description": "A menu item for the user's digital wallet."
+  },
+  "active": "Active",
+  "@active": {
+    "description": "Indicates something is currently in use or happening."
+  },
+  "challenges": "Challenges",
+  "@challenges": {
+    "description": "A category for user challenges or quests."
+  },
+  "view": "View",
+  "@view": {
+    "description": "A button or label to view an item."
+  },
+  "all": "All",
+  "@all": {
+    "description": "Used to show all items in a category."
+  },
+  "achievements": "Achievements",
+  "@achievements": {
+    "description": "A category for user accomplishments."
+  },
+  "level": "Level",
+  "@level": {
+    "description": "A label indicating a user's current level."
+  },
+  "progress": "Progress",
+  "@progress": {
+    "description": "A label to show progress towards a goal."
+  },
+  "next": "Next",
+  "@next": {
+    "description": "A button to go to the next item or step."
+  },
+  "role": "Role",
+  "@role": {
+    "description": "A label for a user's role or title."
+  },
+  "share": "Share",
+  "@share": {
+    "description": "A button to share content."
+  },
+  "contact": "Contact",
+  "@contact": {
+    "description": "A button or label for contact information."
+  },
+  "us": "Us",
+  "@us": {
+    "description": "Part of 'Contact Us' or 'About Us'."
+  },
+  "review": "Review",
+  "@review": {
+    "description": "A button or label for a user review."
+  },
+  "leaderboard": "Leaderboard",
+  "@leaderboard": {
+    "description": "A menu item to view the leaderboard."
+  },
+  "total": "Total",
+  "@total": {
+    "description": "A label for a sum or total amount."
+  },
+  "users": "Users",
+  "@users": {
+    "description": "A label for the count of users."
+  },
+  "referrals": "Referrals",
+  "@referrals": {
+    "description": "A label for the number of referrals."
+  },
+  "top": "Top",
+  "@top": {
+    "description": "Used to denote a top list or ranking."
+  },
+  "your": "Your",
+  "@your": {
+    "description": "A possessive pronoun, e.g., 'Your Cart'."
+  },
+  "cart": "Cart",
+  "@cart": {
+    "description": "A menu item or page for the shopping cart."
+  },
+  "empty": "Empty",
+  "@empty": {
+    "description": "Indicates that a list or container is empty."
+  },
+  "no": "No",
+  "@no": {
+    "description": "A negative word, e.g., 'No items found'."
+  },
+  "found": "Found",
+  "@found": {
+    "description": "Indicates an item was located, e.g., 'No items found'."
+  },
+  "update": "Update",
+  "@update": {
+    "description": "A button or label to update something."
+  },
+  "picture": "Picture",
+  "@picture": {
+    "description": "Label for an image."
+  },
+  "gift": "Gift",
+  "@gift": {
+    "description": "A label for a gift or reward."
+  },
+  "rewards": "Rewards",
+  "@rewards": {
+    "description": "A category for user rewards."
+  },
+  "amazing": "Amazing",
+  "@amazing": {
+    "description": "An adjective to describe something as amazing."
+  },
+  "withString": "With",
+  "@withString": {
+    "description": "A preposition to join two phrases, e.g., 'Redeem with points'."
+  },
+  "points": "Points",
+  "@points": {
+    "description": "A label for a currency or point system."
+  },
+  "from": "From",
+  "@from": {
+    "description": "A preposition to indicate source."
+  },
+  "baakhapa": "Baakhapa",
+  "@baakhapa": {
+    "description": "The name of the app or brand."
+  },
+  "discover": "Discover",
+  "@discover": {
+    "description": "A button to discover new content."
+  },
+  "more": "More",
+  "@more": {
+    "description": "A label to indicate there are more items."
+  },
+  "unread": "Unread",
+  "@unread": {
+    "description": "Indicates a message or item has not been read yet."
+  },
+  "read": "Read",
+  "@read": {
+    "description": "Indicates a message or item has been read."
+  },
+  "products": "Products",
+  "@products": {
+    "description": "A category for products in a store."
+  },
+  "available": "Available",
+  "@available": {
+    "description": "Indicates something is ready for use or purchase."
+  },
+  "my": "My",
+  "@my": {
+    "description": "A possessive pronoun, e.g., 'My Profile'."
+  },
+  "choose": "Choose",
+  "@choose": {
+    "description": "A prompt to make a selection."
+  },
+  "content": "Content",
+  "@content": {
+    "description": "A label for user-generated content."
+  },
+  "select": "Select",
+  "@select": {
+    "description": "A button to select an option."
+  },
+  "video": "Video",
+  "@video": {
+    "description": "A label for a video."
+  },
+  "gallery": "Gallery",
+  "@gallery": {
+    "description": "A label for a photo/video gallery."
+  },
+  "record": "Record",
+  "@record": {
+    "description": "A button or action to record something."
+  },
+  "newString": "New",
+  "@newString": {
+    "description": "Indicates an item is new."
+  },
+  "one": "One",
+  "@one": {
+    "description": "The number one, often used for singular items."
+  },
+  "creator": "Creator",
+  "@creator": {
+    "description": "A label for a single content creator."
+  },
+  "portal": "Portal",
+  "@portal": {
+    "description": "A menu item for a specific portal, e.g., 'Creator Portal'."
+  },
+  "access": "Access",
+  "@access": {
+    "description": "A button or label to gain access to something."
+  },
+  "advanced": "Advanced",
+  "@advanced": {
+    "description": "An adjective to describe a feature as advanced."
+  },
+  "tools": "Tools",
+  "@tools": {
+    "description": "A label for a set of tools."
+  },
+  "and": "And",
+  "@and": {
+    "description": "A conjunction to connect words."
+  },
+  "analytics": "Analytics",
+  "@analytics": {
+    "description": "A label for a data analytics section."
+  },
+  "open": "Open",
+  "@open": {
+    "description": "A button or action to open something."
+  },
+  "close": "Close",
+  "@close": {
+    "description": "A button or action to close something."
+  },
+  "dark": "Dark",
+  "@dark": {
+    "description": "An adjective for a theme, e.g., 'Dark Mode'."
+  },
+  "mode": "Mode",
+  "@mode": {
+    "description": "A label for a theme or state, e.g., 'Dark Mode'."
+  },
+  "assistive": "Assistive",
+  "@assistive": {
+    "description": "An adjective, e.g., 'Assistive Touch'."
+  },
+  "touch": "Touch",
+  "@touch": {
+    "description": "A noun, e.g., 'Assistive Touch'."
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "A button or action to edit something."
+  },
+  "information": "Information",
+  "@information": {
+    "description": "A label for a section of information."
+  },
+  "transaction": "Transaction",
+  "@transaction": {
+    "description": "A label for a single transaction."
+  },
+  "log": "Log",
+  "@log": {
+    "description": "A label for a history or log."
+  },
+  "daily": "Daily",
+  "@daily": {
+    "description": "An adjective to indicate something happens every day."
+  },
+  "reward": "Reward",
+  "@reward": {
+    "description": "A label for a single reward."
+  },
+  "forString": "For",
+  "@forString": {
+    "description": "A preposition."
+  },
+  "day": "Day",
+  "@day": {
+    "description": "A label for a day."
+  },
+  "point": "Point",
+  "@point": {
+    "description": "A label for a single point."
+  },
+  "order": "Order",
+  "@order": {
+    "description": "A label for an order."
+  },
+  "history": "History",
+  "@history": {
+    "description": "A label for a history or log."
+  },
+  "date": "Date",
+  "@date": {
+    "description": "A label for a date."
+  },
+  "time": "Time",
+  "@time": {
+    "description": "A label for the time."
+  },
+  "credited": "Credited",
+  "@credited": {
+    "description": "Indicates a credit was applied to an account."
+  },
+  "debited": "Debited",
+  "@debited": {
+    "description": "Indicates a debit was applied to an account."
+  },
+  "weekly": "Weekly",
+  "@weekly": {
+    "description": "An adjective to indicate something happens every week."
+  },
+  "badge": "Badge",
+  "@badge": {
+    "description": "A label for a single badge."
+  },
+  "badges": "Badges",
+  "@badges": {
+    "description": "A label for a collection of badges."
+  },
+  "overview": "Overview",
+  "@overview": {
+    "description": "A label for an overview or summary."
+  },
+  "details": "Details",
+  "@details": {
+    "description": "A button or label to show more details."
+  },
+  "withdraw": "Withdraw",
+  "@withdraw": {
+    "description": "A button or label to withdraw funds or points."
+  },
+  "expires": "Expires",
+  "@expires": {
+    "description": "Indicates when an item will expire."
+  },
+  "watch": "Watch",
+  "@watch": {
+    "description": "A button or action to watch something."
+  },
+  "ads": "Ads",
+  "@ads": {
+    "description": "A label for advertisements."
+  },
+  "required": "Required",
+  "@required": {
+    "description": "Indicates something is mandatory."
+  },
+  "withdrawal": "Withdrawal",
+  "@withdrawal": {
+    "description": "A label for a withdrawal process."
+  },
+  "conversion": "Conversion",
+  "@conversion": {
+    "description": "A label for a conversion process, e.g., points to cash."
+  },
+  "rate": "Rate",
+  "@rate": {
+    "description": "A label for a rate of something."
+  },
+  "per": "Per",
+  "@per": {
+    "description": "A preposition to indicate a rate, e.g., 'per point'."
+  },
+  "submit": "Submit",
+  "@submit": {
+    "description": "A button to submit a form."
+  },
+  "request": "Request",
+  "@request": {
+    "description": "A label for a request."
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "A button to cancel an action."
+  },
+  "payment": "Payment",
+  "@payment": {
+    "description": "A label for a payment."
+  },
+  "bank": "Bank",
+  "@bank": {
+    "description": "A label for a bank."
+  },
+  "transfer": "Transfer",
+  "@transfer": {
+    "description": "A label for a transfer."
+  },
+  "esewa": "Esewa",
+  "@esewa": {
+    "description": "A mobile payment service name."
+  },
+  "khalti": "Khalti",
+  "@khalti": {
+    "description": "A mobile payment service name."
+  },
+  "mobile": "Mobile",
+  "@mobile": {
+    "description": "An adjective, e.g., 'Mobile Banking'."
+  },
+  "banking": "Banking",
+  "@banking": {
+    "description": "A label for a banking service."
+  },
+  "earn": "Earn",
+  "@earn": {
+    "description": "A button or label to earn rewards."
+  },
+  "claimed": "Claimed",
+  "@claimed": {
+    "description": "Indicates a reward has been claimed."
+  },
+  "challenge": "Challenge",
+  "@challenge": {
+    "description": "A label for a single challenge."
+  },
+  "tap": "Tap",
+  "@tap": {
+    "description": "An action prompt to tap on the screen."
+  },
+  "to": "to",
+  "@to": {
+    "description": "A preposition."
+  },
+  "claim": "Claim",
+  "@claim": {
+    "description": "A button or action to claim a reward."
+  },
+  "attempt": "Attempt",
+  "@attempt": {
+    "description": "A label for a single attempt."
+  },
+  "left": "Left",
+  "@left": {
+    "description": "Indicates a remaining number."
+  },
+  "complete": "Complete",
+  "@complete": {
+    "description": "A button or label to complete a task."
+  },
+  "convert": "Convert",
+  "@convert": {
+    "description": "A button or label to convert something."
+  },
+  "cash": "Cash",
+  "@cash": {
+    "description": "A label for money or cash."
+  },
+  "never": "Never",
+  "@never": {
+    "description": "An adverb of time."
+  },
+  "attempts": "Attempts",
+  "@attempts": {
+    "description": "A label for a number of attempts."
+  },
+  "transferred": "Transferred",
+  "@transferred": {
+    "description": "Indicates something was successfully moved."
+  },
+  "successfully": "Successfully",
+  "@successfully": {
+    "description": "An adverb to indicate a successful action."
+  },
+  "matching": "Matching",
+  "@matching": {
+    "description": "An adjective, e.g., 'matching results'."
+  },
+  "search": "Search",
+  "@search": {
+    "description": "A button or field to search."
+  },
+  "results": "Results",
+  "@results": {
+    "description": "A label for search results."
+  },
+  "sStories": "S.Stories",
+  "@sStories": {
+    "description": "A shortened form of 'Stories'."
+  },
+  "creatorsShats": "Creator's Stats",
+  "@creatorsShats": {
+    "description": "A category for 'stats' from creators."
+  },
+  "referralCode": "Referral Code",
+  "@referralCode": {
+    "description": "A label for a user's referral code."
+  },
+  "activeChallenges": "Active Challenges",
+  "@activeChallenges": {
+    "description": "A section title for challenges that are currently active."
+  },
+  "viewAll": "View All",
+  "@viewAll": {
+    "description": "A button to view all items in a list."
+  },
+  "levelProgress": "Level Progress",
+  "@levelProgress": {
+    "description": "A label showing the user's progress towards the next level."
+  },
+  "contactUs": "Contact Us",
+  "@contactUs": {
+    "description": "A menu item or button to contact support."
+  },
+  "reviewUs": "Review Us",
+  "@reviewUs": {
+    "description": "A button or prompt to ask the user to review the app."
+  },
+  "totalUsers": "Total Users",
+  "@totalUsers": {
+    "description": "A label showing the total number of users."
+  },
+  "top10Referrers": "Top 10 Referrers",
+  "@top10Referrers": {
+    "description": "A section title for the top 10 users who have referred others."
+  },
+  "yourCart": "Your Cart",
+  "@yourCart": {
+    "description": "A section title for the user's shopping cart."
+  },
+  "noShortsFound": "No Shorts Found",
+  "@noShortsFound": {
+    "description": "A message shown when no shorts are available."
+  },
+  "noStoriesFound": "No Stories Found",
+  "@noStoriesFound": {
+    "description": "A message shown when no stories are available."
+  },
+  "noCreatorsFound": "No Creators Found",
+  "@noCreatorsFound": {
+    "description": "A message shown when no creators are found."
+  },
+  "noMessagesFound": "No Messages Found",
+  "@noMessagesFound": {
+    "description": "A message shown when the message inbox is empty."
+  },
+  "noNotificationsFound": "No Notifications Found",
+  "@noNotificationsFound": {
+    "description": "A message shown when the notification list is empty."
+  },
+  "updateProfile": "Update Profile",
+  "@updateProfile": {
+    "description": "A button to update user profile information."
+  },
+  "updateProfilePicture": "Update Profile Picture",
+  "@updateProfilePicture": {
+    "description": "A button to change the user's profile picture."
+  },
+  "giftRewards": "Gift Rewards",
+  "@giftRewards": {
+    "description": "A section title for gift rewards."
+  },
+  "giftRewardsInfo": "Redeem amazing rewards with your points",
+  "@giftRewardsInfo": {
+    "description": "A descriptive message for the gift rewards section."
+  },
+  "storiesFromBaakhapa": "Stories from Baakhapaa",
+  "@storiesFromBaakhapa": {
+    "description": "A section title for stories from the app."
+  },
+  "discoverMore": "Discover More",
+  "@discoverMore": {
+    "description": "A button or section title to explore more content."
+  },
+  "noActiveChallengesFound": "No Active Challenges Found",
+  "@noActiveChallengesFound": {
+    "description": "A message shown when there are no active challenges."
+  },
+  "noAchievementsFound": "No Achievements Found",
+  "@noAchievementsFound": {
+    "description": "A message shown when the user has no achievements yet."
+  },
+  "noLevelProgressFound": "No Level Progress Found",
+  "@noLevelProgressFound": {
+    "description": "A message shown when level progress data is unavailable."
+  },
+  "availableGifts": "Available Gifts",
+  "@availableGifts": {
+    "description": "A section title for gifts that are available to the user."
+  },
+  "myAchievements": "My Achievements",
+  "@myAchievements": {
+    "description": "A section title for the user's personal achievements."
+  },
+  "chooseYourContent": "Choose your content",
+  "@chooseYourContent": {
+    "description": "A prompt to select content."
+  },
+  "chooseYourContentInfo": "Select a video from your gallery or record a new one",
+  "@chooseYourContentInfo": {
+    "description": "Instructions for choosing content."
+  },
+  "creatorPortal": "Creator Portal",
+  "@creatorPortal": {
+    "description": "A menu item for a portal for content creators."
+  },
+  "creatorPortalInfo": "Access advanced creator tools and analytics",
+  "@creatorPortalInfo": {
+    "description": "A descriptive message for the Creator Portal."
+  },
+  "recordInfo": "Create new video",
+  "@recordInfo": {
+    "description": "Instructions for creating a new video."
+  },
+  "darkMode": "Dark Mode",
+  "@darkMode": {
+    "description": "A setting to switch to a dark theme."
+  },
+  "lightMode": "Light Mode",
+  "@lightMode": {
+    "description": "A setting to switch to a light theme."
+  },
+  "assistiveTouch": "Assistive Touch",
+  "@assistiveTouch": {
+    "description": "A setting for an accessibility feature."
+  },
+  "editProfile": "Edit Profile",
+  "@editProfile": {
+    "description": "A button to edit the user's profile."
+  },
+  "updateProfileInfo": "Update your profile information",
+  "@updateProfileInfo": {
+    "description": "A descriptive message for the update profile section."
+  },
+  "transactionLog": "Transaction Log",
+  "@transactionLog": {
+    "description": "A section title for a log of transactions."
+  },
+  "dailyRewardForDay": "Daily Reward for Day",
+  "@dailyRewardForDay": {
+    "description": "A section title for the daily reward."
+  },
+  "pointLog": "Point Log",
+  "@pointLog": {
+    "description": "A section title for a log of points."
+  },
+  "orderHistory": "Order History",
+  "@orderHistory": {
+    "description": "A section title for the user's order history."
+  },
+  "dateTime": "Date & Time",
+  "@dateTime": {
+    "description": "A label for date and time."
+  },
+  "transactionHistory": "Transaction History",
+  "@transactionHistory": {
+    "description": "A section title for the user's transaction history."
+  },
+  "weeklyReward": "Weekly Reward",
+  "@weeklyReward": {
+    "description": "A section title for the weekly reward."
+  },
+  "badgesAchievement": "Badges / Achievements",
+  "@badgesAchievement": {
+    "description": "A section title for badges and achievements."
+  },
+  "pointsOverview": "Points Overview",
+  "@pointsOverview": {
+    "description": "A section title for an overview of the user's points."
+  },
+  "viewDetails": "View Details",
+  "@viewDetails": {
+    "description": "A button to view more details about an item."
+  },
+  "withdrawPoints": "Withdraw Points",
+  "@withdrawPoints": {
+    "description": "A button to initiate a points withdrawal."
+  },
+  "availablePoints": "Available Points",
+  "@availablePoints": {
+    "description": "A label showing the number of available points."
+  },
+  "dailyRewards": "Daily Rewards",
+  "@dailyRewards": {
+    "description": "A section title for daily rewards."
+  },
+  "watchAds": "Watch Ads",
+  "@watchAds": {
+    "description": "A button or prompt to watch an advertisement."
+  },
+  "requiredWithdrawal": "Required Withdrawal",
+  "@requiredWithdrawal": {
+    "description": "A label indicating a required amount for withdrawal."
+  },
+  "conversionRate": "Conversion Rate",
+  "@conversionRate": {
+    "description": "A label for the conversion rate of a currency or points."
+  },
+  "perPoint": "Per Point",
+  "@perPoint": {
+    "description": "A label indicating a rate per point."
+  },
+  "submitRequest": "Submit Request",
+  "@submitRequest": {
+    "description": "A button to submit a request."
+  },
+  "paymentDetails": "Payment Details",
+  "@paymentDetails": {
+    "description": "A section title for payment details."
+  },
+  "bankTransfer": "Bank Transfer",
+  "@bankTransfer": {
+    "description": "A payment method option."
+  },
+  "mobileBanking": "Mobile Banking",
+  "@mobileBanking": {
+    "description": "A payment method option."
+  },
+  "challengeDetails": "Challenge Details",
+  "@challengeDetails": {
+    "description": "A section title for details of a challenge."
+  },
+  "tapToClaim": "Tap to claim",
+  "@tapToClaim": {
+    "description": "An instruction to tap on the screen to claim a reward."
+  },
+  "watchAdsEarnPoints": "Watch ads to earn 1 Point.",
+  "@watchAdsEarnPoints": {
+    "description": "A message explaining how to earn points by watching ads."
+  },
+  "attemptLeft": "Attempt left",
+  "@attemptLeft": {
+    "description": "A label showing the number of attempts remaining."
+  },
+  "completeYourProfile": "Complete your profile",
+  "@completeYourProfile": {
+    "description": "A prompt to complete the user's profile."
+  },
+  "convertPointsToCash": "Convert points to cash",
+  "@convertPointsToCash": {
+    "description": "A button or label to convert points to cash."
+  },
+  "pointOverview": "Point Overview",
+  "@pointOverview": {
+    "description": "A section title for an overview of the user's points."
+  },
+  "transferredSuccessfully": "Transferred successfully",
+  "@transferredSuccessfully": {
+    "description": "A success message for a completed transfer."
+  },
+  "withYour": "With your",
+  "@withYour": {
+    "description": "A prepositional phrase, e.g., 'transferred with your mobile banking'."
+  },
+  "searchResults": "Search Results",
+  "@searchResults": {
+    "description": "A section title for search results."
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "A button to confirm an action."
+  },
+  "creatorsShatsDescription": "See your content preferences",
+  "@creatorsShatsDescription": {
+    "description": "A descriptive message for the Creators' Shats section."
+  },
+  "referralCodeDescription": "Share and earn rewards",
+  "@referralCodeDescription": {
+    "description": "A descriptive message for the referral code section."
+  },
+  "giftRewardsDescription": "Get amazing rewards with your points",
+  "@giftRewardsDescription": {
+    "description": "A descriptive message for the gift rewards section."
+  },
+  "storiesFromBaakhapaDescription": "Discover amazing stories and adventures",
+  "@storiesFromBaakhapaDescription": {
+    "description": "A descriptive message for the stories section."
+  },
+  "discoverMoreDescription": "Explore more storytellers, challenges & more",
+  "@discoverMoreDescription": {
+    "description": "A descriptive message for the discover more section."
+  },
+  "noCreatorsShatsFound": "No Creators' Shats found",
+  "@noCreatorsShatsFound": {
+    "description": "A message shown when no creators' shats are found."
+  },
+  "selectLanguagePrompt": "Please select your preferred language.",
+  "@selectLanguagePrompt": {
+    "description": "A prompt to the user to select their language."
+  },
+  "updateProfilePrompt": "Update your profile information and picture.",
+  "@updateProfilePrompt": {
+    "description": "A prompt to the user to update their profile."
+  },
+  "viewTransactionHistory": "View your transaction history to see all credits and debits.",
+  "@viewTransactionHistory": {
+    "description": "A descriptive message for the transaction history section."
+  },
+  "rewardsForWatchingAds": "Watch ads to earn more points!",
+  "@rewardsForWatchingAds": {
+    "description": "A prompt to watch ads for points."
+  },
+  "viewYourAvailablePoints": "Your available Points will expire on ",
+  "@viewYourAvailablePoints": {
+    "description": "A message indicating a points expiration date."
+  },
+  "dailyRewardClaimed": "You have claimed the daily reward for Day ",
+  "@dailyRewardClaimed": {
+    "description": "A success message for claiming a daily reward."
+  },
+  "selectWithdrawalMethod": "Please select a withdrawal method from the options below.",
+  "@selectWithdrawalMethod": {
+    "description": "A prompt to the user to select a withdrawal method."
+  },
+  "playLearnEarn": "Play, Learn, Earn",
+  "@playLearnEarn": {
+    "description": "A tagline for the application."
+  },
+  "yes": "Yes",
+  "@yes": {
+    "description": "A positive confirmation."
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "An acknowledgement."
+  },
+  "save": "Save",
+  "@save": {
+    "description": "A button to save changes."
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "A button to permanently remove an item."
+  },
+  "welcome": "Welcome",
+  "@welcome": {
+    "description": "A greeting."
+  },
+  "hello": "Hello",
+  "@hello": {
+    "description": "A greeting."
+  },
+  "goodbye": "Goodbye",
+  "@goodbye": {
+    "description": "A farewell."
+  },
+  "success": "Success",
+  "@success": {
+    "description": "A success message."
+  },
+  "warning": "Warning",
+  "@warning": {
+    "description": "A warning message."
+  },
+  "or": "or",
+  "@or": {
+    "description": "A conjunction."
+  },
+  "by": "by",
+  "@by": {
+    "description": "A preposition."
+  },
+  "on": "on",
+  "@on": {
+    "description": "A preposition."
+  },
+  "off": "off",
+  "@off": {
+    "description": "A preposition or state."
+  },
+  "enter": "Enter",
+  "@enter": {
+    "description": "A prompt to input text."
+  },
+  "name": "Name",
+  "@name": {
+    "description": "A label for a name field."
+  },
+  "email": "Email",
+  "@email": {
+    "description": "A label for an email field."
+  },
+  "password": "Password",
+  "@password": {
+    "description": "A label for a password field."
+  },
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "A label for a password confirmation field."
+  },
+  "description": "Description",
+  "@description": {
+    "description": "A label for a description field."
+  },
+  "message": "Message",
+  "@message": {
+    "description": "A label for a message field."
+  },
+  "home": "Home",
+  "@home": {
+    "description": "A label for the home screen."
+  },
+  "vendorStore": "Vendor Store",
+  "@vendorStore": {
+    "description": "A label for a store run by a vendor."
+  },
+  "browse": "Browse",
+  "@browse": {
+    "description": "A button to browse items."
+  },
+  "our": "Our",
+  "@our": {
+    "description": "A possessive pronoun, e.g., 'our collection'."
+  },
+  "collection": "Collection",
+  "@collection": {
+    "description": "A label for a collection of items."
+  },
+  "clearAllNotifications": "Clear All Notifications",
+  "@clearAllNotifications": {
+    "description": "A button to clear all notifications."
+  },
+  "continueShopping": "Continue Shopping",
+  "@continueShopping": {
+    "description": "A button to continue shopping."
+  },
+  "yourCartDescription": "Add some amazing product to your cart and start shopping!",
+  "@yourCartDescription": {
+    "description": "A message to encourage the user to add products to their cart."
+  },
+  "yourCartIsEmpty": "Your cart is empty",
+  "@yourCartIsEmpty": {
+    "description": "A message indicating the user's cart is empty."
+  },
+  "continueString": "Continue",
+  "@continueString": {
+    "description": "A button to continue an action."
+  },
+  "shopping": "Shopping",
+  "@shopping": {
+    "description": "A label related to the shopping activity."
+  },
+  "continueShoppingButton": "Continue Shopping",
+  "@continueShoppingButton": {
+    "description": "A button text to continue shopping."
+  },
+    "redeemLabel": "Redeem",
+    "@redeemLabel": {
+      "description":"A Redeem for gift text" 
+    },
+
+    
+  "successMessage": "Success!",
+  "@successMessage": {
+    "description":"Success message!"
+  },
+  "errorMessage": "An error occurred.",
+  "@errorMessage": {
+    "description": "An error occurred."
+  },
+  "sendButton": "Send",
+  "@sendButton": {
+    "description" :"Send"
+  },
+  "deleteButton": "Delete",
+  "@deleteButton": {
+    "description":"Delete"
+  },
+  "editButton": "Edit",
+  "@editButton": {
+    "description": "Edit"
+  },
+  "addButton": "Add",
+  "@addButton": {
+    "description": "Add"
+  },
+  "updateButton": "Update",
+  "@updateButton": {
+    "description": "Update"
+  },
+  "removeButton": "Remove",
+  "@removeButton": {
+    "description": "Remove"
+  },
+  "confirmButton": "Confirm",
+  "@confirmButton": {
+    "description": "Confirm"
+  },
+  "yesButton": "Yes",
+  "@yesButton": {
+    "description": "Yes"
+  },
+  "noButton": "No",
+  "@noButton": {
+    "description":"No"
+  },
+  "continueButton": "Continue",
+  "@continueButton": {
+    "description":"Continue"
+  },
+  "loginButton": "Login",
+  "@loginButton":
+  {
+    "description":"Login"
+  },
+  "logoutButton": "Logout",
+  "@logoutButton":
+  {
+    "description":"Logout"
+  },
+  "registerButton": "Register",
+  "@registerButton":
+  {
+    "description":"Register"
+  },
+  "signInTitle": "Sign In",
+  "@signInTitle":
+  {
+    "description":"Sign In"
+  },
+  "signUpTitle": "Sign Up",
+  "@signUpTitle":
+  {
+    "description":"Sign Up"
+  },
+  "createAccountButton": "Create an Account",
+  "@createAccountButton":
+  {
+    "description":"Create an Account"
+  },
+  "emailLabel": "Email Address",
+  "@emailLabel":
+  {
+    "description":"Email Address"
+  },
+  "passwordLabel": "Password",
+  "@passwordLabel":
+  {
+    "description":"Password"
+  },
+  "forgotPasswordLink": "Forgot Password?",
+  "@forgotPasswordLink":
+  {
+    "description":"Forgot Password?"
+  },
+  "usernameLabel": "Username",
+  "@usernameLabel":
+  {
+    "description":"Username"
+  },
+  "confirmPasswordLabel": "Confirm Password",
+  "@confirmPasswordLabel":
+  {
+    "description":"Confirm Password"
+  },
+  "alreadyHaveAccount": "Already have an account?",
+  "@alreadyHaveAccount":
+  {
+    "description":"Already have an account?"
+  },
+  "dontHaveAccount": "Don't have an account?",
+  "@dontHaveAccount":
+  {
+    "description":"Don't have an account?"
+  },
+  "logoutConfirmation": "'Are you sure you want to logout?",
+  "@logoutConfirmation":
+  {
+    "description":"'Are you sure you want to logout?"
+  },
+  "browseCollection": "Browse our collection",
+  "@browseCollection": {
+    "description": "Button to navigate to the item collection screen."
+  },
+  "addToCart": "Add to cart",
+  "@addToCart": {
+    "description": "Button to add an item to the shopping cart."
+  },
+  "outOfStock": "Out of stock",
+  "@outOfStock": {
+    "description": "Status label for a product that is currently unavailable."
+  },
+  "episodeViews": "Episode Views",
+  "@episodeViews": {
+    "description": "Label for the number of times an episode has been viewed."
+  },
+  "shortsViews": "S.Shorts Views",
+  "@shortsViews": {
+    "description": "Label for the number of times a short-form video has been viewed."
+  },
+  "storySeasons": "Story Seasons",
+  "@storySeasons": {
+    "description": "A heading or label for different seasons of a story."
+  },
+  "likes": "Likes",
+  "@likes": {
+    "description": "A label indicating the number of likes an item has received."
+  },
+  "giftsMatchingSearch": "Gifts matching your search",
+  "@giftsMatchingSearch": {
+    "description": "A heading for a list of gifts that match a user's search query."
+  },
+  "redeemGiftsWithPoints": "Redeem gifts with your points",
+  "@redeemGiftsWithPoints": {
+    "description": "Instructional text telling the user how to use their points."
+  },
+  "searchGiftsToRedeem": "Search gifts to redeem...",
+  "@searchGiftsToRedeem": {
+    "description": "Placeholder text for a search bar for finding redeemable gifts."
+  },
+  "manageAccount": "Manage your account",
+  "@manageAccount": {
+    "description": "A heading or link to the account management section."
+  },
+  "filterChallenges": "Filter Challenges",
+  "@filterChallenges": {
+    "description": "A button or title for filtering a list of challenges."
+  },
+"toggleSwitchInfo": "Toggle between light and dark themes",
+  "@toggleSwitchInfo": {
+    "description": "Information about the theme toggle switch."
+  },
+  "assistiveTouchInfo": "Enable floating action button",
+  "@assistiveTouchInfo": {
+    "description": "Information about enabling the assistive touch feature."
+  },
+  "contactUsInfo": "Get help and support",
+  "@contactUsInfo": {
+    "description": "Information about contacting support."
+  },
+  "logoutInfo": "Sign out of your account",
+  "@logoutInfo": {
+    "description": "Information about signing out of the user's account."
+  },
+  "languageInfo": "Change app language",
+  "@languageInfo": {
+    "description": "Information about changing the application language."
+  },
+  "unlock": "Unlock",
+  "@unlock": {
+    "description": "A label for an unlock action."
+  },
+  "storytellers": "Storytellers",
+  "@storytellers": {
+    "description": "A title for a section featuring storytellers."
+  },
+  "storyTellersInfo": "Discover amazing storytellers",
+  "@storyTellersInfo": {
+    "description": "Information encouraging discovery of storytellers."
+  },
+  "challengesDescription": "Join exciting challenges and win rewards",
+  "@challengesDescription": {
+    "description": "Description of challenges and rewards."
+  },
+  "findStorytellers": "Discover amazing content creators",
+  "@findStorytellers": {
+    "description": "Text encouraging discovery of content creators."
+  },
+  "find": "Find",
+  "@find": {
+    "description": "A general label for a search or discovery action."
+  },
+  "searchByUsername": "Search by username",
+  "@searchByUsername": {
+    "description": "A placeholder or label for searching by username."
+  },
+  "forYou": "For you",
+  "@forYou": {
+    "description": "A section title for personalized content."
+  },
+  "enterFullScreen": "Enter Full Screen",
+  "@enterFullScreen": {
+    "description": "A button or action to enter full screen mode."
+  },
+  "filterShortStories": "Filter Short Stories",
+  "@filterShortStories": {
+    "description": "A button or title for filtering short stories."
+  },
+  "shortStoriesTopics": "Short Stories Topics",
+  "@shortStoriesTopics": {
+    "description": "A title for topics related to short stories."
+  },
+  "sortBy": "Sort By",
+  "@sortBy": {
+    "description": "A label for sorting options."
+  },
+  "mostLiked": "Most Liked",
+  "@mostLiked": {
+    "description": "A sorting option for content by most likes."
+  },
+  "mostPoints": "Most Points",
+  "@mostPoints": {
+    "description": "A sorting option for content by most points."
+  },
+  "random": "Random",
+  "@random": {
+    "description": "A sorting option for random order."
+  },
+  "latest": "Latest",
+  "@latest": {
+    "description": "A sorting option for the latest content."
+  },
+  "oldest": "Oldest",
+  "@oldest": {
+    "description": "A sorting option for the oldest content."
+  },
+  
+"aboutOurCompany": "About Our Company",
+  "@aboutOurCompany": {
+    "description": "Heading for the company information section."
+  },
+  "companyMissionStatement": "A multi-purpose content sharing app that monetizes engagement according to the knowledge of storytelling.",
+  "@companyMissionStatement": {
+    "description": "Mission statement of the company."
+  },
+  "companyDescription1": "Baakhapaa IT and Marketing Solutions LLC is a software development and marketing company that strives to create stories of success for its clients. We focus on providing informative multimedia platforms for organizations that strive to be a successful brand and propel the business to new heights.",
+  "@companyDescription1": {
+    "description": "First paragraph describing Baakhapaa IT and Marketing Solutions LLC."
+  },
+  "companyDescription2": "With our services, organizations can create a brand that works on uniting people, promoting culture, and moving towards spiritual consciousness through the power of storytelling.",
+  "@companyDescription2": {
+    "description": "Second paragraph describing the impact of company services."
+  },
+  "getInTouch": "Get in Touch",
+  "@getInTouch": {
+    "description": "Call to action for contacting the company."
+  },
+  "instagram": "Instagram",
+  "@instagram": {
+    "description": "Label for Instagram social media link."
+  },
+  "facebook": "Facebook",
+  "@facebook": {
+    "description": "Label for Facebook social media link."
+  },
+  "youTube": "YouTube",
+  "@youTube": {
+    "description": "Label for YouTube social media link."
+  },
+  "messenger": "Messenger",
+  "@messenger": {
+    "description": "Label for Messenger social media link."
+  },
+  "viber": "Viber",
+  "@viber": {
+    "description": "Label for Viber social media link."
+  },
+  "generalInformation": "General Information",
+  "@generalInformation": {
+    "description": "Heading for general user information."
+  },
+  "fullName": "Full Name",
+  "@fullName": {
+    "description": "Label for full name input field."
+  },
+  "username": "Username",
+  "@username": {
+    "description": "Label for username input field."
+  },
+  "dateOfBirth": "Date of birth",
+  "@dateOfBirth": {
+    "description": "Label for date of birth input field."
+  },
+  "addressInformation": "Address Information",
+  "@addressInformation": {
+    "description": "Heading for address details section."
+  },
+  "country": "Country",
+  "@country": {
+    "description": "Label for country input field."
+  },
+  "state": "State",
+  "@state": {
+    "description": "Label for state/province input field."
+  },
+  "address": "Address",
+  "@address": {
+    "description": "Label for address input field."
+  },
+  "postalCode": "Postal Code",
+  "@postalCode": {
+    "description": "Label for postal code input field."
+  },
+  "security": "Security",
+  "@security": {
+    "description": "Heading for security settings section."
+  },
+  "changePassword": "Change Password",
+  "@changePassword": {
+    "description": "Button or link to change password."
+  },
+  "lives": "Lives",
+  "@lives": {
+    "description": "Label for the number of lives in a game or challenge."
+  },
+  "duration": "Duration",
+  "@duration": {
+    "description": "Label for the duration of an item or event."
+  },
+  "mcq": "Mcq",
+  "@mcq": {
+    "description": "Abbreviation for Multiple Choice Question."
+  },
+  "minPlays": "Min Plays",
+  "@minPlays": {
+    "description": "Label for minimum number of plays required."
+  },
+  "pointsRequired": "Points Required",
+  "@pointsRequired": {
+    "description": "Label for points needed to access something."
+  },
+  "winnerAs": "Winner As",
+  "@winnerAs": {
+    "description": "Label indicating how a winner is determined or displayed."
+  },
+  "allCaughtUp": "All Caught up",
+  "@allCaughtUp": {
+    "description": "Message indicating all tasks or notifications are viewed."
+  },
+  "show": "Show",
+  "@show": {
+    "description": "Generic action to display something."
+  },
+  "notificationsReadMessage": "You've read all your notifications. Great job staying organized!",
+  "@notificationsReadMessage": {
+    "description": "Message when all notifications have been read."
+  },
+  "noNotificationsYet": "No notifications yet",
+  "@noNotificationsYet": {
+    "description": "Message when there are no notifications."
+  },
+  "notificationsAppearHere": "When you receive notifications, they'll appear here",
+  "@notificationsAppearHere": {
+    "description": "Hint text for where notifications will appear."
+  },
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Button or action to refresh content."
+  },
+  "episodes": "Episodes",
+  "@episodes": {
+    "description": "Label for number of episodes."
+  },
+  "totalPoints": "Total Points",
+  "@totalPoints": {
+    "description": "Label for total accumulated points."
+  },
+  "creatorsScreen": "Creators Screen",
+  "@creatorsScreen": {
+    "description": "Title for the creators' management screen."
+  },
+  "create": "Create",
+  "@create": {
+    "description": "Generic action to create something."
+  },
+  "galleryInfo": "Choose your videos",
+  "@galleryInfo": {
+    "description": "Instruction for choosing videos from gallery."
+  },
+  "tellUsAboutYourVideo": "Tell us about your video",
+  "@tellUsAboutYourVideo": {
+    "description": "Prompt for user to describe their video."
+  },
+  "title": "Title",
+  "@title": {
+    "description": "Label for video title input field."
+  },
+  "whatsYourVideoAbout": "What's your video about?",
+  "@whatsYourVideoAbout": {
+    "description": "Placeholder or prompt for video description."
+  },
+  "describeYourContent": "Describe your content...",
+  "@describeYourContent": {
+    "description": "Placeholder for content description input."
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Button to go back to the previous screen."
+  },
+  "setupYourChallenge": "Setup your challenge",
+  "@setupYourChallenge": {
+    "description": "Heading for challenge setup section."
+  },
+  "category": "Category",
+  "@category": {
+    "description": "Label for category selection."
+  },
+  "chooseCategory": "Choose category",
+  "@chooseCategory": {
+    "description": "Instruction for choosing a category."
+  },
+  "loadingCategories": "Loading categories …",
+  "@loadingCategories": {
+    "description": "Loading message for categories."
+  },
+  "pointsReward": "Points Reward",
+  "@pointsReward": {
+    "description": "Label for points awarded as a reward."
+  },
+  "postShorts": "Post Shorts",
+  "@postShorts": {
+    "description": "Button or action to post short videos."
+  },
+  "waitToContinue": "Wait to continue...",
+  "@waitToContinue": {
+    "description": "Message indicating a wait state before proceeding."
+  },
+  "goToQuestion": "Start Quiz",
+  "@goToQuestion": {
+    "description": "Button to navigate to a question."
+  },
+  "comments": "Comments",
+  "@comments": {
+    "description": "Heading for comments section."
+  },
+  "supportCreator": "Vote Creator",
+  "@supportCreator": {
+    "description": "Button or action to support a creator."
+  },
+  "episodeNavigation": "Episode Navigation",
+  "@episodeNavigation": {
+    "description": "Heading for episode navigation controls."
+  },
+  "previous": "Previous",
+  "@previous": {
+    "description": "Button to go to the previous item/episode."
+  },
+  "post": "Post",
+  "@post": {
+    "description": "Generic action to post content."
+  },
+  "shareYourThoughts": "Add a comments..",
+  "@shareYourThoughts": {
+    "description": "Prompt for user to share their opinion."
+  },
+  "leadingReferralUsers": "Leading referral users",
+  "@leadingReferralUsers": {
+    "description": "Heading for a list of top referral users."
+  },
+  "shareMyRanking": "Share my ranking",
+  "@shareMyRanking": {
+    "description": "Button to share user's ranking."
+  },
+
+  "becomeACreator": "Become a Creator",
+  "@becomeACreator": {
+    "description": "Title for the 'Become a Creator' page or section."
+  },
+  "unlockBadgesAndEarnRewards": "Unlock badges and earn rewards",
+  "@unlockBadgesAndEarnRewards": {
+    "description": "A heading or title encouraging users to earn rewards."
+  },
+  "earnBadgesForRewards": "Earn badges to redeem rewards inside baakhapaa app. Achievements are categorized by type to help you track your progress",
+  "@earnBadgesForRewards": {
+    "description": "Descriptive text explaining how the badge system works."
+  },
+  "completed": "Completed",
+  "@completed": {
+    "description": "Status text indicating something has been completed."
+  },
+  "shareCodeWithFriends": "Share this code with friends and earn rewards when they join!",
+  "@shareCodeWithFriends": {
+    "description": "Call to action for users to share a referral code."
+  },
+  "copyCode": "Copy Code",
+  "@copyCode": {
+    "description": "Button text to copy a referral code."
+  },
+  "noReferralCodeAvailable": "No referral code available",
+  "@noReferralCodeAvailable": {
+    "description": "Message displayed when no referral code exists for the user."
+  },
+  "joinCreatorCommunity": "Join the community of content creators and share your unique voice with the world",
+  "@joinCreatorCommunity": {
+    "description": "A welcome message or call to action for joining the creator community."
+  },
+  "creatorBenefits": "Creator Benefits",
+  "@creatorBenefits": {
+    "description": "Heading for a section outlining the benefits of being a creator."
+  },
+  "whatYouCanAchieve": "What you can achieve as a creator",
+  "@whatYouCanAchieve": {
+    "description": "Subheading or descriptive text for the creator benefits section."
+  },
+  "contentCreation": "Content Creation",
+  "@contentCreation": {
+    "description": "A benefit item related to creating content."
+  },
+  "createAndShareContent": "Create and share engaging Shorts and Stories",
+  "@createAndShareContent": {
+    "description": "Description of the content creation benefit."
+  },
+  "buildFollowing": "Build Following",
+  "@buildFollowing": {
+    "description": "A benefit item related to building an audience."
+  },
+  "growYourAudience": "Grow your audience with engaged fans",
+  "@growYourAudience": {
+    "description": "Description of the audience-building benefit."
+  },
+  "monetization": "Monetization",
+  "@monetization": {
+    "description": "A benefit item related to earning money."
+  },
+  "earnThroughMonetization": "Earn through various monetization channels",
+  "@earnThroughMonetization": {
+    "description": "Description of the monetization benefit."
+  },
+  "recognition": "Recognition",
+  "@recognition": {
+    "description": "A benefit item related to getting recognized for contributions."
+  },
+  "getRewardsForContributions": "Get rewards for your contributions",
+  "@getRewardsForContributions": {
+    "description": "Description of the recognition benefit."
+  },
+  "requirements": "Requirements",
+  "@requirements": {
+    "description": "Heading for a section outlining the requirements to become a creator."
+  },
+  "meetCreatorCriteria": "Meet these criteria to become a creator",
+  "@meetCreatorCriteria": {
+    "description": "Descriptive text for the requirements section."
+  },
+  "minimum": "Minimum",
+  "@minimum": {
+    "description": "Prefix for a minimum value or requirement."
+  },
+  "need": "Need",
+  "@need": {
+    "description": "Introductory word for a list of requirements."
+  },
+  "completeEpisodesToQualify": "Complete these episodes to qualify",
+  "@completeEpisodesToQualify": {
+    "description": "Descriptive text for a specific requirement to complete episodes."
+  },
+  "requestUnderReview": "Your request is under review. You will receive an email notification once a decision has been made.",
+  "@requestUnderReview": {
+    "description": "A message to the user that their request has been submitted and is being reviewed."
+  },
+  "meetAllRequirements": "Please meet all requirements before submitting your request.",
+  "@meetAllRequirements": {
+    "description": "An error message or prompt to the user to fulfill all requirements before submitting."
+  },
+  "requestSubmitted": "Request Submitted",
+  "@requestSubmitted": {
+    "description": "Confirmation message that a request has been submitted."
+  },
+  "submitCreatorRequest": "Submit Creator Request",
+  "@submitCreatorRequest": {
+    "description": "Button text to submit a creator request."
+  },
+  "learn": "Learn",
+  "@learn": {
+    "description": "Heading for a section about earning rewards."
+  },
+  "learnDescription": "Watch stories • Upload Videos • Complete Challenges to earn rewards",
+  "@learnDescription": {
+    "description": "Descriptive text detailing the actions required to earn rewards."
+  },
+  "monetizeYourSCREENTIME": "Monetize Your SCREEN TIME",
+  "@monetizeYourSCREENTIME": {
+    "description":"Monetize Your SCREEN TIME"
+  },
+  "storiesArePowerStoriesAreRewards": "Stories Are Power. Stories Are Rewards.",
+  "@storiesArePowerStoriesAreRewards": {
+    "description": "Stories Are Power. Stories Are Rewards."
+  },
+  "storiesArePower": "Stories Are Power.",
+  "@storiesArePower": {
+    "description":"Stories Are Power."
+  },
+  "storiesAreRewards": "Stories Are Rewards.",
+  "@storiesAreRewards": {
+    "description":"Stories Are Rewards."
+  },
+  "browseByVendorsAndCollections": "Browse by vendors and collections",
+  "@browseByVendorsAndCollections": {
+    "description":"Browse by vendors and collections"
+  },
+  "startJourney": "Start your journey of watching shorts, playing games and earning rewards!",
+  "@startJourney": 
+  {
+    "description":
+    "Start your journey of watching shorts, playing games and earning rewards!"
+  },
+  "iAgreeToThe": "I agree to the",
+  "@iAgreeToThe": {"description":"I agree to the"},
+  "andKeyword": "and",
+  "@andKeyword": {"description": "and"},
+ "applyToBecomeCreator": "Apply to become a content creator",
+  "@applyToBecomeCreator": {"description": "Apply to become a content creator"}
+
+}

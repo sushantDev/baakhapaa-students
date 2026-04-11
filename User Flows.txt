@@ -1,0 +1,2698 @@
+App Launch & Complete User Flow — Baakhapaa Application (Flutter v3)
+================================================================================
+
+App Launch & Initialization
+├─ App Startup Sequence
+│  ├─ Sentry Error Tracking Initialization
+│  ├─ SharedPreferences & App State Initialization  
+│  ├─ Firebase Core Setup (FCM, messaging)
+│  ├─ Google Mobile Ads SDK Initialization
+│  ├─ Microsoft Clarity Analytics Initialization
+│  ├─ Deep Link Handler Setup
+│  ├─ Khalti Payment SDK Configuration
+│  ├─ Local Notifications Setup
+│  └─ Global Providers (Auth, Story, Shop, Cart, etc.)
+├─ Authentication Check (via Auth Provider)
+│  ├─ Check stored session token validity
+│  ├─ If valid token exists → Auto-login → Story Screen
+│  ├─ If no token or invalid → Guest Mode → Shorts Screen
+│  └─ Loading state during authentication check
+└─ Initial Route Decision
+   ├─ Authenticated User → Story Screen (Primary Home)
+   └─ Guest User → Shorts Screen (Guest Entry Point)
+
+================================================================================
+GUEST MODE EXPERIENCE (Default Entry Point - Shorts Screen)
+================================================================================
+
+Shorts Screen (Primary Landing for Guests)
+├─ Top Navigation Tabs
+│  ├─ For You Tab (Fully Accessible)
+│  │  ├─ Unlimited shorts video feed
+│  │  ├─ Vertical auto-playing videos
+│  │  ├─ Full viewing access without restrictions
+│  │  └─ Algorithm-based content delivery
+│  └─ Challenges Tab (Visible but Locked)
+│     ├─ Shows "Login Required" on tap
+│     ├─ Preview of available challenges
+│     └─ Login/Register prompt dialog
+├─ Filter Button (Top Right - Restricted)
+│  ├─ Accessible but shows login prompt
+│  ├─ "Login to customize your feed" message
+│  └─ Redirects to authentication flow
+├─ Main Video Player Area  
+│  ├─ Shorts Video Player
+│  │  ├─ Auto-play on scroll
+│  │  ├─ Tap to pause/play
+│  │  ├─ Swipe up/down navigation
+│  │  ├─ Full screen video experience
+│  │  └─ Seamless video transitions
+│  ├─ Video Information Overlay
+│  │  ├─ Creator username with role badge
+│  │  ├─ Video title and description
+│  │  ├─ "Show more" for long descriptions
+│  │  ├─ Creator profile image (clickable)
+│  │  └─ Video metadata (views, duration)
+│  └─ Quiz Integration (Guest Demo Mode)
+│     ├─ Quiz button with question count
+│     ├─ Demo quiz experience available
+│     ├─ Can answer questions but no points earned
+│     ├─ "Login to earn points" banner
+│     └─ Guest win/loose screens with limited rewards
+├─ Right Side Action Panel
+│  ├─ Like Button (Restricted)
+│  │  ├─ Shows current like count
+│  │  ├─ Tap → "Login Required" dialog
+│  │  └─ "Like videos? Login to save preferences"
+│  ├─ Comment Button (Restricted)  
+│  │  ├─ Shows comment count
+│  │  ├─ Tap → "Login Required" dialog
+│  │  └─ "Join the conversation! Login to comment"
+│  ├─ Support/Gift Button (Restricted)
+│  │  ├─ Shows gift icon
+│  │  ├─ Tap → "Login Required" dialog
+│  │  └─ "Support creators by logging in"
+│  └─ Share Button (Fully Functional)
+│     ├─ No login required
+│     ├─ Native sharing menu
+│     ├─ Social platform sharing
+│     ├─ Copy link functionality
+│     └─ Messaging app sharing
+├─ Bottom Navigation (Mixed Access)
+│  ├─ Shorts Tab (Active/Accessible)
+│  │  └─ Currently viewing - full functionality
+│  ├─ Stories Tab (Restricted)
+│  │  ├─ Tap → "Login Required" dialog
+│  │  ├─ "Discover amazing stories and quizzes"
+│  │  └─ Authentication prompt
+│  ├─ Create Button (Center FAB - Restricted)
+│  │  ├─ Floating Action Button with gradient
+│  │  ├─ Tap → "Login Required" dialog
+│  │  └─ "Share your creativity! Login to create"
+│  ├─ Store Tab (Restricted)
+│  │  ├─ Tap → "Login Required" dialog  
+│  │  ├─ "Shop exclusive items and rewards"
+│  │  └─ Authentication prompt
+│  └─ Profile Tab (Restricted)
+│     ├─ Tap → "Login Required" dialog
+│     ├─ "Track progress and achievements"
+│     └─ Authentication prompt
+└─ Assistive Touch (Floating Menu - Mixed Access)
+   ├─ Floating circular button (bottom right)
+   ├─ Expandable radial menu
+   ├─ Most features require login
+   ├─ Language selector (may be accessible)
+   ├─ Support/Contact (may be accessible)
+   └─ All other features prompt for authentication
+
+================================================================================
+AUTHENTICATION FLOWS  
+================================================================================
+
+Registration Flow (New Users)
+├─ Entry Points to Registration
+│  ├─ Welcome Screen → "Create Account" button
+│  ├─ Login Screen → "Don't have account? Register" 
+│  ├─ Guest mode prompts → "Register" option
+│  └─ Direct navigation to RegisterScreen route
+├─ Registration Screen (/register-screen)
+│  ├─ Form Fields
+│  │  ├─ Full Name (required, validation)
+│  │  ├─ Email Address (required, format validation)
+│  │  ├─ Password (required, strength requirements)
+│  │  └─ Confirm Password (required, must match)
+│  ├─ Validation & User Experience
+│  │  ├─ Real-time field validation
+│  │  ├─ Inline error messaging
+│  │  ├─ Password strength indicator
+│  │  └─ Form submission loading states
+│  ├─ Terms & Privacy
+│  │  ├─ Terms of Service agreement checkbox
+│  │  ├─ Privacy Policy links
+│  │  └─ Required acceptance for registration
+│  ├─ Submit Registration
+│  │  ├─ "Create Account" primary button
+│  │  ├─ Loading spinner during submission
+│  │  ├─ Success handling with auto-login
+│  │  └─ Error handling with user feedback
+│  └─ Alternative Actions
+│     ├─ "Already have account? Login here"
+│     └─ Social login options (if implemented)
+├─ Registration Success Flow
+│  ├─ Automatic login with session token
+│  ├─ FCM token registration for notifications
+│  ├─ User profile initialization
+│  ├─ Navigation to Story Screen (authenticated home)
+│  └─ Welcome/onboarding flow (if applicable)
+└─ Registration Error Handling
+   ├─ Email already exists → Suggest login flow
+   ├─ Weak password → Show strength requirements
+   ├─ Network errors → Retry mechanism
+   └─ Server errors → Support contact information
+
+Login Flow (Returning Users)
+├─ Entry Points to Login
+│  ├─ Welcome Screen → "Login" button
+│  ├─ Register Screen → "Already have account? Login"
+│  ├─ Guest mode prompts → "Login" option
+│  └─ Direct navigation to LoginScreen route
+├─ Login Screen (/login-screen)
+│  ├─ Form Fields
+│  │  ├─ Email/Username field (required)
+│  │  ├─ Password field with show/hide toggle
+│  │  └─ "Remember me" checkbox (optional)
+│  ├─ Primary Actions
+│  │  ├─ "Login" submit button
+│  │  ├─ Loading state during authentication
+│  │  └─ Form validation before submission
+│  ├─ Secondary Actions
+│  │  ├─ "Forgot Password?" link → ForgotPasswordScreen
+│  │  ├─ "Create Account" → RegisterScreen
+│  │  ├─ "Continue as Guest" → ShortsScreen
+│  │  └─ Social login options (if implemented)
+│  └─ Auto-login Features
+│     ├─ Secure credential storage
+│     ├─ Session persistence
+│     └─ Biometric authentication (if available)
+├─ Login Success Flow
+│  ├─ Session token storage and validation
+│  ├─ User profile and preferences loading
+│  ├─ FCM token update for notifications
+│  ├─ Deep link processing (if pending)
+│  └─ Navigation to Story Screen or intended destination
+└─ Login Error Handling
+   ├─ Invalid credentials → Clear error messages
+   ├─ Account locked → Support information
+   ├─ Network issues → Retry options
+   └─ Server errors → Status information and retry
+
+Forgot Password Flow
+├─ Forgot Password Screen (/forgot-password-screen)
+│  ├─ Email input field for reset
+│  ├─ "Send Reset Link" button
+│  ├─ Email validation before submission
+│  └─ "Back to Login" navigation
+├─ Email Sent Confirmation
+│  ├─ "Check your email" confirmation message
+│  ├─ Resend option with cooldown timer
+│  ├─ Email troubleshooting tips
+│  └─ Return to login navigation
+├─ OTP Verification (if implemented)
+│  ├─ Verify OTP Screen (/verify-otp-screen)
+│  ├─ OTP code input field
+│  ├─ Resend OTP option
+│  └─ Verification and password reset
+└─ Password Reset Completion
+   ├─ New password creation form
+   ├─ Password confirmation
+   ├─ Success confirmation
+   └─ Auto-login after successful reset
+
+================================================================================
+AUTHENTICATED USER EXPERIENCE (Primary App Flow)
+================================================================================
+
+Story Screen (Main Home for Authenticated Users - /story-screen)
+├─ Top Header Navigation
+│  ├─ App logo and branding
+│  ├─ Notification bell icon (with unread count badge)
+│  ├─ Search functionality
+│  ├─ User profile avatar (clickable)
+│  └─ Header navigation controls
+├─ Banner/Slider Section
+│  ├─ Auto-scrolling promotional banners
+│  ├─ Featured story highlights
+│  ├─ Special events and announcements
+│  ├─ Swipeable banner carousel
+│  └─ Clickable banner navigation
+├─ Main Story Content
+│  ├─ Story Categories Grid
+│  │  ├─ Category-based story organization
+│  │  ├─ Visual story cards with thumbnails
+│  │  ├─ Progress indicators on started stories
+│  │  ├─ Difficulty/level indicators
+│  │  └─ Story metadata (episodes, duration)
+│  ├─ Featured Stories Section
+│  │  ├─ Highlighted popular stories
+│  │  ├─ Editor's choice recommendations
+│  │  ├─ New release showcase
+│  │  └─ Trending story content
+│  ├─ Continue Reading Widget
+│  │  ├─ Resume in-progress stories
+│  │  ├─ Bookmarked content access
+│  │  ├─ Reading history tracking
+│  │  └─ Quick continue options
+│  └─ Story Discovery
+│     ├─ Recommended based on history
+│     ├─ Similar stories suggestions
+│     ├─ Creator recommendations
+│     └─ Genre-based browsing
+├─ Quick Access Features
+│  ├─ Search and filter functionality
+│  ├─ Bookmarks and favorites
+│  ├─ Reading progress tracking
+│  ├─ Achievement notifications
+│  └─ Social sharing options
+└─ Bottom Navigation (Full Access)
+   ├─ Stories Tab (Currently active)
+   ├─ Shorts Tab (full access with challenges)
+   ├─ Create FAB (role-based access)
+   ├─ Store Tab (full shopping experience)
+   └─ Profile Tab (user dashboard)
+
+Story Content Flow (Episode → Video → Question → Results)
+├─ Episode Screen (/episode-screen)
+│  ├─ Episode Selection Interface
+│  │  ├─ Chapter/episode navigation
+│  │  ├─ Progress tracking per episode
+│  │  ├─ Episode thumbnails and descriptions
+│  │  ├─ Difficulty and reward indicators
+│  │  └─ Episode unlock status
+│  ├─ Reading Interface
+│  │  ├─ Text content presentation
+│  │  ├─ Font size and theme controls
+│  │  ├─ Reading progress bar
+│  │  ├─ Bookmark functionality
+│  │  └─ Auto-save reading position
+│  ├─ Navigation Controls
+│  │  ├─ Previous/next episode
+│  │  ├─ Chapter jump navigation
+│  │  ├─ Table of contents
+│  │  └─ Back to story overview
+│  └─ Interactive Features
+│     ├─ Share episode content
+│     ├─ Comment and discussion
+│     ├─ Rate episode experience
+│     └─ Related episodes
+├─ Video Screen (/video-screen)
+│  ├─ Video Player Interface
+│  │  ├─ Full-screen video playback
+│  │  ├─ Video quality controls (auto, HD, SD)
+│  │  ├─ Playback speed adjustment
+│  │  ├─ Seek/scrub functionality
+│  │  └─ Play/pause controls
+│  ├─ Video Features
+│  │  ├─ Closed captions (if available)
+│  │  ├─ Picture-in-picture mode
+│  │  ├─ Video progress tracking
+│  │  ├─ Auto-continue to next
+│  │  └─ Repeat/loop options
+│  ├─ Video Information
+│  │  ├─ Video title and description
+│  │  ├─ Creator information
+│  │  ├─ View count and statistics
+│  │  ├─ Video duration display
+│  │  └─ Related video suggestions
+│  └─ Interactive Elements
+│     ├─ Like/dislike functionality
+│     ├─ Comment section
+│     ├─ Share video options
+│     ├─ Add to playlist/favorites
+│     └─ Report video issues
+├─ Question Screen (/question-screen)
+│  ├─ Quiz Interface
+│  │  ├─ Story-based quiz questions
+│  │  ├─ Multiple choice answer options
+│  │  ├─ Question progress indicator
+│  │  ├─ Time limit display (if applicable)
+│  │  └─ Question difficulty indicator
+│  ├─ Answer Selection
+│  │  ├─ Interactive answer buttons
+│  │  ├─ Single or multiple selection
+│  │  ├─ Answer confirmation dialog
+│  │  ├─ Answer change allowance
+│  │  └─ Submit answer functionality
+│  ├─ Help Features
+│  │  ├─ Hint system (optional)
+│  │  ├─ Hint cost/penalty system
+│  │  ├─ Skip question option
+│  │  ├─ Question explanation
+│  │  └─ Help/guidance popup
+│  ├─ Live Features
+│  │  ├─ Lives/attempts system
+│  │  ├─ Life reduction on wrong answers
+│  │  ├─ Life regeneration over time
+│  │  ├─ Extra life purchase options
+│  │  └─ Game over conditions
+│  └─ Timer System
+│     ├─ Question time limits
+│     ├─ Overall quiz timer
+│     ├─ Time bonus for quick answers
+│     ├─ Time warning notifications
+│     └─ Timeout handling
+├─ Win Screen (/win-screen)
+│  ├─ Victory Celebration
+│  │  ├─ Success animation and effects
+│  │  ├─ Congratulatory messages
+│  │  ├─ Achievement unlock notifications
+│  │  ├─ Victory sound effects
+│  │  └─ Confetti/celebration visuals
+│  ├─ Rewards Summary
+│  │  ├─ Points earned breakdown
+│  │  ├─ Experience points gained
+│  │  ├─ Coins/currency rewards
+│  │  ├─ Badge/achievement unlocks
+│  │  └─ Level progression updates
+│  ├─ Performance Stats
+│  │  ├─ Quiz completion time
+│  │  ├─ Accuracy percentage
+│  │  ├─ Lives remaining
+│  │  ├─ Hints used count
+│  │  └─ Comparative performance
+│  ├─ Social Features
+│  │  ├─ Share victory on social media
+│  │  ├─ Challenge friends option
+│  │  ├─ Leaderboard position update
+│  │  ├─ Achievement sharing
+│  │  └─ Screenshot/share results
+│  └─ Next Actions
+│     ├─ Continue to next episode/story
+│     ├─ Replay quiz option
+│     ├─ Return to story overview
+│     ├─ Explore similar content
+│     └─ Review performance details
+└─ Loose Screen (/loose-screen)
+   ├─ Encouragement Interface
+   │  ├─ Motivational messages
+   │  ├─ "Try again" encouragement
+   │  ├─ Learning opportunity focus
+   │  ├─ Positive reinforcement
+   │  └─ Progress acknowledgment
+   ├─ Learning Review
+   │  ├─ Correct answers display
+   │  ├─ Question explanation/education
+   │  ├─ Knowledge gaps identification
+   │  ├─ Study tips and hints
+   │  └─ Related content suggestions
+   ├─ Retry Options
+   │  ├─ "Try Again" button
+   │  ├─ Life cost for retry
+   │  ├─ Wait time for free retry
+   │  ├─ Purchase additional lives
+   │  └─ Skip to next question/episode
+   ├─ Support Features
+   │  ├─ Hint purchase options
+   │  ├─ Extra help resources
+   │  ├─ Study mode activation
+   │  ├─ Practice quiz access
+   │  └─ Difficulty adjustment suggestions
+   └─ Navigation Options
+      ├─ Return to episode selection
+      ├─ Go back to story overview
+      ├─ Explore easier content
+      ├─ Access help/tutorial
+      └─ Contact support option
+
+Shorts Screen Enhanced Experience (Authenticated Users - /shorts-screen)
+├─ Enhanced Top Navigation
+│  ├─ For You Tab (Personalized & Expanded)
+│  │  ├─ Algorithm-driven personalized feed
+│  │  ├─ Based on viewing history and preferences
+│  │  ├─ Like/dislike history integration
+│  │  ├─ Following creator prioritization
+│  │  └─ Content quality and relevance scoring
+│  └─ Challenges Tab (Fully Unlocked)
+│     ├─ Active challenges participation
+│     ├─ Challenge leaderboards access
+│     ├─ Challenge creation for eligible users
+│     ├─ Challenge progress tracking
+│     └─ Challenge-specific rewards
+├─ Advanced Content Filtering
+│  ├─ Category-based filtering
+│  ├─ Creator-based filtering
+│  ├─ Trending content filter
+│  ├─ Difficulty level filtering
+│  ├─ Duration-based filtering
+│  ├─ Language/region filtering
+│  ├─ Save filter preferences
+│  └─ Quick filter presets
+├─ Enhanced Video Interaction
+│  ├─ Like/Unlike System
+│  │  ├─ Save personal preferences
+│  │  ├─ Impact content recommendations
+│  │  ├─ Creator engagement metrics
+│  │  └─ Like history tracking
+│  ├─ Advanced Comment System
+│  │  ├─ Comment and reply functionality
+│  │  ├─ Comment threading
+│  │  ├─ Emoji reactions on comments
+│  │  ├─ Comment moderation tools
+│  │  └─ Comment notification system
+│  ├─ Creator Support Features
+│  │  ├─ Virtual gift sending
+│  │  ├─ Creator tip/donation system
+│  │  ├─ Support level indicators
+│  │  ├─ Creator appreciation rewards
+│  │  └─ Support history tracking
+│  ├─ Enhanced Sharing
+│  │  ├─ Social platform integration
+│  │  ├─ Share with tracking/analytics
+│  │  ├─ Internal app sharing
+│  │  ├─ Custom share messages
+│  │  └─ Share rewards/incentives
+│  └─ Content Management
+│     ├─ Add to favorites/watchlist
+│     ├─ Save for later functionality
+│     ├─ Download for offline viewing
+│     ├─ Create custom playlists
+│     └─ Content quality reporting
+├─ Full Quiz Integration Experience
+│  ├─ Points and Rewards System
+│  │  ├─ Earn points for correct answers
+│  │  ├─ Bonus points for speed
+│  │  ├─ Streak multiplier rewards
+│  │  ├─ Daily quiz completion bonuses
+│  │  └─ Special event quiz rewards
+│  ├─ Quiz Performance Tracking
+│  │  ├─ Quiz accuracy statistics
+│  │  ├─ Improvement progress tracking
+│  │  ├─ Subject/category performance
+│  │  ├─ Personal best records
+│  │  └─ Quiz completion history
+│  ├─ Competitive Features
+│  │  ├─ Quiz leaderboards (global/friends)
+│  │  ├─ Quiz tournaments and competitions
+│  │  ├─ Challenge friends to quizzes
+│  │  ├─ Quiz ranking system
+│  │  └─ Competitive achievement unlocks
+│  ├─ Quiz Achievements
+│  │  ├─ Quiz-specific badge system
+│  │  ├─ Milestone achievement unlocks
+│  │  ├─ Rare achievement collection
+│  │  ├─ Achievement showcase
+│  │  └─ Achievement sharing
+│  └─ Reward Redemption
+│     ├─ Convert quiz points to currency
+│     ├─ Unlock exclusive content
+│     ├─ Purchase power-ups/hints
+│     ├─ Access premium features
+│     └─ Redeem for store items
+├─ Creator Following & Social System
+│  ├─ Creator Management
+│  │  ├─ Follow/unfollow creators
+│  │  ├─ Creator notification preferences
+│  │  ├─ Following feed organization
+│  │  ├─ Creator recommendation system
+│  │  └─ Creator interaction history
+│  ├─ Creator Profiles & Access
+│  │  ├─ Detailed creator profile pages
+│  │  ├─ Creator content history
+│  │  ├─ Creator statistics and metrics
+│  │  ├─ Creator social media links
+│  │  └─ Creator direct messaging
+│  ├─ Social Discovery
+│  │  ├─ Friend recommendations
+│  │  ├─ Find friends by contact
+│  │  ├─ Social media integration
+│  │  ├─ Friend activity feeds
+│  │  └─ Social sharing features
+│  └─ Community Features
+│     ├─ User-generated content discovery
+│     ├─ Community challenges
+│     ├─ User collaboration features
+│     ├─ Community voting/polls
+│     └─ Community moderation tools
+└─ Progress Tracking & Gamification
+   ├─ Activity Tracking
+   │  ├─ Daily viewing streak tracking
+   │  ├─ Weekly activity summaries
+   │  ├─ Monthly progress reports
+   │  ├─ Watch time statistics
+   │  └─ Engagement pattern analysis
+   ├─ Achievement System
+   │  ├─ Viewing milestone achievements
+   │  ├─ Social interaction achievements
+   │  ├─ Quiz performance achievements
+   │  ├─ Creator support achievements
+   │  └─ Special event achievements
+   ├─ Level Progression
+   │  ├─ User level advancement system
+   │  ├─ Experience points from activities
+   │  ├─ Level-based benefit unlocks
+   │  ├─ Level leaderboard positioning
+   │  └─ Level progression rewards
+   └─ Personalization
+      ├─ Algorithm learning from behavior
+      ├─ Content preference refinement
+      ├─ Recommendation improvement
+      ├─ Personal content discovery
+      └─ Custom feed optimization
+
+Shorts Quiz Experience (Authenticated Users)
+├─ Shorts Question Screen (/shorts-question-screen)
+│  ├─ Quiz Interface Design
+│  │  ├─ Questions related to shorts content
+│  │  ├─ Visual question elements integration
+│  │  ├─ Multiple choice answer presentation
+│  │  ├─ Interactive answer selection
+│  │  └─ Question numbering and progress
+│  ├─ Timing & Pressure Elements
+│  │  ├─ Timer display for each question
+│  │  ├─ Overall quiz time limit
+│  │  ├─ Time pressure visual indicators
+│  │  ├─ Quick answer bonus rewards
+│  │  └─ Timeout handling and penalties
+│  ├─ Help & Support Features
+│  │  ├─ Skip question option (with point penalty)
+│  │  ├─ Hint system purchase/use
+│  │  ├─ Question difficulty indicators
+│  │  ├─ Help popup and guidance
+│  │  └─ Lives/attempts system
+│  ├─ Progress & Feedback
+│  │  ├─ Real-time progress bar
+│  │  ├─ Question-by-question feedback
+│  │  ├─ Correct/incorrect answer indication
+│  │  ├─ Running score display
+│  │  └─ Streak counter and multipliers
+│  └─ Social & Competitive Elements
+│     ├─ Live leaderboard position
+│     ├─ Friend comparison display
+│     ├─ Achievement unlock notifications
+│     ├─ Social sharing mid-quiz
+│     └─ Challenge progress tracking
+├─ Shorts Win Screen (/shorts-win-screen)
+│  ├─ Victory Celebration
+│  │  ├─ Dynamic victory animations
+│  │  ├─ Personalized congratulations
+│  │  ├─ Achievement unlock celebrations
+│  │  ├─ Victory sound and visual effects
+│  │  └─ Success milestone recognition
+│  ├─ Rewards & Points Summary
+│  │  ├─ Quiz points earned display
+│  │  ├─ Time bonus calculations
+│  │  ├─ Streak multiplier rewards
+│  │  ├─ Total points accumulation
+│  │  └─ Currency/coin rewards
+│  ├─ Leaderboard & Rankings
+│  │  ├─ Global leaderboard position update
+│  │  ├─ Friend ranking comparison
+│  │  ├─ Category-specific rankings
+│  │  ├─ Achievement ranking progress
+│  │  └─ Competitive stats display
+│  ├─ Social Sharing Features
+│  │  ├─ Share victory achievements
+│  │  ├─ Challenge friends to beat score
+│  │  ├─ Social media integration
+│  │  ├─ Screenshot sharing
+│  │  └─ Custom victory messages
+│  ├─ Progression & Unlocks
+│  │  ├─ Level progression updates
+│  │  ├─ New content unlock notifications
+│  │  ├─ Badge/achievement unlocks
+│  │  ├─ Skill improvement tracking
+│  │  └─ Next challenge recommendations
+│  └─ Continue Options
+│     ├─ Continue watching shorts
+│     ├─ Play similar quizzes
+│     ├─ Challenge completion status
+│     ├─ Return to shorts feed
+│     └─ Explore related content
+├─ Shorts Loose Screen (/shorts-loose-screen)
+│  ├─ Encouragement & Motivation
+│  │  ├─ Positive motivational messaging
+│  │  ├─ "Learn and improve" focus
+│  │  ├─ Progress acknowledgment
+│  │  ├─ Effort recognition
+│  │  └─ Growth mindset encouragement
+│  ├─ Learning & Review
+│  │  ├─ Show correct answers with explanations
+│  │  ├─ Educational content related to questions
+│  │  ├─ Knowledge gap identification
+│  │  ├─ Study recommendations
+│  │  └─ Related learning resources
+│  ├─ Retry & Second Chances
+│  │  ├─ "Try Again" option with life cost
+│  │  ├─ Free retry after wait time
+│  │  ├─ Purchase additional lives/attempts
+│  │  ├─ Practice mode without penalties
+│  │  └─ Easier difficulty suggestions
+│  ├─ Support & Assistance
+│  │  ├─ Tips for improvement
+│  │  ├─ Hint purchase options
+│  │  ├─ Study mode activation
+│  │  ├─ Tutorial access
+│  │  └─ Help resources
+│  ├─ Progress Tracking
+│  │  ├─ Show improvement over time
+│  │  ├─ Personal best comparisons
+│  │  ├─ Skill development tracking
+│  │  ├─ Learning pattern analysis
+│  │  └─ Goal setting suggestions
+│  └─ Navigation Options
+│     ├─ Continue to next shorts
+│     ├─ Return to shorts feed
+│     ├─ Explore easier content
+│     ├─ Practice similar questions
+│     └─ Access help center
+
+Shorts Challenge System (Authenticated Users)
+├─ Shorts Challenge Screen (/shorts-challenge-screen)
+│  ├─ Challenge Overview
+│  │  ├─ Challenge details and objectives
+│  │  ├─ Challenge rules and requirements
+│  │  ├─ Participation prerequisites
+│  │  ├─ Challenge duration and timeline
+│  │  └─ Entry fee/cost information
+│  ├─ Reward Structure Display
+│  │  ├─ Prize breakdown by ranking
+│  │  ├─ Point/currency rewards
+│  │  ├─ Exclusive content unlocks
+│  │  ├─ Badge/achievement rewards
+│  │  └─ Special recognition benefits
+│  ├─ Participation Management
+│  │  ├─ Current participants list
+│  │  ├─ Live participant count
+│  │  ├─ Join challenge button
+│  │  ├─ Challenge capacity limits
+│  │  └─ Registration deadline tracking
+│  ├─ Live Competition Features
+│  │  ├─ Real-time leaderboard
+│  │  ├─ Live progress tracking
+│  │  ├─ Participant activity feed
+│  │  ├─ Challenge milestone notifications
+│  │  └─ Live competition updates
+│  ├─ Historical & Analytics
+│  │  ├─ Previous challenge results
+│  │  ├─ Personal challenge history
+│  │  ├─ Performance analytics
+│  │  ├─ Challenge statistics
+│  │  └─ Improvement tracking
+│  └─ Social & Community
+│     ├─ Challenge discussion/comments
+│     ├─ Team formation options
+│     ├─ Friend invitation system
+│     ├─ Challenge sharing
+│     └─ Community voting features
+├─ All Challenges Screen (/all-challenges-screen)
+│  ├─ Challenge Directory
+│  │  ├─ Comprehensive challenge listing
+│  │  ├─ Active challenges highlight
+│  │  ├─ Upcoming challenges preview
+│  │  ├─ Past challenges archive
+│  │  └─ Challenge search functionality
+│  ├─ Filtering & Organization
+│  │  ├─ Filter by challenge type
+│  │  ├─ Sort by start date/popularity
+│  │  ├─ Difficulty level filtering
+│  │  ├─ Reward size filtering
+│  │  └─ Duration-based filtering
+│  ├─ Challenge Management
+│  │  ├─ Participation status tracking
+│  │  ├─ Registration status display
+│  │  ├─ Challenge favorites/bookmarks
+│  │  ├─ Reminder notifications setup
+│  │  └─ Challenge recommendation engine
+│  ├─ Creator Features
+│  │  ├─ Create new challenge option (eligible users)
+│  │  ├─ Challenge proposal submission
+│  │  ├─ Community challenge voting
+│  │  ├─ Challenge template library
+│  │  └─ Challenge creation guidelines
+│  └─ Analytics & Insights
+│     ├─ Personal challenge statistics
+│     ├─ Success rate analytics
+│     ├─ Preferred challenge types
+│     ├─ Performance improvement tracking
+│     └─ Challenge recommendation accuracy
+├─ Single Shorts Screen (/single-shorts-screen)
+│  ├─ Individual Video Focus
+│  │  ├─ Single shorts detailed view
+│  │  ├─ Enhanced video player controls
+│  │  ├─ Full-screen viewing mode
+│  │  ├─ Video quality optimization
+│  │  └─ Video interaction enhancements
+│  ├─ Extended Information
+│  │  ├─ Detailed video description
+│  │  ├─ Creator comprehensive profile
+│  │  ├─ Video creation date/statistics
+│  │  ├─ Video category and tags
+│  │  └─ Video performance metrics
+│  ├─ Enhanced Comments Section
+│  │  ├─ Threaded comment system
+│  │  ├─ Comment sorting options
+│  │  ├─ Comment reaction system
+│  │  ├─ Comment moderation tools
+│  │  └─ Comment notification management
+│  ├─ Creator Interaction
+│  │  ├─ Direct creator profile access
+│  │  ├─ Creator portfolio viewing
+│  │  ├─ Creator following/messaging
+│  │  ├─ Creator support options
+│  │  └─ Creator collaboration inquiries
+│  ├─ Related Content Discovery
+│  │  ├─ Algorithm-based related shorts
+│  │  ├─ Same creator content showcase
+│  │  ├─ Similar category recommendations
+│  │  ├─ Trending related content
+│  │  └─ User interest-based suggestions
+│  └─ Advanced Sharing & Social
+│     ├─ Extended sharing options
+│     ├─ Custom share message creation
+│     ├─ Share with specific friends
+│     ├─ Social media platform optimization
+│     └─ Share analytics and tracking
+
+Content Creation Experience (Creator Role Required)
+├─ Creator Role & Access Management
+│  ├─ Role Verification System
+│  │  ├─ Non-creators see "Become Creator" prompt
+│  │  ├─ Creator request screen (/creator-request-screen)
+│  │  ├─ Application review and approval process
+│  │  ├─ Creator benefits and responsibilities
+│  │  └─ Creator agreement and terms
+│  ├─ Creator Access Control
+│  │  ├─ FAB (Create button) role-based visibility
+│  │  ├─ Creator dashboard access
+│  │  ├─ Content management permissions
+│  │  ├─ Analytics and insights access
+│  │  └─ Community management tools
+│  └─ Creator Support & Resources
+│     ├─ Creator onboarding tutorial
+│     ├─ Content creation guidelines
+│     ├─ Best practices documentation
+│     ├─ Creator community access
+│     └─ Creator support channel
+├─ Create Shorts Content Flow
+│  ├─ Create Shorts Screen (/create-shorts-screen)
+│  │  ├─ Content Creation Options
+│  │  │  ├─ Record new video content
+│  │  │  ├─ Import from device gallery
+│  │  │  ├─ Use existing video library
+│  │  │  ├─ Collaborative content creation
+│  │  │  └─ Template-based creation
+│  │  ├─ Video Enhancement Tools
+│  │  │  ├─ Built-in video editing suite
+│  │  │  ├─ Filter and effect application
+│  │  │  ├─ Text overlay and graphics
+│  │  │  ├─ Music and audio integration
+│  │  │  └─ Video trimming and adjustment
+│  │  ├─ Content Metadata
+│  │  │  ├─ Video title and description input
+│  │  │  ├─ Category and tag selection
+│  │  │  ├─ Thumbnail customization
+│  │  │  ├─ Content visibility settings
+│  │  │  └─ Monetization options
+│  │  └─ Publishing Options
+│  │     ├─ Immediate publishing
+│  │     ├─ Schedule future publication
+│  │     ├─ Save as draft
+│  │     ├─ Preview before publishing
+│  │     └─ Community/collaboration sharing
+│  ├─ Camera Recording Screen (/camera-recording-screen)
+│  │  ├─ Recording Interface
+│  │  │  ├─ Real-time video recording
+│  │  │  ├─ Front/back camera toggle
+│  │  │  ├─ Flash and lighting controls
+│  │  │  ├─ Recording timer and duration
+│  │  │  └─ Grid lines for composition
+│  │  ├─ Recording Settings
+│  │  │  ├─ Video resolution selection
+│  │  │  ├─ Frame rate adjustment
+│  │  │  ├─ Video quality settings
+│  │  │  ├─ Audio recording settings
+│  │  │  └─ Storage location preferences
+│  │  ├─ Live Recording Features
+│  │  │  ├─ Real-time filter application
+│  │  │  ├─ Live effects and overlays
+│  │  │  ├─ Multi-segment recording
+│  │  │  ├─ Pause/resume functionality
+│  │  │  └─ Recording progress indicator
+│  │  └─ Post-Recording Actions
+│  │     ├─ Immediate playback review
+│  │     ├─ Re-record option
+│  │     ├─ Accept and proceed to editing
+│  │     ├─ Save to drafts
+│  │     └─ Discard recording
+│  ├─ Preview Shorts Screen (/preview-shorts-screen)
+│  │  ├─ Final Review Interface
+│  │  │  ├─ Complete video preview playback
+│  │  │  ├─ Final quality assessment
+│  │  │  ├─ Content policy compliance check
+│  │  │  ├─ Metadata review and confirmation
+│  │  │  └─ Publishing readiness verification
+│  │  ├─ Last-Minute Editing
+│  │  │  ├─ Quick edit functionality
+│  │  │  ├─ Minor adjustment tools
+│  │  │  ├─ Text/title modifications
+│  │  │  ├─ Thumbnail selection/change
+│  │  │  └─ Tag/category adjustments
+│  │  ├─ Content Information Finalization
+│  │  │  ├─ Final title and description
+│  │  │  ├─ Category and tag confirmation
+│  │  │  ├─ Hashtag optimization suggestions
+│  │  │  ├─ Target audience selection
+│  │  │  └─ Content monetization settings
+│  │  ├─ Privacy & Visibility Settings
+│  │  │  ├─ Public/private/unlisted options
+│  │  │  ├─ Age restriction settings
+│  │  │  ├─ Geographic availability
+│  │  │  ├─ Community guidelines compliance
+│  │  │  └─ Content warning labels
+│  │  └─ Publishing Actions
+│  │     ├─ Publish immediately
+│  │     ├─ Schedule publication
+│  │     ├─ Save as draft for later
+│  │     ├─ Return to editing
+│  │     └─ Cancel/discard content
+│  └─ Drafts Management Screen (/drafts-screen)
+│     ├─ Draft Organization
+│     │  ├─ List of all saved drafts
+│     │  ├─ Draft creation date and time
+│     │  ├─ Draft thumbnail preview
+│     │  ├─ Draft completion status
+│     │  └─ Draft size and duration info
+│     ├─ Draft Management Actions
+│     │  ├─ Continue editing draft
+│     │  ├─ Preview draft content
+│     │  ├─ Duplicate draft for variations
+│     │  ├─ Delete unwanted drafts
+│     │  └─ Share draft with collaborators
+│     ├─ Draft Search & Filter
+│     │  ├─ Search drafts by title/content
+│     │  ├─ Filter by creation date
+│     │  ├─ Filter by completion status
+│     │  ├─ Sort by various criteria
+│     │  └─ Tag-based organization
+│     └─ Storage Management
+│        ├─ Draft storage usage display
+│        ├─ Storage limit warnings
+│        ├─ Cleanup suggestions
+│        ├─ Auto-delete old drafts
+│        └─ Export/backup drafts
+├─ Quiz Creation for Shorts
+│  ├─ Create Shorts Question Screen (/create-shorts-question-screen)
+│  │  ├─ Quiz Integration Setup
+│  │  │  ├─ Link quiz to existing shorts
+│  │  │  ├─ Create quiz for new shorts
+│  │  │  ├─ Quiz difficulty level selection
+│  │  │  ├─ Quiz category assignment
+│  │  │  └─ Quiz accessibility settings
+│  │  ├─ Question Type Configuration
+│  │  │  ├─ Multiple choice questions
+│  │  │  ├─ True/false questions
+│  │  │  ├─ Fill-in-the-blank questions
+│  │  │  ├─ Image-based questions
+│  │  │  └─ Video-based questions
+│  │  ├─ Question Settings
+│  │  │  ├─ Question difficulty rating
+│  │  │  ├─ Time limit per question
+│  │  │  ├─ Point value assignment
+│  │  │  ├─ Hint availability toggle
+│  │  │  └─ Question weight/importance
+│  │  └─ Quiz Configuration
+│  │     ├─ Total quiz duration
+│  │     ├─ Number of questions
+│  │     ├─ Passing score requirements
+│  │     ├─ Retry policy settings
+│  │     └─ Reward structure definition
+│  ├─ Create Shorts Question Form (/create-shorts-question-form-screen)
+│  │  ├─ Detailed Question Builder
+│  │  │  ├─ Question text composition
+│  │  │  ├─ Rich text formatting options
+│  │  │  ├─ Image/media insertion
+│  │  │  ├─ Question preview functionality
+│  │  │  └─ Question accessibility features
+│  │  ├─ Answer Options Management
+│  │  │  ├─ Multiple answer option creation
+│  │  │  ├─ Correct answer designation
+│  │  │  ├─ Answer explanation/feedback
+│  │  │  ├─ Answer randomization settings
+│  │  │  └─ Answer media attachments
+│  │  ├─ Question Enhancement
+│  │  │  ├─ Hint creation and management
+│  │  │  ├─ Educational explanation text
+│  │  │  ├─ Reference material links
+│  │  │  ├─ Related content suggestions
+│  │  │  └─ Learning objective alignment
+│  │  ├─ Quality Assurance
+│  │  │  ├─ Question preview and testing
+│  │  │  ├─ Answer validation checks
+│  │  │  ├─ Content policy compliance
+│  │  │  ├─ Grammar and spell checking
+│  │  │  └─ Accessibility compliance
+│  │  └─ Question Management
+│  │     ├─ Save question to question bank
+│  │     ├─ Publish question immediately
+│  │     ├─ Schedule question release
+│  │     ├─ Save as draft for review
+│  │     └─ Submit for moderation
+│  └─ Quiz Analytics & Management
+│     ├─ Question performance analytics
+│     ├─ User engagement metrics
+│     ├─ Quiz completion rates
+│     ├─ Question difficulty analysis
+│     └─ Quiz improvement recommendations
+└─ Creator Analytics & Tools
+   ├─ Content Performance Dashboard
+   │  ├─ Video view analytics
+   │  ├─ Engagement rate tracking
+   │  ├─ Audience demographics
+   │  ├─ Revenue/monetization metrics
+   │  └─ Content reach analysis
+   ├─ Creator Community Management
+   │  ├─ Follower management tools
+   │  ├─ Comment moderation dashboard
+   │  ├─ Community interaction analytics
+   │  ├─ Fan engagement strategies
+   │  └─ Community building resources
+   ├─ Creator Resources & Support
+   │  ├─ Content creation tutorials
+   │  ├─ Best practices guides
+   │  ├─ Creator community forums
+   │  ├─ Technical support access
+   │  └─ Creator monetization guidance
+   └─ Creator Compliance & Guidelines
+      ├─ Content policy adherence
+      ├─ Community guidelines compliance
+      ├─ Copyright and licensing management
+      ├─ Creator code of conduct
+      └─ Platform policy updates
+
+Discovery & Exploration Experience (Available to Authenticated Users)
+├─ Discover Screen (/discover-screen)
+│  ├─ Content Discovery Hub
+│  │  ├─ Trending content showcase across all categories
+│  │  ├─ Featured creators and their latest content
+│  │  ├─ Popular challenges and competitions
+│  │  ├─ Trending hashtags and topics
+│  │  └─ Editor's picks and curated collections
+│  ├─ Personalized Recommendations
+│  │  ├─ Algorithm-based content suggestions
+│  │  ├─ Based on viewing and interaction history
+│  │  ├─ Similar user preference matching
+│  │  ├─ Content discovery for new interests
+│  │  └─ Regional and cultural content prioritization
+│  ├─ Category Exploration
+│  │  ├─ Browse by content categories
+│  │  ├─ Subject-based content organization
+│  │  ├─ Difficulty level-based browsing
+│  │  ├─ Content type filtering (stories vs shorts)
+│  │  └─ Duration-based content discovery
+│  ├─ Search Functionality
+│  │  ├─ Global content search across platform
+│  │  ├─ Advanced search filters and options
+│  │  ├─ Search autocomplete and suggestions
+│  │  ├─ Search history and saved searches
+│  │  └─ Voice search capabilities (if available)
+│  ├─ Social Discovery
+│  │  ├─ Friend activity and recommendations
+│  │  ├─ Social sharing integration
+│  │  ├─ Community-driven content discovery
+│  │  ├─ User-generated content highlights
+│  │  └─ Collaborative playlist/collection features
+│  └─ Discovery Analytics
+│     ├─ Content performance metrics
+│     ├─ User engagement tracking
+│     ├─ Discovery pattern analysis
+│     ├─ Recommendation accuracy improvement
+│     └─ Content diversity measurement
+├─ Creators Screen (/creators-screen)
+│  ├─ Creator Directory
+│  │  ├─ Comprehensive creator listing
+│  │  ├─ Creator profile previews
+│  │  ├─ Creator specialization/category display
+│  │  ├─ Creator popularity and ranking
+│  │  └─ Featured creator spotlights
+│  ├─ Creator Discovery Tools
+│  │  ├─ Filter creators by category/genre
+│  │  ├─ Search creators by name/content
+│  │  ├─ Creator location-based filtering
+│  │  ├─ Creator content type filtering
+│  │  └─ Creator activity level filtering
+│  ├─ Creator Interaction
+│  │  ├─ Follow/unfollow creator management
+│  │  ├─ Creator content preview access
+│  │  ├─ Creator statistics and achievements
+│  │  ├─ Creator collaboration opportunities
+│  │  └─ Creator support and appreciation
+│  ├─ Creator Community
+│  │  ├─ Creator networking features
+│  │  ├─ Creator collaboration tools
+│  │  ├─ Creator mentorship programs
+│  │  ├─ Creator resource sharing
+│  │  └─ Creator success stories
+│  └─ Aspiring Creator Support
+│     ├─ "Become Creator" call-to-action
+│     ├─ Creator application process info
+│     ├─ Creator benefits and opportunities
+│     ├─ Creator onboarding resources
+│     └─ Creator community guidelines
+├─ Creator Story Screen (/creator-story-screen)
+│  ├─ Individual Creator Profile
+│  │  ├─ Comprehensive creator biography
+│  │  ├─ Creator background and experience
+│  │  ├─ Creator achievements and recognition
+│  │  ├─ Creator statistics and metrics
+│  │  └─ Creator verification and credibility
+│  ├─ Creator Content Portfolio
+│  │  ├─ Creator's complete story collection
+│  │  ├─ Creator's shorts and video content
+│  │  ├─ Creator's quiz and educational content
+│  │  ├─ Content organization and categorization
+│  │  └─ Content creation timeline
+│  ├─ Creator Social Information
+│  │  ├─ External social media links
+│  │  ├─ Creator website and portfolio
+│  │  ├─ Creator contact information
+│  │  ├─ Creator collaboration preferences
+│  │  └─ Creator community involvement
+│  ├─ Creator Engagement
+│  │  ├─ Follower count and community size
+│  │  ├─ Recent activity and updates
+│  │  ├─ Creator interaction features
+│  │  ├─ Follow/message options
+│  │  └─ Creator support mechanisms
+│  ├─ Creator Content Access
+│  │  ├─ Latest creator content
+│  │  ├─ Popular creator content
+│  │  ├─ Creator content series/collections
+│  │  ├─ Creator exclusive content
+│  │  └─ Creator premium offerings
+│  └─ Creator Discovery
+│     ├─ Similar creator recommendations
+│     ├─ Creator collaboration history
+│     ├─ Creator influence and reach
+│     ├─ Creator growth and trends
+│     └─ Creator community connections
+└─ Content Search & Discovery Tools
+   ├─ Advanced Search Features
+   │  ├─ Multi-criteria search functionality
+   │  ├─ Boolean search operators
+   │  ├─ Date range and time-based filtering
+   │  ├─ Content quality and rating filters
+   │  └─ Accessibility and language filters
+   ├─ Search Results Management
+   │  ├─ Search result organization and sorting
+   │  ├─ Search result preview and quick access
+   │  ├─ Search result sharing and bookmarking
+   │  ├─ Search result analytics and tracking
+   │  └─ Search result recommendation improvement
+   ├─ Trending & Popular Content
+   │  ├─ Real-time trending content tracking
+   │  ├─ Regional and global trend analysis
+   │  ├─ Trend prediction and forecasting
+   │  ├─ Viral content identification
+   │  └─ Trend participation opportunities
+   └─ Content Recommendation Engine
+      ├─ Machine learning-based recommendations
+      ├─ User behavior pattern analysis
+      ├─ Content similarity and matching
+      ├─ Collaborative filtering algorithms
+      └─ Continuous recommendation improvement
+
+Store/Shop Experience (Authenticated Users - /tab_view_product)
+├─ Shop Main Interface (/shop-screen)
+│  ├─ Store Navigation & Organization
+│  │  ├─ Product categories navigation
+│  │  ├─ Featured products carousel
+│  │  ├─ Daily deals and special offers
+│  │  ├─ Flash sales and limited-time offers
+│  │  └─ Seasonal and themed collections
+│  ├─ Product Discovery
+│  │  ├─ Search products with autocomplete
+│  │  ├─ Filter products by multiple criteria
+│  │  ├─ Sort by price, popularity, ratings
+│  │  ├─ Product recommendation engine
+│  │  └─ Recently viewed items tracking
+│  ├─ Store Features
+│  │  ├─ Wishlist and favorites management
+│  │  ├─ Product comparison tools
+│  │  ├─ Store notification preferences
+│  │  ├─ Vendor shop directory access
+│  │  └─ Store loyalty program integration
+│  ├─ Shopping Experience Enhancement
+│  │  ├─ Product reviews and ratings system
+│  │  ├─ Product image galleries and videos
+│  │  ├─ Size guides and fit assistance
+│  │  ├─ Product availability notifications
+│  │  └─ Price drop and deal alerts
+│  └─ Store Analytics & Personalization
+│     ├─ Shopping behavior analysis
+│     ├─ Personalized product recommendations
+│     ├─ Shopping pattern recognition
+│     ├─ Purchase prediction modeling
+│     └─ Shopping experience optimization
+├─ Product Details & Management
+│  ├─ Single Product Screen (/single-product-screen)
+│  │  ├─ Product Information Display
+│  │  │  ├─ High-quality product image gallery
+│  │  │  ├─ Product video demonstrations
+│  │  │  ├─ Detailed product descriptions
+│  │  │  ├─ Technical specifications
+│  │  │  └─ Product feature highlights
+│  │  ├─ Pricing & Purchase Information
+│  │  │  ├─ Current price and discount display
+│  │  │  ├─ Price history and trend analysis
+│  │  │  ├─ Bulk pricing and quantity discounts
+│  │  │  ├─ Payment method compatibility
+│  │  │  └─ Tax and shipping calculations
+│  │  ├─ Product Variants & Options
+│  │  │  ├─ Size, color, and style variants
+│  │  │  ├─ Product customization options
+│  │  │  ├─ Variant availability status
+│  │  │  ├─ Variant-specific pricing
+│  │  │  └─ Product bundle suggestions
+│  │  ├─ Social Proof & Reviews
+│  │  │  ├─ Customer reviews and ratings
+│  │  │  ├─ Review filtering and sorting
+│  │  │  ├─ Verified purchase indicators
+│  │  │  ├─ Review helpfulness voting
+│  │  │  └─ Photo/video reviews
+│  │  ├─ Purchase Actions
+│  │  │  ├─ Add to cart functionality
+│  │  │  ├─ Buy now express checkout
+│  │  │  ├─ Add to wishlist option
+│  │  │  ├─ Share product functionality
+│  │  │  └─ Stock availability checking
+│  │  └─ Related Products & Recommendations
+│  │     ├─ Similar product suggestions
+│  │     ├─ Frequently bought together
+│  │     ├─ Alternative product options
+│  │     ├─ Cross-category recommendations
+│  │     └─ Recently viewed alternatives
+│  ├─ Vendor Product Screen (/vendor-product-screen)
+│  │  ├─ Vendor Information & Profile
+│  │  │  ├─ Vendor business profile and history
+│  │  │  ├─ Vendor verification and credibility
+│  │  │  ├─ Vendor contact and support info
+│  │  │  ├─ Vendor location and shipping zones
+│  │  │  └─ Vendor policies and guarantees
+│  │  ├─ Vendor Product Catalog
+│  │  │  ├─ Complete vendor product portfolio
+│  │  │  ├─ Vendor product categories
+│  │  │  ├─ Vendor exclusive products
+│  │  │  ├─ Vendor featured products
+│  │  │  └─ Vendor new arrivals
+│  │  ├─ Vendor Performance Metrics
+│  │  │  ├─ Vendor ratings and reviews
+│  │  │  ├─ Vendor response time metrics
+│  │  │  ├─ Order fulfillment accuracy
+│  │  │  ├─ Customer satisfaction scores
+│  │  │  └─ Vendor reliability indicators
+│  │  ├─ Vendor Interaction Features
+│  │  │  ├─ Contact vendor directly
+│  │  │  ├─ Follow vendor for updates
+│  │  │  ├─ Vendor storefront customization
+│  │  │  ├─ Vendor promotion notifications
+│  │  │  └─ Vendor exclusive offers access
+│  │  └─ Vendor Support & Services
+│  │     ├─ Customer service availability
+│  │     ├─ Return and exchange policies
+│  │     ├─ Warranty and guarantee terms
+│  │     ├─ Technical support access
+│  │     └─ Post-purchase support services
+│  └─ Search Product Screen (/search-product-screen)
+│     ├─ Advanced Search Interface
+│     │  ├─ Search bar with intelligent suggestions
+│     │  ├─ Voice search functionality
+│     │  ├─ Visual search capabilities
+│     │  ├─ Barcode scanning for products
+│     │  └─ Search query auto-completion
+│     ├─ Search Filtering & Refinement
+│     │  ├─ Price range filtering
+│     │  ├─ Brand and manufacturer filtering
+│     │  ├─ Category and subcategory filtering
+│     │  ├─ Rating and review filtering
+│     │  └─ Availability and stock filtering
+│     ├─ Search Results Organization
+│     │  ├─ Grid and list view options
+│     │  ├─ Sort by relevance, price, popularity
+│     │  ├─ Search result pagination
+│     │  ├─ Search result bookmarking
+│     │  └─ Search result sharing
+│     ├─ Search Enhancement Features
+│     │  ├─ Search history and saved searches
+│     │  ├─ Popular search suggestions
+│     │  ├─ Search trend analysis
+│     │  ├─ Search result analytics
+│     │  └─ Search query optimization
+│     └─ No Results Handling
+│        ├─ Alternative search suggestions
+│        ├─ Similar product recommendations
+│        ├─ Category browsing fallback
+│        ├─ Popular product suggestions
+│        └─ Search assistance and support
+├─ Shopping Cart & Checkout System
+│  ├─ Cart Screen (/cart-screen)
+│  │  ├─ Cart Management
+│  │  │  ├─ Cart items listing with details
+│  │  │  ├─ Quantity adjustment controls
+│  │  │  ├─ Remove items functionality
+│  │  │  ├─ Move to wishlist option
+│  │  │  └─ Save for later functionality
+│  │  ├─ Price Calculation & Breakdown
+│  │  │  ├─ Subtotal calculation display
+│  │  │  ├─ Tax calculation and breakdown
+│  │  │  ├─ Shipping cost estimation
+│  │  │  ├─ Discount and coupon application
+│  │  │  └─ Total price with all fees
+│  │  ├─ Promotional Features
+│  │  │  ├─ Discount codes and coupons
+│  │  │  ├─ Promotional offer application
+│  │  │  ├─ Loyalty points redemption
+│  │  │  ├─ Free shipping threshold tracking
+│  │  │  └─ Bundle deal suggestions
+│  │  ├─ Cart Optimization
+│  │  │  ├─ Recommended additional items
+│  │  │  ├─ Frequently bought together
+│  │  │  ├─ Cart abandonment prevention
+│  │  │  ├─ Express checkout options
+│  │  │  └─ Guest checkout availability
+│  │  └─ Checkout Process Initiation
+│  │     ├─ Secure checkout button
+│  │     ├─ Continue shopping option
+│  │     ├─ Checkout progress indication
+│  │     ├─ Security and privacy assurance
+│  │     └─ Customer support access
+│  └─ Tab View Product (/tab_view_product)
+│     ├─ Tabbed Product Information
+│     │  ├─ Product overview tab
+│     │  ├─ Detailed description tab
+│     │  ├─ Customer reviews tab
+│     │  ├─ Technical specifications tab
+│     │  └─ Related products tab
+│     ├─ Enhanced Product Presentation
+│     │  ├─ Interactive product gallery
+│     │  ├─ 360-degree product view
+│     │  ├─ Augmented reality preview
+│     │  ├─ Product comparison tools
+│     │  └─ Product personalization options
+│     └─ Integrated Shopping Features
+│        ├─ Quick add to cart from tabs
+│        ├─ Tab-specific recommendations
+│        ├─ Cross-tab navigation
+│        ├─ Tab content sharing
+│        └─ Tab usage analytics
+├─ Points Integration & Rewards
+│  ├─ Points-Based Shopping
+│  │  ├─ Points as currency for purchases
+│  │  ├─ Points-only exclusive products
+│  │  ├─ Points discount application
+│  │  ├─ Points earning on purchases
+│  │  └─ Points conversion rate display
+│  ├─ Loyalty Program Benefits
+│  │  ├─ Tier-based loyalty rewards
+│  │  ├─ VIP member exclusive access
+│  │  ├─ Early access to sales and products
+│  │  ├─ Free shipping benefits
+│  │  └─ Birthday and anniversary rewards
+│  ├─ Gamified Shopping Experience
+│  │  ├─ Shopping milestone achievements
+│  │  ├─ Purchase streak rewards
+│  │  ├─ Social sharing bonuses
+│  │  ├─ Referral program integration
+│  │  └─ Seasonal challenge participation
+│  └─ Points Earning Opportunities
+│     ├─ Purchase-based points earning
+│     ├─ Review and rating rewards
+│     ├─ Social sharing bonuses
+│     ├─ Loyalty program participation
+│     └─ Special event point multipliers
+├─ Order Management & Tracking
+│  ├─ Orders Screen (/orders-screen)
+│  │  ├─ Order History Management
+│  │  │  ├─ Complete order history listing
+│  │  │  ├─ Order status tracking
+│  │  │  ├─ Order details and breakdown
+│  │  │  ├─ Order timeline and updates
+│  │  │  └─ Order invoice and receipt access
+│  │  ├─ Order Actions & Options
+│  │  │  ├─ Reorder functionality
+│  │  │  ├─ Order modification (if allowed)
+│  │  │  ├─ Order cancellation process
+│  │  │  ├─ Return and exchange initiation
+│  │  │  └─ Order dispute resolution
+│  │  ├─ Delivery & Shipping Tracking
+│  │  │  ├─ Real-time delivery tracking
+│  │  │  ├─ Estimated delivery time
+│  │  │  ├─ Delivery status notifications
+│  │  │  ├─ Delivery preference management
+│  │  │  └─ Delivery confirmation and proof
+│  │  ├─ Order Communication
+│  │  │  ├─ Order update notifications
+│  │  │  ├─ Seller communication channel
+│  │  │  ├─ Customer service access
+│  │  │  ├─ Order-related support
+│  │  │  └─ Feedback and review prompts
+│  │  └─ Order Analytics & Insights
+│  │     ├─ Purchase pattern analysis
+│  │     ├─ Spending analytics
+│  │     ├─ Order frequency tracking
+│  │     ├─ Favorite products identification
+│  │     └─ Shopping behavior insights
+│  └─ Post-Purchase Experience
+│     ├─ Order confirmation and receipt
+│     ├─ Shipping and delivery updates
+│     ├─ Product usage guidance
+│     ├─ Customer satisfaction surveys
+│     └─ Future purchase recommendations
+└─ Checkout & Payment Processing
+   ├─ Khalti Payment Integration
+   │  ├─ Secure Khalti payment gateway
+   │  ├─ Multiple payment method support
+   │  ├─ Payment security and encryption
+   │  ├─ Payment failure handling
+   │  └─ Payment history and receipts
+   ├─ Address & Delivery Management
+   │  ├─ Shipping address selection
+   │  ├─ Multiple address management
+   │  ├─ Address validation and verification
+   │  ├─ Delivery option selection
+   │  └─ Delivery scheduling preferences
+   ├─ Payment Method Options
+   │  ├─ Credit/debit card payments
+   │  ├─ Digital wallet integration
+   │  ├─ Bank transfer options
+   │  ├─ Cash on delivery (if available)
+   │  └─ Installment payment plans
+   ├─ Order Review & Confirmation
+   │  ├─ Final order summary review
+   │  ├─ Payment breakdown confirmation
+   │  ├─ Terms and conditions acceptance
+   │  ├─ Order placement confirmation
+   │  └─ Order receipt generation
+   └─ Security & Privacy
+      ├─ Secure payment processing
+      ├─ Personal information protection
+      ├─ Transaction encryption
+      ├─ Fraud prevention measures
+      └─ Privacy policy compliance
+
+User Profile/Dashboard Experience (Authenticated Users - /user-screen)
+├─ User Screen Main Hub (/user-screen)
+│  ├─ Profile Overview Section
+│  │  ├─ User Profile Management
+│  │  │  ├─ Profile picture and banner display
+│  │  │  ├─ Username and display name
+│  │  │  ├─ User bio and description
+│  │  │  ├─ Account verification status
+│  │  │  └─ Profile completion indicators
+│  │  ├─ User Statistics Dashboard
+│  │  │  ├─ Total points balance and history
+│  │  │  ├─ Current level and progression
+│  │  │  ├─ Achievement badges showcase
+│  │  │  ├─ Follower and following counts
+│  │  │  └─ Social interaction metrics
+│  │  ├─ Activity Overview
+│  │  │  ├─ Stories read and completion rate
+│  │  │  ├─ Shorts watched and engagement
+│  │  │  ├─ Quizzes completed and performance
+│  │  │  ├─ Comments and social interactions
+│  │  │  └─ Content creation activities (if creator)
+│  │  └─ Quick Access Navigation
+│  │     ├─ Profile editing shortcuts
+│  │     ├─ Settings and preferences
+│  │     ├─ Points and rewards access
+│  │     ├─ Achievement gallery
+│  │     └─ Order and purchase history
+│  ├─ Recent Activity & Social Feed
+│  │  ├─ Recent achievement unlocks
+│  │  ├─ Recent purchase and order activity
+│  │  ├─ Recent social interactions
+│  │  ├─ Friend activity updates
+│  │  └─ Personalized content recommendations
+│  ├─ Quick Actions & Shortcuts
+│  │  ├─ Continue watching/reading shortcuts
+│  │  ├─ Wishlist and favorites access
+│  │  ├─ Draft content management
+│  │  ├─ Notification center access
+│  │  └─ Support and help center
+│  └─ User Engagement Features
+│     ├─ Daily login streak tracking
+│     ├─ Weekly challenge participation
+│     ├─ Monthly goal setting and tracking
+│     ├─ Annual progress reports
+│     └─ Milestone celebration features
+├─ Profile Management & Customization
+│  ├─ Edit Profile Screen (/edit-profile-screen)
+│  │  ├─ Personal Information Management
+│  │  │  ├─ Profile picture upload and editing
+│  │  │  ├─ Banner image customization
+│  │  │  ├─ Display name and username changes
+│  │  │  ├─ Bio and description editing
+│  │  │  └─ Contact information updates
+│  │  ├─ Privacy & Visibility Settings
+│  │  │  ├─ Profile visibility controls
+│  │  │  ├─ Activity sharing preferences
+│  │  │  ├─ Friend and follower settings
+│  │  │  ├─ Content discovery preferences
+│  │  │  └─ Search visibility options
+│  │  ├─ Social Media Integration
+│  │  │  ├─ Link external social media accounts
+│  │  │  ├─ Cross-platform sharing settings
+│  │  │  ├─ Social media verification
+│  │  │  ├─ Contact import from social platforms
+│  │  │  └─ Social media activity sync
+│  │  ├─ Notification Preferences
+│  │  │  ├─ Push notification settings
+│  │  │  ├─ Email notification preferences
+│  │  │  ├─ In-app notification controls
+│  │  │  ├─ Notification frequency settings
+│  │  │  └─ Notification category preferences
+│  │  └─ Account Security Settings
+│  │     ├─ Password change functionality
+│  │     ├─ Two-factor authentication setup
+│  │     ├─ Login activity monitoring
+│  │     ├─ Device management
+│  │     └─ Account recovery options
+│  ├─ User Details Screen (/user-details-screen)
+│  │  ├─ Comprehensive Profile Information
+│  │  │  ├─ Complete user profile overview
+│  │  │  ├─ Account creation and history
+│  │  │  ├─ Last login and activity information
+│  │  │  ├─ Account statistics and metrics
+│  │  │  └─ Profile completion status
+│  │  ├─ Account Verification & Trust
+│  │  │  ├─ Identity verification status
+│  │  │  ├─ Email and phone verification
+│  │  │  ├─ Creator verification (if applicable)
+│  │  │  ├─ Account security indicators
+│  │  │  └─ Trust score and reputation
+│  │  ├─ Account Health & Analytics
+│  │  │  ├─ Account health metrics
+│  │  │  ├─ Engagement pattern analysis
+│  │  │  ├─ Content consumption analytics
+│  │  │  ├─ Social interaction patterns
+│  │  │  └─ Performance improvement suggestions
+│  │  └─ Data Management
+│  │     ├─ Data usage and storage information
+│  │     ├─ Data download and export options
+│  │     ├─ Data deletion and privacy controls
+│  │     ├─ Account backup and restore
+│  │     └─ Data portability features
+│  └─ Address Management Screen (/address-screen)
+│     ├─ Address Book Management
+│     │  ├─ Saved addresses comprehensive list
+│     │  ├─ Default address designation
+│     │  ├─ Address type categorization
+│     │  ├─ Address usage history
+│     │  └─ Address verification status
+│     ├─ Address Operations
+│     │  ├─ Add new address functionality
+│     │  ├─ Edit existing addresses
+│     │  ├─ Delete unused addresses
+│     │  ├─ Set primary/default address
+│     │  └─ Address validation and verification
+│     ├─ Delivery Preferences
+│     │  ├─ Preferred delivery times
+│     │  ├─ Special delivery instructions
+│     │  ├─ Contactless delivery preferences
+│     │  ├─ Alternative contact information
+│     │  └─ Delivery notification settings
+│     └─ Address Security & Privacy
+│        ├─ Address privacy controls
+│        ├─ Shared address management
+│        ├─ Address access permissions
+│        ├─ Address data encryption
+│        └─ Address usage analytics
+├─ Points, Rewards & Achievements System
+│  ├─ Points Screen (/points-screen)
+│  │  ├─ Points Balance & Overview
+│  │  │  ├─ Current total points balance
+│  │  │  ├─ Points earning rate and trends
+│  │  │  ├─ Points value and conversion rates
+│  │  │  ├─ Points expiry dates and management
+│  │  │  └─ Points tier and level benefits
+│  │  ├─ Points Earning Opportunities
+│  │  │  ├─ Daily check-in and login bonuses
+│  │  │  ├─ Quiz completion and performance bonuses
+│  │  │  ├─ Content engagement rewards
+│  │  │  ├─ Social interaction bonuses
+│  │  │  └─ Special event and challenge rewards
+│  │  ├─ Available Rewards Catalog
+│  │  │  ├─ Rewards categorization and browsing
+│  │  │  ├─ Point cost and value comparison
+│  │  │  ├─ Limited-time and exclusive rewards
+│  │  │  ├─ Reward availability and stock status
+│  │  │  └─ Reward preview and descriptions
+│  │  ├─ Points Redemption Interface
+│  │  │  ├─ Direct reward redemption
+│  │  │  ├─ Shopping discount application
+│  │  │  ├─ Premium feature unlock
+│  │  │  ├─ Gift and transfer functionality
+│  │  │  └─ Redemption confirmation and tracking
+│  │  └─ Points Strategy & Tips
+│  │     ├─ Points earning optimization tips
+│  │     ├─ Redemption strategy guidance
+│  │     ├─ Points maximization techniques
+│  │     ├─ Seasonal points opportunities
+│  │     └─ Points community and sharing
+│  ├─ Point Logs Screen (/point-logs-screen)
+│  │  ├─ Transaction History Management
+│  │  │  ├─ Complete points transaction history
+│  │  │  ├─ Transaction categorization and filtering
+│  │  │  ├─ Date range filtering and search
+│  │  │  ├─ Transaction amount and source tracking
+│  │  │  └─ Transaction verification and receipts
+│  │  ├─ Points Analytics & Insights
+│  │  │  ├─ Points earning pattern analysis
+│  │  │  ├─ Spending behavior insights
+│  │  │  ├─ Monthly and yearly summaries
+│  │  │  ├─ Goal tracking and achievement
+│  │  │  └─ Predictive earning projections
+│  │  ├─ Transaction Management
+│  │  │  ├─ Transaction search and filtering
+│  │  │  ├─ Transaction dispute resolution
+│  │  │  ├─ Transaction documentation export
+│  │  │  ├─ Refund and reversal tracking
+│  │  │  └─ Transaction notification settings
+│  │  └─ Data Export & Reporting
+│  │     ├─ Transaction data export options
+│  │     ├─ Custom date range reports
+│  │     ├─ Tax and accounting documentation
+│  │     ├─ Third-party integration data
+│  │     └─ Audit trail and compliance
+│  ├─ Weekly Rewards Screen (/weekly-rewards-screen)
+│  │  ├─ Weekly Challenge System
+│  │  │  ├─ Current week challenges overview
+│  │  │  ├─ Challenge progress tracking
+│  │  │  ├─ Difficulty level and reward scaling
+│  │  │  ├─ Challenge completion deadlines
+│  │  │  └─ Bonus challenge opportunities
+│  │  ├─ Reward Milestone Tracking
+│  │  │  ├─ Weekly milestone progression
+│  │  │  ├─ Cumulative reward calculations
+│  │  │  ├─ Streak multiplier benefits
+│  │  │  ├─ Performance comparison analytics
+│  │  │  └─ Achievement unlock predictions
+│  │  ├─ Reward Claim Management
+│  │  │  ├─ Available rewards claim interface
+│  │  │  ├─ Automatic reward distribution
+│  │  │  ├─ Manual claim requirements
+│  │  │  ├─ Reward expiry and time limits
+│  │  │  └─ Reward claim verification
+│  │  ├─ Performance Analytics
+│  │  │  ├─ Weekly performance summaries
+│  │  │  ├─ Improvement trend analysis
+│  │  │  ├─ Comparative performance metrics
+│  │  │  ├─ Goal achievement tracking
+│  │  │  └─ Personal best records
+│  │  └─ Future Planning & Preview
+│  │     ├─ Next week challenge preview
+│  │     ├─ Upcoming reward opportunities
+│  │     ├─ Strategic planning assistance
+│  │     ├─ Goal setting for upcoming weeks
+│  │     └─ Community challenges participation
+│  └─ Tab View Log (/tab_view_log)
+│     ├─ Activity Logs Organization
+│     │  ├─ Comprehensive activity log tabs
+│     │  ├─ Points earning and spending logs
+│     │  ├─ Purchase and transaction logs
+│     │  ├─ Achievement and milestone logs
+│     │  └─ Social interaction activity logs
+│     ├─ Log Analytics & Insights
+│     │  ├─ Activity pattern recognition
+│     │  ├─ Behavioral trend analysis
+│     │  ├─ Performance correlation insights
+│     │  ├─ Productivity and engagement metrics
+│     │  └─ Personalized improvement recommendations
+│     ├─ Log Management Features
+│     │  ├─ Log filtering and search functionality
+│     │  ├─ Custom date range selections
+│     │  ├─ Log export and download options
+│     │  ├─ Log sharing and collaboration
+│     │  └─ Log privacy and security controls
+│     └─ Cross-Tab Navigation & Integration
+│        ├─ Seamless tab switching
+│        ├─ Cross-tab data correlation
+│        ├─ Unified search across all logs
+│        ├─ Tab-specific insights and analytics
+│        └─ Integrated reporting dashboard
+├─ Achievement & Level System
+│  ├─ Achievements Screen (/achievements-screen)
+│  │  ├─ Achievement Gallery & Showcase
+│  │  │  ├─ Unlocked achievements display
+│  │  │  ├─ Achievement categorization and organization
+│  │  │  ├─ Rare and special achievement highlights
+│  │  │  ├─ Achievement difficulty and rarity indicators
+│  │  │  └─ Achievement unlock date and circumstances
+│  │  ├─ Progress Tracking & Goals
+│  │  │  ├─ In-progress achievement tracking
+│  │  │  ├─ Achievement completion percentage
+│  │  │  ├─ Milestone progress indicators
+│  │  │  ├─ Time-based achievement deadlines
+│  │  │  └─ Achievement difficulty progression
+│  │  ├─ Achievement Social Features
+│  │  │  ├─ Achievement sharing capabilities
+│  │  │  ├─ Friend achievement comparisons
+│  │  │  ├─ Achievement-based leaderboards
+│  │  │  ├─ Community achievement challenges
+│  │  │  └─ Achievement celebration features
+│  │  ├─ Achievement Rewards & Benefits
+│  │  │  ├─ Point rewards from achievements
+│  │  │  ├─ Exclusive content unlocks
+│  │  │  ├─ Special privilege access
+│  │  │  ├─ Title and badge unlocks
+│  │  │  └─ Achievement-based discounts
+│  │  └─ Achievement Discovery
+│  │     ├─ Hidden achievement hints
+│  │     ├─ Achievement search and filtering
+│  │     ├─ Related achievement suggestions
+│  │     ├─ Achievement strategy guidance
+│  │     └─ Community achievement guides
+│  └─ Levels Screen (/levels-screen)
+│     ├─ Level Progression System
+│     │  ├─ Current level display and benefits
+│     │  ├─ Experience points tracking
+│     │  ├─ Next level requirements and timeline
+│     │  ├─ Level progression history
+│     │  └─ Level achievement celebration
+│     ├─ Level Benefits & Perks
+│     │  ├─ Level-specific feature unlocks
+│     │  ├─ Enhanced earning rates and bonuses
+│     │  ├─ Exclusive content and early access
+│     │  ├─ VIP support and priority services
+│     │  └─ Level-based social recognition
+│     ├─ Level Competition & Social
+│     │  ├─ Global level leaderboards
+│     │  ├─ Friend level comparisons
+│     │  ├─ Level-based community access
+│     │  ├─ Mentorship and guidance programs
+│     │  └─ Level achievement sharing
+│     ├─ Level-Based Rewards
+│     │  ├─ Level-up reward distribution
+│     │  ├─ Milestone celebration bonuses
+│     │  ├─ Anniversary and loyalty rewards
+│     │  ├─ Level maintenance benefits
+│     │  └─ Elite level exclusive rewards
+│     └─ Level Strategy & Planning
+│        ├─ Experience optimization strategies
+│        ├─ Level progression planning tools
+│        ├─ Activity recommendation engine
+│        ├─ Goal setting and tracking
+│        └─ Performance improvement insights
+├─ Settings & Preferences Management
+│  ├─ Setting Screen (/setting-screen)
+│  │  ├─ Account Settings & Security
+│  │  │  ├─ Profile and account information
+│  │  │  ├─ Password and security settings
+│  │  │  ├─ Two-factor authentication
+│  │  │  ├─ Login activity and device management
+│  │  │  └─ Account recovery and backup
+│  │  ├─ Privacy & Data Settings
+│  │  │  ├─ Privacy controls and visibility
+│  │  │  ├─ Data sharing preferences
+│  │  │  ├─ Analytics and tracking opt-outs
+│  │  │  ├─ Data deletion and download
+│  │  │  └─ Third-party integration management
+│  │  ├─ Notification Management
+│  │  │  ├─ Push notification preferences
+│  │  │  ├─ Email notification settings
+│  │  │  ├─ SMS and phone call preferences
+│  │  │  ├─ Notification frequency controls
+│  │  │  └─ Emergency and security notifications
+│  │  ├─ Content & Experience Settings
+│  │  │  ├─ Content filtering and moderation
+│  │  │  ├─ Language and localization
+│  │  │  ├─ Theme and appearance preferences
+│  │  │  ├─ Accessibility features and options
+│  │  │  └─ Content recommendation tuning
+│  │  ├─ App Preferences & Functionality
+│  │  │  ├─ Video quality and data usage
+│  │  │  ├─ Audio and sound preferences
+│  │  │  ├─ Navigation and interface customization
+│  │  │  ├─ Storage and cache management
+│  │  │  └─ Performance optimization settings
+│  │  ├─ Support & Information
+│  │  │  ├─ Help center and FAQ access
+│  │  │  ├─ Contact support and feedback
+│  │  │  ├─ App version and update information
+│  │  │  ├─ Terms of service and privacy policy
+│  │  │  └─ About app and developer information
+│  │  └─ Advanced Settings
+│  │     ├─ Developer options and debugging
+│  │     ├─ Beta feature access
+│  │     ├─ API and integration settings
+│  │     ├─ Data sync and backup options
+│  │     └─ Export and migration tools
+│  └─ Language Screen (/language-screen)
+│     ├─ Language Selection Interface
+│     │  ├─ Available languages comprehensive list
+│     │  ├─ Current language highlighting
+│     │  ├─ Language preview and testing
+│     │  ├─ Regional dialect options
+│     │  └─ Language pack download status
+│     ├─ Localization Features
+│     │  ├─ Content translation quality
+│     │  ├─ Cultural adaptation features
+│     │  ├─ Date and time format preferences
+│     │  ├─ Number and currency formatting
+│     │  └─ Right-to-left language support
+│     ├─ Language Management
+│     │  ├─ Language pack management
+│     │  ├─ Automatic language detection
+│     │  ├─ Fallback language preferences
+│     │  ├─ Language update notifications
+│     │  └─ Offline language support
+│     └─ Language Community Features
+│        ├─ Community translation contributions
+│        ├─ Language feedback and reporting
+│        ├─ Translation quality voting
+│        ├─ Language-specific content discovery
+│        └─ Multilingual user community access
+└─ Social Features & Community Integration
+   ├─ Friend & Following Management
+   │  ├─ Friend discovery and suggestions
+   │  ├─ Contact-based friend finding
+   │  ├─ Social media integration for connections
+   │  ├─ Friend activity feeds and updates
+   │  └─ Friend recommendation algorithms
+   ├─ Social Activity Tracking
+   │  ├─ Social interaction analytics
+   │  ├─ Community participation metrics
+   │  ├─ Social influence and reach tracking
+   │  ├─ Collaboration and teamwork features
+   │  └─ Social achievement and recognition
+   ├─ Community Participation
+   │  ├─ User-generated content contribution
+   │  ├─ Community challenges and events
+   │  ├─ Community voting and polls
+   │  ├─ Community moderation participation
+   │  └─ Community leadership opportunities
+   ├─ Social Sharing & Integration
+   │  ├─ Cross-platform sharing capabilities
+   │  ├─ Social media account linking
+   │  ├─ Content sharing analytics
+   │  ├─ Social sharing rewards and incentives
+   │  └─ Privacy-aware sharing controls
+   └─ Referral & Growth Systems
+      ├─ Referral program participation
+      ├─ Friend invitation and onboarding
+      ├─ Referral reward tracking
+      ├─ Social growth analytics
+      └─ Community expansion initiatives
+
+Subscription & Premium Features (Premium User Experience)
+├─ Subscription Screen (/subscription-screen)
+│  ├─ Subscription Plans Overview
+│  │  ├─ Available subscription tiers (monthly, quarterly, annual)
+│  │  ├─ Feature comparison matrix
+│  │  ├─ Pricing structure and discount offers
+│  │  ├─ Free vs premium benefit breakdown
+│  │  ├─ Most popular plan recommendations
+│  │  └─ Limited-time promotional offers
+│  ├─ Khalti Payment Integration
+│  │  ├─ Secure Khalti payment processing
+│  │  ├─ Multiple payment method support
+│  │  ├─ Subscription billing automation
+│  │  ├─ Payment security and encryption
+│  │  └─ Payment failure handling and retry
+│  ├─ Subscription Management
+│  │  ├─ Current subscription status and details
+│  │  ├─ Next billing date and amount
+│  │  ├─ Subscription upgrade/downgrade options
+│  │  ├─ Subscription cancellation process
+│  │  ├─ Subscription pause and resume
+│  │  └─ Billing history and receipt access
+│  ├─ Premium Benefits & Features
+│  │  ├─ Ad-free browsing and content experience
+│  │  ├─ Exclusive premium content access
+│  │  ├─ Advanced app features and tools
+│  │  ├─ Priority customer support
+│  │  ├─ Enhanced earning potential and bonuses
+│  │  └─ Early access to new features
+│  └─ Subscription Analytics & Insights
+│     ├─ Subscription value and ROI tracking
+│     ├─ Premium feature usage analytics
+│     ├─ Content consumption enhancement metrics
+│     ├─ Subscription satisfaction surveys
+│     └─ Personalized subscription recommendations
+└─ Premium Content & Feature Access
+   ├─ Exclusive Content Library
+   │  ├─ Premium-only stories and episodes
+   │  ├─ High-quality exclusive shorts content
+   │  ├─ Advanced educational content
+   │  ├─ Expert-created premium courses
+   │  └─ Celebrity and influencer exclusive content
+   ├─ Enhanced Challenge Access
+   │  ├─ Premium-exclusive challenges
+   │  ├─ Higher reward challenge participation
+   │  ├─ VIP tournament and competition access
+   │  ├─ Exclusive leaderboard and ranking
+   │  └─ Premium challenge creation tools
+   ├─ Advanced Features
+   │  ├─ Enhanced video quality and resolution
+   │  ├─ Offline content download and storage
+   │  ├─ Advanced analytics and insights
+   │  ├─ Custom content recommendation tuning
+   │  └─ Priority content loading and streaming
+   ├─ VIP Community Access
+   │  ├─ Premium user community forums
+   │  ├─ Direct creator interaction opportunities
+   │  ├─ Exclusive events and webinars
+   │  ├─ VIP customer support channel
+   │  └─ Premium user networking features
+   └─ Enhanced Earning & Rewards
+      ├─ Multiplied points earning rates
+      ├─ Exclusive reward catalog access
+      ├─ Premium-only gift and prize options
+      ├─ Enhanced cashback and refund rates
+      └─ VIP loyalty program benefits
+
+Messaging & Communication System
+├─ Conversations Screen (/conversations-screen)
+│  ├─ Conversation Management
+│  │  ├─ Chat conversations comprehensive list
+│  │  ├─ Conversation search and filtering
+│  │  ├─ Unread/read status management
+│  │  ├─ Conversation pinning and organization
+│  │  └─ Conversation archiving and deletion
+│  ├─ Conversation Features
+│  │  ├─ Group conversation creation and management
+│  │  ├─ Conversation settings and preferences
+│  │  ├─ Conversation participant management
+│  │  ├─ Conversation notification controls
+│  │  └─ Conversation backup and export
+│  ├─ Communication Enhancement
+│  │  ├─ New conversation initiation
+│  │  ├─ Contact discovery and suggestion
+│  │  ├─ Conversation invitation and sharing
+│  │  ├─ Conversation templates and quick replies
+│  │  └─ Conversation analytics and insights
+│  └─ Privacy & Security
+│     ├─ End-to-end encryption support
+│     ├─ Message deletion and self-destruct
+│     ├─ Conversation privacy controls
+│     ├─ Block and report functionality
+│     └─ Conversation security indicators
+├─ Messages Screen (/messages-screen)
+│  ├─ Messaging Interface
+│  │  ├─ Individual chat comprehensive interface
+│  │  ├─ Real-time message delivery and sync
+│  │  ├─ Message status indicators (sent, delivered, read)
+│  │  ├─ Typing indicators and presence
+│  │  └─ Message threading and organization
+│  ├─ Message Content & Media
+│  │  ├─ Text message composition and sending
+│  │  ├─ Image and photo sharing
+│  │  ├─ Video and audio file sharing
+│  │  ├─ Document and file attachment
+│  │  └─ Voice message recording and playback
+│  ├─ Message Enhancement Features
+│  │  ├─ Emoji reactions and stickers
+│  │  ├─ GIF integration and search
+│  │  ├─ Message formatting and rich text
+│  │  ├─ Message translation features
+│  │  └─ Message scheduling and delayed sending
+│  ├─ Communication Tools
+│  │  ├─ Voice call integration (if supported)
+│  │  ├─ Video call functionality (if supported)
+│  │  ├─ Screen sharing capabilities
+│  │  ├─ Location sharing features
+│  │  └─ Contact card sharing
+│  ├─ Message Management
+│  │  ├─ Message search and filtering
+│  │  ├─ Message history and archiving
+│  │  ├─ Message forwarding and sharing
+│  │  ├─ Message deletion and editing
+│  │  └─ Message backup and restoration
+│  └─ Security & Moderation
+│     ├─ Message encryption status
+│     ├─ Spam and abuse reporting
+│     ├─ Block and unblock user functionality
+│     ├─ Message content moderation
+│     └─ Privacy-aware messaging features
+├─ Chatbot Screen (/chatbot-screen)
+│  ├─ AI Assistant Interface
+│  │  ├─ Intelligent chatbot conversation interface
+│  │  ├─ Natural language processing and understanding
+│  │  ├─ Context-aware response generation
+│  │  ├─ Multi-turn conversation support
+│  │  └─ Conversation history and memory
+│  ├─ Query & Support Features
+│  │  ├─ Predefined query categories and options
+│  │  ├─ Natural language input and processing
+│  │  ├─ Help and support query handling
+│  │  ├─ App feature explanations and guidance
+│  │  └─ Troubleshooting assistance and diagnostics
+│  ├─ Educational & Learning Support
+│  │  ├─ Quiz help and hint system
+│  │  ├─ Content explanation and clarification
+│  │  ├─ Learning path recommendations
+│  │  ├─ Study tips and strategies
+│  │  └─ Educational resource suggestions
+│  ├─ Integration & Functionality
+│  │  ├─ FAQ database integration
+│  │  ├─ Knowledge base access and search
+│  │  ├─ Real-time information retrieval
+│  │  ├─ App functionality demonstration
+│  │  └─ Feature discovery and onboarding
+│  ├─ Escalation & Human Support
+│  │  ├─ Escalate to human support agents
+│  │  ├─ Support ticket creation and tracking
+│  │  ├─ Complex query handling and routing
+│  │  ├─ Specialist support access
+│  │  └─ Follow-up and resolution tracking
+│  └─ Chatbot Enhancement
+│     ├─ Conversation feedback and rating
+│     ├─ Chatbot learning and improvement
+│     ├─ Personalized response customization
+│     ├─ Conversation analytics and insights
+│     └─ Multilingual support and translation
+└─ Notification Management System
+   ├─ Notification Screen (/notification-screen)
+   │  ├─ Notification Organization
+   │  │  ├─ All notifications comprehensive list
+   │  │  ├─ Notification categorization and grouping
+   │  │  ├─ Date-based notification organization
+   │  │  ├─ Priority-based notification sorting
+   │  │  └─ Notification search and filtering
+   │  ├─ Notification Management
+   │  │  ├─ Mark notifications as read/unread
+   │  │  ├─ Bulk notification actions
+   │  │  ├─ Notification deletion and archiving
+   │  │  ├─ Notification sharing and forwarding
+   │  │  └─ Notification backup and export
+   │  ├─ Notification Interaction
+   │  │  ├─ Direct action from notifications
+   │  │  ├─ Quick reply functionality
+   │  │  ├─ Notification deep linking
+   │  │  ├─ Notification-based navigation
+   │  │  └─ Notification context preservation
+   │  ├─ Notification Preferences
+   │  │  ├─ Notification type preferences
+   │  │  ├─ Notification frequency controls
+   │  │  ├─ Notification delivery preferences
+   │  │  ├─ Do-not-disturb scheduling
+   │  │  └─ Notification sound and vibration settings
+   │  └─ Notification Analytics
+   │     ├─ Notification engagement metrics
+   │     ├─ Notification effectiveness analysis
+   │     ├─ User notification behavior patterns
+   │     ├─ Notification personalization insights
+   │     └─ Notification optimization recommendations
+   └─ Real-time Notification System
+      ├─ Push Notification Management
+      │  ├─ Firebase Cloud Messaging (FCM) integration
+      │  ├─ Cross-platform notification delivery
+      │  ├─ Rich notification content support
+      │  ├─ Notification action buttons and interactions
+      │  └─ Notification analytics and tracking
+      ├─ In-App Notification Features
+      │  ├─ Real-time in-app notification banners
+      │  ├─ Context-sensitive notification display
+      │  ├─ Non-intrusive notification presentation
+      │  ├─ Notification animation and effects
+      │  └─ Notification accessibility features
+      ├─ Notification Categories & Types
+      │  ├─ New content and update notifications
+      │  ├─ Social interaction notifications
+      │  ├─ Challenge and competition updates
+      │  ├─ Store and promotion notifications
+      │  ├─ Achievement and milestone notifications
+      │  └─ System and maintenance notifications
+      ├─ Smart Notification Features
+      │  ├─ Time-zone aware notification scheduling
+      │  ├─ User activity-based notification timing
+      │  ├─ Notification frequency limiting and batching
+      │  ├─ Intelligent notification relevance scoring
+      │  └─ Personalized notification content
+      └─ Notification Privacy & Security
+         ├─ Notification content privacy controls
+         ├─ Secure notification transmission
+         ├─ User consent and permission management
+         ├─ Notification data retention policies
+         └─ GDPR-compliant notification practices
+
+Gift & Rewards Ecosystem
+├─ Gift Screen (/gift-screen)
+│  ├─ Gift Catalog & Browse
+│  │  ├─ Comprehensive gift catalog browsing
+│  │  ├─ Gift categorization (virtual, physical, experiences)
+│  │  ├─ Point-based and premium gift options
+│  │  ├─ Seasonal and limited-time gifts
+│  │  └─ Gift popularity and recommendation rankings
+│  ├─ Gift Management
+│  │  ├─ Send gifts to other users
+│  │  ├─ Received gifts history and tracking
+│  │  ├─ Gift redemption process and management
+│  │  ├─ Gift expiry tracking and notifications
+│  │  └─ Gift inventory and collection display
+│  ├─ Gift Social Features
+│  │  ├─ Gift sharing and showcasing
+│  │  ├─ Gift giving occasions and celebrations
+│  │  ├─ Community gift exchanges
+│  │  ├─ Gift recommendation based on relationships
+│  │  └─ Collaborative gift pooling
+│  ├─ Gift Personalization
+│  │  ├─ Custom gift message composition
+│  │  ├─ Gift wrapping and presentation options
+│  │  ├─ Scheduled gift delivery
+│  │  ├─ Anonymous gift sending options
+│  │  └─ Gift recipient preference matching
+│  └─ Gift Analytics & Insights
+│     ├─ Gift giving and receiving patterns
+│     ├─ Gift preference analysis
+│     ├─ Gift value and impact tracking
+│     ├─ Social gift network analysis
+│     └─ Gift satisfaction and feedback
+├─ Single Gift Screen (/single-gift-screen)
+│  ├─ Detailed Gift Information
+│  │  ├─ Comprehensive gift description and features
+│  │  ├─ High-quality gift images and previews
+│  │  ├─ Gift value and point cost display
+│  │  ├─ Gift availability and stock status
+│  │  └─ Gift reviews and ratings from recipients
+│  ├─ Gift Redemption Process
+│  │  ├─ Redemption requirements and eligibility
+│  │  ├─ Step-by-step redemption guidance
+│  │  ├─ Redemption confirmation and verification
+│  │  ├─ Redemption timeline and delivery info
+│  │  └─ Redemption support and assistance
+│  ├─ Gift Interaction Features
+│  │  ├─ Gift preview and demonstration
+│  │  ├─ Gift comparison with alternatives
+│  │  ├─ Gift wishlist addition
+│  │  ├─ Gift sharing and recommendation
+│  │  └─ Gift feedback and review submission
+│  ├─ Similar Gifts & Recommendations
+│  │  ├─ Alternative gift suggestions
+│  │  ├─ Complementary gift recommendations
+│  │  ├─ Price range alternative gifts
+│  │  ├─ Category-based similar gifts
+│  │  └─ User preference-based suggestions
+│  └─ Gift Purchase & Delivery
+│     ├─ Point-based gift purchase
+│     ├─ Premium gift purchase options
+│     ├─ Gift delivery tracking and updates
+│     ├─ Gift recipient notification system
+│     └─ Gift delivery confirmation and receipt
+└─ Fortune Wheel & Gamification (/bkp-fortune-wheel)
+   ├─ Fortune Wheel Mechanics
+   │  ├─ Daily spin opportunity and timing
+   │  ├─ Interactive spin wheel interface
+   │  ├─ Prize wheel segment customization
+   │  ├─ Cooldown timer and availability display
+   │  └─ Spin animation and visual effects
+   ├─ Prize System & Rewards
+   │  ├─ Varied prize pool and reward types
+   │  ├─ Prize probability and distribution
+   │  ├─ Bonus spin opportunities
+   │  ├─ Progressive jackpot features
+   │  └─ Special event prize enhancements
+   ├─ Spin History & Tracking
+   │  ├─ Personal spin history and records
+   │  ├─ Prize claim and redemption tracking
+   │  ├─ Spin streak and consistency rewards
+   │  ├─ Lucky day and timing analytics
+   │  └─ Spin performance and outcome analysis
+   ├─ Social & Sharing Features
+   │  ├─ Share spin results and big wins
+   │  ├─ Community spin leaderboards
+   │  ├─ Friend spin status and activities
+   │  ├─ Collaborative spin challenges
+   │  └─ Achievement-based spin bonuses
+   ├─ Gamification Elements
+   │  ├─ Spin-based achievement unlocks
+   │  ├─ Loyalty and consistency rewards
+   │  ├─ Special event and holiday spins
+   │  ├─ Spin prediction and strategy games
+   │  └─ Community spin competitions
+   └─ Fairness & Transparency
+      ├─ Transparent probability disclosure
+      ├─ Fair play and randomness assurance
+      ├─ Anti-cheat and fraud prevention
+      ├─ Prize distribution audit and reporting
+      └─ User feedback and fairness reporting
+
+Leaderboard & Competition System
+├─ Leaderboard Screen (/leaderboard-screen)
+│  ├─ Leaderboard Categories & Views
+│  │  ├─ Global leaderboard comprehensive display
+│  │  ├─ Category-wise rankings and competition
+│  │  ├─ Friend and social network leaderboards
+│  │  ├─ Weekly, monthly, and all-time views
+│  │  └─ Regional and local leaderboards
+│  ├─ Ranking System & Metrics
+│  │  ├─ Current user position highlighting
+│  │  ├─ Top performers showcase and recognition
+│  │  ├─ Ranking change indicators and trends
+│  │  ├─ Performance gap analysis
+│  │  └─ Ranking prediction and forecasting
+│  ├─ Competitive Features
+│  │  ├─ Competition schedules and announcements
+│  │  ├─ Tournament and championship tracking
+│  │  ├─ Prize distribution and rewards
+│  │  ├─ Competition rules and eligibility
+│  │  └─ Live competition updates and scoring
+│  ├─ Leaderboard Filtering & Customization
+│  │  ├─ Filter by activity type and category
+│  │  ├─ Custom time range selections
+│  │  ├─ Demographic and region filtering
+│  │  ├─ Skill level and experience filtering
+│  │  └─ Personalized leaderboard creation
+│  ├─ Social & Interaction Features
+│  │  ├─ Challenge specific users to compete
+│  │  ├─ Follow top performers and rivals
+│  │  ├─ Leaderboard commenting and interaction
+│  │  ├─ Achievement and milestone celebration
+│  │  └─ Mentorship and coaching connections
+│  └─ Performance Analytics & Insights
+│     ├─ Personal performance trend analysis
+│     ├─ Competitive position tracking
+│     ├─ Improvement opportunity identification
+│     ├─ Goal setting and achievement tracking
+│     └─ Strategic performance enhancement
+└─ Competitive Gaming & Rankings
+   ├─ Points-Based Competition
+   │  ├─ Quiz performance and accuracy rankings
+   │  ├─ Content consumption and engagement scoring
+   │  ├─ Social interaction and community contribution
+   │  ├─ Achievement and milestone completion
+   │  └─ Consistency and streak-based rankings
+   ├─ Activity-Based Rankings
+   │  ├─ Story reading and completion rankings
+   │  ├─ Shorts viewing and engagement metrics
+   │  ├─ Challenge participation and success rates
+   │  ├─ Content creation and quality rankings
+   │  └─ Community support and mentorship scoring
+   ├─ Social & Collaborative Competition
+   │  ├─ Team-based challenges and tournaments
+   │  ├─ Guild and group competition systems
+   │  ├─ Collaborative achievement competitions
+   │  ├─ Peer-to-peer challenge systems
+   │  └─ Mentorship and teaching effectiveness
+   ├─ Seasonal & Event Competition
+   │  ├─ Seasonal championship tournaments
+   │  ├─ Holiday-themed competitions
+   │  ├─ Special event leaderboards
+   │  ├─ Limited-time competitive challenges
+   │  └─ Anniversary and milestone competitions
+   └─ Recognition & Rewards
+      ├─ Hall of fame and achievement galleries
+      ├─ Champion recognition and celebration
+      ├─ Exclusive titles and badge systems
+      ├─ Prize and reward distribution
+      └─ Legacy and historical achievement tracking
+
+Community Requests & Special Features
+├─ Creator Request System (/creator-request-screen)
+│  ├─ Creator Application Process
+│  │  ├─ Comprehensive creator application form
+│  │  ├─ Portfolio upload and showcase section
+│  │  ├─ Experience and background verification
+│  │  ├─ Content creation goals and vision
+│  │  └─ Social media and external presence links
+│  ├─ Application Review & Approval
+│  │  ├─ Application status tracking and updates
+│  │  ├─ Review criteria and requirements display
+│  │  ├─ Feedback and improvement suggestions
+│  │  ├─ Interview and assessment scheduling
+│  │  └─ Approval timeline and communication
+│  ├─ Creator Agreement & Terms
+│  │  ├─ Creator terms and conditions
+│  │  ├─ Content creation responsibilities
+│  │  ├─ Community guidelines adherence
+│  │  ├─ Revenue sharing and monetization
+│  │  └─ Creator code of conduct
+│  ├─ Creator Benefits & Resources
+│  │  ├─ Creator tools and resource access
+│  │  ├─ Educational and training materials
+│  │  ├─ Creator community access
+│  │  ├─ Marketing and promotion support
+│  │  └─ Technical and creative assistance
+│  └─ Application Management
+│     ├─ Draft application saving and editing
+│     ├─ Application submission and confirmation
+│     ├─ Re-application and appeal process
+│     ├─ Application analytics and insights
+│     └─ Creator referral and recommendation
+├─ Challenge Request System (/challenge-request-screen)
+│  ├─ Challenge Proposal Interface
+│  │  ├─ Challenge concept and description form
+│  │  ├─ Challenge type and category selection
+│  │  ├─ Rules and requirements specification
+│  │  ├─ Timeline and duration planning
+│  │  └─ Difficulty and skill level assessment
+│  ├─ Challenge Design & Structure
+│  │  ├─ Reward structure and prize definition
+│  │  ├─ Participation criteria and eligibility
+│  │  ├─ Challenge progression and milestones
+│  │  ├─ Competition format and mechanics
+│  │  └─ Success metrics and evaluation criteria
+│  ├─ Challenge Review & Approval
+│  │  ├─ Proposal review and feedback process
+│  │  ├─ Community voting and input system
+│  │  ├─ Expert evaluation and assessment
+│  │  ├─ Modification and improvement suggestions
+│  │  └─ Approval and scheduling notification
+│  ├─ Challenge Community Features
+│  │  ├─ Challenge discussion and feedback
+│  │  ├─ Community suggestion integration
+│  │  ├─ Collaborative challenge development
+│  │  ├─ Challenge testing and beta programs
+│  │  └─ Community moderator involvement
+│  └─ Challenge Management
+│     ├─ Proposal tracking and status updates
+│     ├─ Challenge launch and promotion
+│     ├─ Ongoing challenge monitoring
+│     ├─ Challenge modification and updates
+│     └─ Post-challenge analysis and feedback
+├─ Special Events & Tournaments
+│  ├─ MLBB Registration Screen (/mlbb-registration-screen)
+│  │  ├─ Mobile Legends Tournament Registration
+│  │  │  ├─ Tournament information and rules
+│  │  │  ├─ Player registration and information form
+│  │  │  ├─ Game ID and account verification
+│  │  │  ├─ Team formation and management
+│  │  │  └─ Skill level and experience assessment
+│  │  ├─ Tournament Structure & Format
+│  │  │  ├─ Tournament bracket and scheduling
+│  │  │  ├─ Match format and game rules
+│  │  │  ├─ Elimination and progression system
+│  │  │  ├─ Fair play and anti-cheat measures
+│  │  │  └─ Technical requirements and setup
+│  │  ├─ Prize & Recognition System
+│  │  │  ├─ Prize pool and distribution structure
+│  │  │  ├─ Winner recognition and celebration
+│  │  │  ├─ Participation rewards and benefits
+│  │  │  ├─ Achievement and badge unlocks
+│  │  │  └─ Community recognition and fame
+│  │  ├─ Registration Management
+│  │  │  ├─ Registration deadline and reminders
+│  │  │  ├─ Registration confirmation and receipt
+│  │  │  ├─ Team communication and coordination
+│  │  │  ├─ Registration modification and updates
+│  │  │  └─ Withdrawal and refund process
+│  │  └─ Tournament Communication
+│  │     ├─ Tournament updates and announcements
+│  │     ├─ Match scheduling and notifications
+│  │     ├─ Technical support and assistance
+│  │     ├─ Community discussion and interaction
+│  │     └─ Results and outcome communication
+│  └─ Referrals Screen (/referrals-screen)
+│     ├─ Referral Program Management
+│     │  ├─ Referral program details and benefits
+│     │  ├─ Personal referral code generation
+│     │  ├─ Referral link sharing and distribution
+│     │  ├─ Multi-platform sharing integration
+│     │  └─ Referral campaign customization
+│     ├─ Referral Tracking & Analytics
+│     │  ├─ Referral tracking and attribution
+│     │  ├─ Friend registration and activity monitoring
+│     │  ├─ Referral success rate analytics
+│     │  ├─ Conversion funnel analysis
+│     │  └─ ROI and effectiveness measurement
+│     ├─ Referral Rewards & Benefits
+│     │  ├─ Referral rewards earned display
+│     │  ├─ Tiered referral bonus system
+│     │  ├─ Milestone and achievement rewards
+│     │  ├─ Loyalty and consistency bonuses
+│     │  └─ Special referral event participation
+│     ├─ Social & Community Features
+│     │  ├─ Referral leaderboard and competition
+│     │  ├─ Friend activity and engagement tracking
+│     │  ├─ Social sharing and promotion tools
+│     │  ├─ Community referral challenges
+│     │  └─ Peer-to-peer referral support
+│     ├─ Referral Program Rules
+│     │  ├─ Referral program terms and conditions
+│     │  ├─ Eligible activities and requirements
+│     │  ├─ Fraud prevention and fair play
+│     │  ├─ Reward distribution and timing
+│     │  └─ Program modification and updates
+│     └─ Referral Support & Assistance
+│        ├─ Referral strategy and tips
+│        ├─ Sharing best practices and guides
+│        ├─ Technical support for referral issues
+│        ├─ Community mentorship and guidance
+│        └─ Referral program feedback and improvement
+└─ Onboarding & Introduction Features
+   ├─ Intro Screen (/intro-screen)
+   │  ├─ App Introduction & Welcome
+   │  │  ├─ App introduction walkthrough
+   │  │  ├─ Key features highlight and demonstration
+   │  │  ├─ Swipe-through tutorial navigation
+   │  │  ├─ Skip option availability and flexibility
+   │  │  └─ Get started call-to-action
+   │  ├─ Feature Discovery & Education
+   │  │  ├─ Interactive feature demonstrations
+   │  │  ├─ Value proposition communication
+   │  │  ├─ User benefit explanation
+   │  │  ├─ Community and social feature preview
+   │  │  └─ Premium feature teaser and introduction
+   │  ├─ Onboarding Flow & Guidance
+   │  │  ├─ Personalized onboarding experience
+   │  │  ├─ Progressive disclosure of features
+   │  │  ├─ User preference collection
+   │  │  ├─ Content recommendation setup
+   │  │  └─ Privacy and permission requests
+   │  ├─ Account Creation Integration
+   │  │  ├─ Account creation prompt and incentive
+   │  │  ├─ Guest mode explanation and limitations
+   │  │  ├─ Social login integration options
+   │  │  ├─ Quick registration process
+   │  │  └─ Profile setup and customization
+   │  └─ Retention & Engagement
+   │     ├─ First-time user experience optimization
+   │     ├─ Engagement hook and motivation
+   │     ├─ Achievement and progress setup
+   │     ├─ Community introduction and connection
+   │     └─ Return user encouragement and retention
+   ├─ Ads Screen (/ads-screen)
+   │  ├─ Advertisement Display Management
+   │  │  ├─ Advertisement content display interface
+   │  │  ├─ Sponsored content presentation
+   │  │  ├─ Video advertisement integration
+   │  │  ├─ Banner advertisement management
+   │  │  └─ Interactive advertisement experiences
+   │  ├─ Ad Engagement & Interaction
+   │  │  ├─ Advertisement interaction tracking
+   │  │  ├─ Click-through and engagement analytics
+   │  │  ├─ Ad preference collection and learning
+   │  │  ├─ Ad feedback and rating system
+   │  │  └─ Ad skipping and dismissal options
+   │  ├─ Reward-Based Advertising
+   │  │  ├─ Ad viewing rewards and incentives
+   │  │  ├─ Points and currency earning from ads
+   │  │  ├─ Exclusive content unlock through ads
+   │  │  ├─ Achievement and milestone ad rewards
+   │  │  └─ Premium feature trial through ads
+   │  ├─ Ad Personalization & Targeting
+   │  │  ├─ Personalized advertisement delivery
+   │  │  ├─ Interest-based ad targeting
+   │  │  ├─ Behavioral ad customization
+   │  │  ├─ Geographic and demographic targeting
+   │  │  └─ Context-aware ad placement
+   │  ├─ Ad Preferences & Control
+   │  │  ├─ Advertisement preference settings
+   │  │  ├─ Ad frequency and timing controls
+   │  │  ├─ Ad category filtering options
+   │  │  ├─ Ad-free upgrade promotion
+   │  │  └─ Ad privacy and data control
+   │  └─ Advertiser & Revenue Features
+   │     ├─ Revenue sharing with content creators
+   │     ├─ Advertiser partnership opportunities
+   │     ├─ Ad performance analytics for creators
+   │     ├─ Community-supported advertising
+   │     └─ Ethical and responsible advertising
+   └─ Contact & Support System (/contact-us-screen)
+      ├─ Support Contact Interface
+      │  ├─ Customer support contact form
+      │  ├─ Categorized support request system
+      │  ├─ Priority and urgency level selection
+      │  ├─ Attachment and media support
+      │  └─ Support ticket tracking and management
+      ├─ Multi-Channel Support Access
+      │  ├─ Live chat option and availability
+      │  ├─ Email support and response system
+      │  ├─ Phone support access (if available)
+      │  ├─ Video call support for complex issues
+      │  └─ Community forum and peer support
+      ├─ Self-Service & Resources
+      │  ├─ Comprehensive FAQ section
+      │  ├─ Troubleshooting guides and tutorials
+      │  ├─ Video help and demonstration library
+      │  ├─ Community-generated help content
+      │  └─ AI-powered support and guidance
+      ├─ Feedback & Improvement
+      │  ├─ Bug report and issue submission
+      │  ├─ Feature request and suggestion system
+      │  ├─ User experience feedback collection
+      │  ├─ App improvement suggestion platform
+      │  └─ Community feedback voting and prioritization
+      ├─ Support Analytics & Management
+      │  ├─ Response time and expectation management
+      │  ├─ Support satisfaction surveys and ratings
+      │  ├─ Issue resolution tracking and follow-up
+      │  ├─ Support quality assurance and improvement
+      │  └─ Support team performance and optimization
+      └─ Emergency & Critical Support
+         ├─ Emergency contact and escalation
+         ├─ Account security and fraud reporting
+         ├─ Payment and billing issue resolution
+         ├─ Critical bug and system issue reporting
+         └─ Legal and compliance issue handling
+
+================================================================================
+UNIVERSAL FEATURES & SYSTEM CAPABILITIES
+================================================================================
+
+Assistive Touch Menu (Comprehensive Access Control)
+├─ Floating Action Interface
+│  ├─ Always-visible overlay positioning
+│  ├─ Customizable position and behavior
+│  ├─ Expandable radial menu system
+│  ├─ Smart hiding during video playback
+│  └─ Accessibility-compliant interaction
+├─ Menu Categories (Authenticated Users)
+│  ├─ Settings → App preferences and account management
+│  ├─ Achievements → Progress tracking and badge showcase
+│  ├─ Leaderboard → Global and friend ranking access
+│  ├─ Messages → Direct messaging and notification center
+│  ├─ Notifications → Activity alerts and system updates
+│  ├─ Rewards → Points, gifts, and redemption center
+│  ├─ Support → Help center and contact access
+│  ├─ Language → App language selection and preferences
+│  └─ Quick Actions → Shortcuts to frequently used features
+├─ Guest User Restrictions
+│  ├─ Most menu items require authentication
+│  ├─ Support and Language features may be accessible
+│  ├─ Login prompt for restricted functionality
+│  ├─ Feature preview and benefit descriptions
+│  └─ Educational content about premium features
+└─ Personalization & Accessibility
+   ├─ Menu customization and organization
+   ├─ Accessibility features and compliance
+   ├─ Voice control and navigation support
+   ├─ Large text and high contrast options
+   └─ Motor impairment accommodation features
+
+Deep Link Handling & Navigation
+├─ Supported Link Types & Routing
+│  ├─ Story content deep linking
+│  ├─ Shorts video direct access
+│  ├─ Product and store item linking
+│  ├─ User profile and creator access
+│  ├─ Challenge and competition linking
+│  └─ Special promotion and event access
+├─ Authentication-Aware Routing
+│  ├─ Public content direct access
+│  ├─ Protected content authentication requirement
+│  ├─ Login prompt with intent preservation
+│  ├─ Post-authentication redirect handling
+│  └─ Graceful fallback for invalid links
+├─ Context Preservation & State Management
+│  ├─ App state detection and preservation
+│  ├─ Background and foreground handling
+│  ├─ User notification and alert system
+│  ├─ Deep link analytics and tracking
+│  └─ Cross-platform link compatibility
+└─ Advanced Deep Link Features
+   ├─ Dynamic link generation and sharing
+   ├─ Personalized content linking
+   ├─ Campaign and marketing link tracking
+   ├─ Social media integration and sharing
+   └─ SEO-optimized web link fallbacks
+
+Push Notification System
+├─ Notification Categories & Types
+│  ├─ New content alerts and recommendations
+│  ├─ Social interactions (likes, comments, follows)
+│  ├─ Challenge updates and competition results
+│  ├─ Store promotions and exclusive offers
+│  ├─ Achievement unlocks and milestone celebrations
+│  ├─ System announcements and maintenance alerts
+│  └─ Personalized content and user engagement
+├─ User Control & Preferences
+│  ├─ Granular notification preferences
+│  ├─ Category-specific enabling and disabling
+│  ├─ Do-not-disturb scheduling and management
+│  ├─ Notification frequency and batching controls
+│  └─ Complete notification disable option
+├─ Smart Delivery & Optimization
+│  ├─ Time-zone aware scheduling and delivery
+│  ├─ User activity-based timing optimization
+│  ├─ Frequency limiting and spam prevention
+│  ├─ Relevance scoring and personalization
+│  └─ A/B testing and optimization
+└─ Advanced Notification Features
+   ├─ Rich media and interactive notifications
+   ├─ Action buttons and quick reply functionality
+   ├─ Notification grouping and organization
+   ├─ Cross-device synchronization
+   └─ Analytics and engagement tracking
+
+Global Search & Discovery Engine
+├─ Comprehensive Search Functionality
+│  ├─ Universal content search across platform
+│  ├─ User and creator discovery and search
+│  ├─ Product and store item search
+│  ├─ Challenge and competition discovery
+│  └─ Hashtag and topic-based search
+├─ Advanced Search Features
+│  ├─ Auto-complete and intelligent suggestions
+│  ├─ Search history and saved searches
+│  ├─ Trending searches and popular queries
+│  ├─ Voice search capabilities (where supported)
+│  └─ Visual and image-based search
+├─ Search Result Organization
+│  ├─ Categorized and filtered results
+│  ├─ Relevance and popularity sorting
+│  ├─ Date-based and time-sensitive filtering
+│  ├─ Quality and rating-based filtering
+│  └─ Personalized result ranking
+├─ Discovery & Recommendation
+│  ├─ Trending content and viral discovery
+│  ├─ Editor's picks and curated content
+│  ├─ Personalized recommendation engine
+│  ├─ Similar content and cross-discovery
+│  └─ Community-driven content highlights
+└─ Search Analytics & Optimization
+   ├─ Search behavior and pattern analysis
+   ├─ Query optimization and suggestion improvement
+   ├─ Result relevance and accuracy measurement
+   ├─ User satisfaction and engagement tracking
+   └─ Search algorithm improvement and machine learning
+
+Analytics & Monitoring Infrastructure
+├─ Microsoft Clarity Integration
+│  ├─ User behavior tracking and heatmaps
+│  ├─ Session recording and replay analysis
+│  ├─ Click tracking and interaction analytics
+│  ├─ User journey mapping and flow analysis
+│  └─ Performance optimization insights
+├─ Sentry Error Tracking
+│  ├─ Real-time error monitoring and alerting
+│  ├─ Crash reporting and stability analysis
+│  ├─ Performance monitoring and optimization
+│  ├─ Error context and debugging information
+│  └─ Release and deployment impact tracking
+├─ User Engagement Analytics
+│  ├─ Session duration and retention analysis
+│  ├─ Content interaction and engagement rates
+│  ├─ Feature usage and adoption patterns
+│  ├─ User journey and conversion tracking
+│  └─ Churn prediction and retention strategies
+├─ Content Performance Metrics
+│  ├─ View counts and completion rate analysis
+│  ├─ Engagement metrics (likes, shares, comments)
+│  ├─ Quiz participation and performance tracking
+│  ├─ Creator content performance analytics
+│  └─ Viral content identification and analysis
+└─ Business Intelligence & Insights
+   ├─ User acquisition and growth analytics
+   ├─ Revenue and monetization tracking
+   ├─ Feature ROI and impact measurement
+   ├─ Market penetration and demographic analysis
+   └─ Predictive analytics and forecasting
+
+Performance & Optimization Systems
+├─ Network & Connectivity Management
+│  ├─ Offline mode and cached content access
+│  ├─ Poor connection adaptation and optimization
+│  ├─ Progressive loading and lazy content delivery
+│  ├─ Bandwidth-aware quality adjustment
+│  └─ Network retry and resilience mechanisms
+├─ App Performance Optimization
+│  ├─ Memory management and garbage collection
+│  ├─ Image caching and optimization
+│  ├─ Video buffer management and streaming
+│  ├─ Background task management and limiting
+│  └─ CPU and battery usage optimization
+├─ Storage & Data Management
+│  ├─ Intelligent cache size management
+│  ├─ Automatic cleanup and maintenance
+│  ├─ User storage controls and preferences
+│  ├─ Low storage warnings and management
+│  └─ Data compression and optimization
+└─ Security & Privacy Framework
+   ├─ Data encryption and secure transmission
+   ├─ Privacy settings respect and enforcement
+   ├─ GDPR and privacy regulation compliance
+   ├─ Content moderation and community safety
+   └─ Account security and fraud prevention
+
+================================================================================
+SESSION MANAGEMENT & SECURITY INFRASTRUCTURE
+================================================================================
+
+Authentication & Session Control
+├─ Secure Session Management
+│  ├─ JWT token generation and validation
+│  ├─ Device fingerprinting and tracking
+│  ├─ Session expiry and automatic refresh
+│  ├─ Secure token storage and encryption
+│  └─ Multi-device session management
+├─ Security Monitoring & Protection
+│  ├─ Suspicious activity detection and alerts
+│  ├─ Account lockout and security measures
+│  ├─ Login attempt monitoring and tracking
+│  ├─ Device management and authorization
+│  └─ Security breach detection and response
+├─ Data Synchronization & Backup
+│  ├─ Real-time cross-device synchronization
+│  ├─ Offline action queuing and sync
+│  ├─ Conflict resolution and data integrity
+│  ├─ Cloud backup and data recovery
+│  └─ Data portability and export
+└─ Privacy & Compliance
+   ├─ User consent management
+   ├─ Data minimization and purpose limitation
+   ├─ Right to deletion and data portability
+   ├─ Audit trail and compliance monitoring
+   └─ International privacy law compliance
+
+================================================================================
+TECHNICAL INFRASTRUCTURE & INTEGRATIONS
+================================================================================
+
+Payment & Commerce Integration
+├─ Khalti Payment Gateway
+│  ├─ Secure payment processing and encryption
+│  ├─ Multiple payment method support
+│  ├─ Fraud detection and prevention
+│  ├─ PCI DSS compliance and security
+│  └─ Payment analytics and reporting
+├─ E-commerce Features
+│  ├─ Shopping cart and checkout optimization
+│  ├─ Inventory management and tracking
+│  ├─ Order fulfillment and shipping
+│  ├─ Return and refund processing
+│  └─ Customer service and support
+└─ Financial Management
+   ├─ Revenue tracking and analytics
+   ├─ Commission and payout management
+   ├─ Tax calculation and compliance
+   ├─ Financial reporting and auditing
+   └─ Creator monetization and revenue sharing
+
+Firebase & Cloud Services
+├─ Firebase Core Services
+│  ├─ Authentication and user management
+│  ├─ Cloud Firestore database
+│  ├─ Cloud Storage for media and files
+│  ├─ Cloud Functions for server logic
+│  └─ Firebase Analytics and insights
+├─ Cloud Messaging & Notifications
+│  ├─ Firebase Cloud Messaging (FCM)
+│  ├─ Cross-platform notification delivery
+│  ├─ Rich notification content and actions
+│  ├─ Notification analytics and tracking
+│  └─ A/B testing for notification optimization
+└─ Performance & Monitoring
+   ├─ Firebase Performance Monitoring
+   ├─ Crashlytics for crash reporting
+   ├─ Remote Config for feature flagging
+   ├─ App Distribution for testing
+   └─ Firebase Test Lab for quality assurance
+
+Content Delivery & Media Management
+├─ Media Processing & Optimization
+│  ├─ Video transcoding and compression
+│  ├─ Image optimization and resizing
+│  ├─ Content delivery network (CDN)
+│  ├─ Adaptive bitrate streaming
+│  └─ Media caching and storage
+├─ Content Moderation & Safety
+│  ├─ Automated content scanning
+│  ├─ Community reporting and flagging
+│  ├─ Human moderation and review
+│  ├─ Content policy enforcement
+│  └─ Age-appropriate content filtering
+└─ Global Content Distribution
+   ├─ Multi-region content delivery
+   ├─ Localization and translation
+   ├─ Regional content adaptation
+   ├─ Compliance with local regulations
+   └─ Performance optimization by region

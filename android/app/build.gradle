@@ -1,0 +1,121 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+android {
+    namespace = "com.baakhapaa.com"
+    compileSdk = 36
+    // Use highest NDK version for 16 KB page size support (backward compatible)
+    ndkVersion = "28.2.13676358"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+        apiVersion = "1.8"
+        languageVersion = "1.8"
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.baakhapaa.com"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // minSdk = flutter.minSdkVersion
+        // local_auth_android requires API 24+
+        minSdkVersion = 24
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        multiDexEnabled true
+        // Support for 16 KB page size
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+        }
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            // signingConfig = signingConfigs.debug
+            signingConfig = signingConfigs.getByName("debug")
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // This can help identify which classes are actually missing
+            minifyEnabled true
+            shrinkResources true
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        jniLibs {
+            // Use uncompressed native libraries for 16 KB page size support
+            // Requires AGP 8.5.1+ which handles 16 KB alignment automatically
+            useLegacyPackaging = false
+        }
+    }
+
+    // Add this if you're getting dexing errors
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+    dependencies {
+        def camerax_version = "1.4.0"  // Updated version for 16 KB support
+        // coreLibraryDesugaringEnabled true  <--- REMOVE THIS LINE
+        coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4' // This one is correct
+        
+        implementation "androidx.camera:camera-core:${camerax_version}"
+        implementation "androidx.camera:camera-camera2:${camerax_version}"
+        implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+        implementation "androidx.camera:camera-video:${camerax_version}"
+        implementation "androidx.camera:camera-view:${camerax_version}"
+        implementation "androidx.camera:camera-extensions:${camerax_version}"
+
+        // Fix for EditorInfoCompat issue - add proper AndroidX Core version
+        implementation "androidx.core:core:1.12.0"
+        implementation "androidx.core:core-ktx:1.12.0"
+
+        // Update or add these Media3 dependencies
+        def media3_version = "1.1.1"
+        implementation "androidx.media3:media3-exoplayer:$media3_version"
+        implementation "androidx.media3:media3-exoplayer-dash:$media3_version"
+        implementation "androidx.media3:media3-ui:$media3_version"
+
+        // Add this to handle R8 optimization
+        implementation 'androidx.annotation:annotation:1.7.1'
+
+        // Update Segment Analytics to compliant version
+        implementation 'com.segment.analytics.android:analytics:4.10.1'
+
+        implementation 'org.slf4j:slf4j-simple:1.7.36'
+    }
+
+}
+
+flutter {
+    source = "../.."
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'com.google.errorprone:error_prone_annotations:2.15.0'
+        force 'androidx.core:core:1.13.0'
+        force 'androidx.core:core-ktx:1.13.0'
+    }
+}

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="14dp">
+
+    <!-- Flame icon + streak count -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.5"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/flame_icon"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/ic_widget_flame"
+            android:scaleType="fitCenter" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.4"
+            android:orientation="vertical"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:id="@+id/streak_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="52sp"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:lineSpacingMultiplier="0.9" />
+
+            <TextView
+                android:id="@+id/streak_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="day streak"
+                android:textSize="16sp"
+                android:textColor="#808080"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Stats row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="6dp">
+
+        <ImageView
+            android:id="@+id/doc_icon"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_widget_doc"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/chapters_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="0"
+            android:textSize="15sp"
+            android:textColor="#808080" />
+
+        <ImageView
+            android:id="@+id/books_icon"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/ic_widget_books"
+            android:layout_marginStart="14dp"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/books_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="0"
+            android:textSize="15sp"
+            android:textColor="#808080" />
+    </LinearLayout>
+
+    <!-- Spacer -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.3"
+        android:orientation="vertical" />
+
+    <!-- Streak encouragement -->
+    <TextView
+        android:id="@+id/streak_message"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.6"
+        android:text="Keep the streak going!"
+        android:textSize="15sp"
+        android:textColor="#FFC208"
+        android:textStyle="bold"
+        android:gravity="center_vertical"
+        android:visibility="gone" />
+
+    <!-- CTA button -->
+    <TextView
+        android:id="@+id/cta_start"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.7"
+        android:text="Start your streak!"
+        android:textSize="15sp"
+        android:textColor="#000000"
+        android:background="@drawable/widget_cta_bg"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:textStyle="bold"
+        android:visibility="visible" />
+
+    <!-- Last book row -->
+    <LinearLayout
+        android:id="@+id/last_book_row"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.6"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/book_icon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:src="@drawable/ic_widget_book"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/last_book_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:text=""
+            android:textSize="14sp"
+            android:textColor="#FFC208"
+            android:textStyle="bold"
+            android:ellipsize="end"
+            android:maxLines="1" />
+    </LinearLayout>
+
+</LinearLayout>

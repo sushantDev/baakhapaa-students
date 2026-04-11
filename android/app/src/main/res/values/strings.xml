@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Baakhapaa</string>
+    
+    <!-- Facebook Configuration -->
+    <!-- Replace with your actual Facebook App ID -->
+    <string name="facebook_app_id">591287309442411</string>
+    <!-- Replace with your actual Facebook Client Token -->
+    <string name="facebook_client_token">2ef357fe832f8f2f0ea2501cd7057dee</string>
+    <!-- Replace with your actual Facebook App ID -->
+    <string name="fb_login_protocol_scheme">fb591287309442411</string>
+    <string name="widget_description">Track your daily reading streak</string>
+</resources>

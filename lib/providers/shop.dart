@@ -142,6 +142,7 @@ class Shop with ChangeNotifier {
         productMap.forEach((key, value) {
           if (value is List) {
             _products[key.toString()] = value;
+            // ignore: unnecessary_cast
             DebugLogger.api('Vendor $key: ${(value as List).length} products');
           } else if (value is Map) {
             // Handle if value is a map instead of list
@@ -171,6 +172,7 @@ class Shop with ChangeNotifier {
 
       int totalProducts = 0;
       _products.forEach((key, value) {
+        // ignore: unnecessary_cast
         if (value is List) totalProducts += (value as List).length;
       });
 

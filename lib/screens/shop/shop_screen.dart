@@ -257,6 +257,7 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
           final vendorProducts = products[key];
           if (vendorProducts is List) {
             DebugLogger.info(
+                // ignore: unnecessary_cast
                 '  • Vendor $key: ${(vendorProducts as List).length} products');
           } else {
             DebugLogger.error(
@@ -1700,6 +1701,7 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
               'Invalid product type for vendor $key: ${value.runtimeType}');
           return SizedBox.shrink();
         }
+        // ignore: unnecessary_cast
         final vendorProducts = value as List;
         if (vendorProducts.isEmpty) {
           return SizedBox.shrink();

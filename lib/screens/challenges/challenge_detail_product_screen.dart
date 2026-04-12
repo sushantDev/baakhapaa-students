@@ -1291,12 +1291,12 @@ String _extractImageUrl(Map<String, dynamic> product) {
       if (path.startsWith('http')) {
         return path;
       }
-      return 'https://app.baakhapaa.com/storage/$path';
+      return 'https://student.baakhapaa.com/storage/$path';
     } else if (firstImage is String) {
       if (firstImage.startsWith('http')) {
         return firstImage;
       }
-      return 'https://app.baakhapaa.com/storage/$firstImage';
+      return 'https://student.baakhapaa.com/storage/$firstImage';
     }
   }
 

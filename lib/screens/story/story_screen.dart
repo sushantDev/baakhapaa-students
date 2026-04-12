@@ -1069,7 +1069,7 @@ class _StoryScreenState extends State<StoryScreen>
     if (gift['images'] != null && gift['images'].isNotEmpty) {
       // Use the same URL pattern as the working gift screen
       imageUrl =
-          'https://app.baakhapaa.com/storage/${gift['images'][0]['full']}';
+          'https://student.baakhapaa.com/storage/${gift['images'][0]['full']}';
     }
     final auth = Provider.of<Auth>(context, listen: false);
     return InkWell(

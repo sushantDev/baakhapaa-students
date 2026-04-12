@@ -267,7 +267,7 @@ class _MessagesScreenState extends State<MessagesScreen>
   //   try {
   //     channel = WebSocketChannel.connect(
   //       Uri.parse(
-  //           'ws://app.baakhapaa.com:6001/socket.io/?EIO=4&transport=websocket'),
+  //           'ws://student.baakhapaa.com:6001/socket.io/?EIO=4&transport=websocket'),
   //     );
   //     await channel.ready;
   //     DebugLogger.info('WebSocket connection established');
@@ -296,7 +296,7 @@ class _MessagesScreenState extends State<MessagesScreen>
   //   try {
   //     // Create a Socket.IO connection
   //     IO.Socket socket = IO.io(
-  //         'http://app.baakhapaa.com:6001',
+  //         'http://student.baakhapaa.com:6001',
   //         IO.OptionBuilder()
   //             .setTransports(['websocket']) // Use WebSocket transport
   //             .enableAutoConnect() // Enable auto-connect

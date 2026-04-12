@@ -265,10 +265,10 @@ class _VendorProductTypeScreenState extends State<VendorProductTypeScreen>
         final path = images[0]['full']?.toString();
         if (path != null) {
           // Base URL for product images
-          imageUrl = 'https://app.baakhapaa.com/storage/$path';
+          imageUrl = 'https://student.baakhapaa.com/storage/$path';
         }
       } else if (images[0] is String) {
-        imageUrl = 'https://app.baakhapaa.com/storage/${images[0]}';
+        imageUrl = 'https://student.baakhapaa.com/storage/${images[0]}';
       }
     }
 

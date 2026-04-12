@@ -740,7 +740,7 @@ When fetching shorts via `GET /api/shorts_v2`, the response includes:
             "id": 456,
             "title": "Gaming Mouse Pro",
             "coin": 5000,
-            "image": "https://app.baakhapaa.com/storage/..."
+            "image": "https://student.baakhapaa.com/storage/..."
           },
           {
             "id": 457,

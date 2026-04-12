@@ -10,7 +10,7 @@
 2. **Added Channel Authorization**
 
    - Implemented `onAuthorizer` callback in PusherService
-   - Calls Laravel backend at `https://app.baakhapaa.com/broadcasting/auth`
+   - Calls Laravel backend at `https://student.baakhapaa.com/broadcasting/auth`
    - Passes user's Bearer token for authentication
 
 3. **Updated Initialization**
@@ -37,7 +37,7 @@ When app starts, you should see:
 ✅ Pusher: Connected
 🔌 Pusher: Subscribing to channel: private-user.2
 🔐 Pusher: Authorizing channel private-user.2 with socket XXXXX
-🔐 Pusher: POST https://app.baakhapaa.com/broadcasting/auth
+🔐 Pusher: POST https://student.baakhapaa.com/broadcasting/auth
    Headers: {Authorization: Bearer YOUR_TOKEN}
    Body: {socket_id: XXXXX, channel_name: private-user.2}
 🔐 Pusher: Response status: 200

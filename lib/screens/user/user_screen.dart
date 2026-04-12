@@ -457,6 +457,25 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     return visibility['view_count'] ?? true;
   }
 
+  // Helper method to convert role to display name
+  String _getRoleDisplayName(dynamic role) {
+    if (role == null) return 'Student';
+    final roleStr = role.toString().toLowerCase().trim();
+    switch (roleStr) {
+      case 'creator':
+        return 'Teacher';
+      case 'player':
+        return 'Student';
+      case 'vendor':
+        return 'Vendor';
+      default:
+        return roleStr.replaceAllMapped(
+          RegExp(r'(^\w|\s\w)'),
+          (match) => match.group(0)!.toUpperCase(),
+        );
+    }
+  }
+
   Future<void> _loadAchievementsAndChallenges() async {
     var auth = Provider.of<Auth>(context, listen: false);
 
@@ -1453,26 +1472,20 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         Row(
                           children: [
                             Text(
-                              (_user['role'] ?? 'Player')
-                                  .toString()
-                                  .replaceAllMapped(
-                                    RegExp(r'(^\w|\s\w)'),
-                                    (match) => match.group(0)!.toUpperCase(),
-                                  ),
+                              _getRoleDisplayName(_user['role']),
                               style: TextStyle(
                                 color: const Color.fromARGB(255, 175, 114, 186),
                                 fontSize: 12,
                               ),
                             ),
-                            if (_user['role'] == 'creator')
-                              Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Icon(
-                                  Icons.video_camera_front,
-                                  color: Colors.white,
-                                  size: 12,
-                                ),
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Icon(
+                                Icons.video_camera_front,
+                                color: Colors.white,
+                                size: 12,
                               ),
+                            ),
                           ],
                         ),
                         _buildActionButtons(),

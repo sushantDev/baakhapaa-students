@@ -563,12 +563,12 @@ STRIPE_CURRENCY=usd
 
 ### Stripe Dashboard Setup
 
-- Set webhook URL: `https://app.baakhapaa.com/api/stripe/webhook`
+- Set webhook URL: `https://student.baakhapaa.com/api/stripe/webhook`
 - Events to listen for: `payment_intent.succeeded`, `payment_intent.payment_failed`
 
 ### Flutter
 
-No new env vars needed. API base URL auto-resolves to `https://app.baakhapaa.com/api`. Stripe publishable key is received dynamically from the backend in `create-payment-intent` response.
+No new env vars needed. API base URL auto-resolves to `https://student.baakhapaa.com/api`. Stripe publishable key is received dynamically from the backend in `create-payment-intent` response.
 
 ---
 

@@ -1339,7 +1339,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
     // Construct full product image URL
     final String? fullProductImageUrl = productImageUrl != null
         ? (productImageUrl.startsWith('storage/')
-            ? 'https://app.baakhapaa.com/storage/$productImageUrl'
+            ? 'https://student.baakhapaa.com/storage/$productImageUrl'
             : productImageUrl)
         : null;
 
@@ -1789,7 +1789,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                   final int productId = product['id'] ?? 0;
                   final String fullImageUrl = imageUrl.isNotEmpty
                       ? (imageUrl.startsWith('storage/')
-                          ? 'https://app.baakhapaa.com/storage/$imageUrl'
+                          ? 'https://student.baakhapaa.com/storage/$imageUrl'
                           : imageUrl)
                       : '';
 

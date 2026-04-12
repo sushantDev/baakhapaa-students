@@ -706,9 +706,9 @@ class PuppetInteractionProvider with ChangeNotifier {
             String path = fullPath.toString();
             // The full path might already include 'storage/', so handle both cases
             if (path.startsWith('storage/')) {
-              return 'https://app.baakhapaa.com/$path';
+              return 'https://student.baakhapaa.com/$path';
             } else {
-              return 'https://app.baakhapaa.com/storage/$path';
+              return 'https://student.baakhapaa.com/storage/$path';
             }
           }
         }

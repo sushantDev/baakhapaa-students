@@ -379,7 +379,7 @@ public function completeChallenge(Request $request)
 ### 1. Test API Endpoint
 
 ```bash
-curl -X GET "https://app.baakhapaa.com/api/levels/user-progress" \
+curl -X GET "https://student.baakhapaa.com/api/levels/user-progress" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Accept: application/json"
 ```
@@ -387,7 +387,7 @@ curl -X GET "https://app.baakhapaa.com/api/levels/user-progress" \
 ### 2. Test Hint Generation
 
 ```bash
-curl -X POST "https://app.baakhapaa.com/api/puppet-interactions/generate-level-hint" \
+curl -X POST "https://student.baakhapaa.com/api/puppet-interactions/generate-level-hint" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Accept: application/json"
 ```

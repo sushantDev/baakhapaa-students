@@ -2949,7 +2949,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                         itemBuilder: (context, index) {
                           final product = allProducts[index];
                           final String imageUrl =
-                              'https://app.baakhapaa.com/storage/' +
+                              'https://student.baakhapaa.com/storage/' +
                                   product['image_url'];
                           final int productId = product['id'] ?? 0;
                           final bool isPurchased =
@@ -3575,7 +3575,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                             child: imageUrl.isNotEmpty
                                 ? Image.network(
                                     imageUrl.startsWith('storage/')
-                                        ? 'https://app.baakhapaa.com/storage/$imageUrl'
+                                        ? 'https://student.baakhapaa.com/storage/$imageUrl'
                                         : imageUrl,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) {

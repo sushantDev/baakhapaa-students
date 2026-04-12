@@ -81,22 +81,108 @@ class Shop with ChangeNotifier {
 
   Future<void> getAllProducts() async {
     try {
+      final url = Url.baakhapaaApi('/products');
+      DebugLogger.api('Fetching shop products from: $url');
+
       final response = await http.get(
-        Uri.parse(Url.baakhapaaApi('/products')),
+        Uri.parse(url),
         headers: Url.baakhapaaAuthHeaders(authToken),
       );
 
-      var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      if (responseData['success'] == true) {
-        _shop = responseData['data']['items'] as Map<String, dynamic>;
-        _products = _shop['product'] as Map<String, dynamic>;
-        _gifts = _shop['gift'] as Map<String, dynamic>;
+      DebugLogger.api('Shop API response status: ${response.statusCode}');
+
+      if (response.statusCode != 200) {
+        DebugLogger.error('Shop API returned status ${response.statusCode}');
+        _products = {};
+        _gifts = {};
         notifyListeners();
-      } else {
-        throw ('Error');
+        return;
       }
-    } catch (error) {
-      throw error;
+
+      var responseData = json.decode(utf8.decode(response.bodyBytes));
+      DebugLogger.api(
+          'Shop API response keys: ${responseData.keys.toString()}');
+
+      // Try multiple response patterns
+      Map<String, dynamic> items = {};
+
+      if (responseData['success'] == true && responseData['data'] != null) {
+        final data = responseData['data'];
+        if (data is Map) {
+          // Pattern 1: data.items (most common)
+          if (data['items'] is Map) {
+            items = data['items'] as Map<String, dynamic>;
+            DebugLogger.api('✅ Matched pattern: data.items is Map');
+          }
+          // Pattern 2: data is the items directly
+          else {
+            items = data as Map<String, dynamic>;
+            DebugLogger.api('✅ Matched pattern: data is Map');
+          }
+        }
+      } else if (responseData is Map && !responseData.containsKey('success')) {
+        // API might not use 'success' field
+        if (responseData['data'] is Map) {
+          items = responseData['data'] as Map<String, dynamic>;
+          DebugLogger.api(
+              '✅ Matched pattern: response.data is Map (no success field)');
+        } else if (responseData['items'] is Map) {
+          items = responseData['items'] as Map<String, dynamic>;
+          DebugLogger.api('✅ Matched pattern: response.items is Map');
+        }
+      }
+
+      // Parse products and gifts from items
+      _shop = items;
+      _products = {};
+      _gifts = {};
+
+      if (items['product'] is Map) {
+        final productMap = items['product'] as Map;
+        productMap.forEach((key, value) {
+          if (value is List) {
+            _products[key.toString()] = value;
+            DebugLogger.api('Vendor $key: ${(value as List).length} products');
+          } else if (value is Map) {
+            // Handle if value is a map instead of list
+            _products[key.toString()] = [value];
+            DebugLogger.api('Vendor $key: 1 product (from map)');
+          }
+        });
+      } else if (items['products'] is Map) {
+        final productMap = items['products'] as Map;
+        productMap.forEach((key, value) {
+          if (value is List) {
+            _products[key.toString()] = value;
+          }
+        });
+      }
+
+      if (items['gift'] is Map) {
+        final giftMap = items['gift'] as Map;
+        giftMap.forEach((key, value) {
+          if (value is List) {
+            _gifts[key.toString()] = value;
+          }
+        });
+      }
+
+      notifyListeners();
+
+      int totalProducts = 0;
+      _products.forEach((key, value) {
+        if (value is List) totalProducts += (value as List).length;
+      });
+
+      DebugLogger.success(
+          '✅ Shop API loaded successfully! ${_products.length} vendors, $totalProducts total products');
+    } catch (error, stackTrace) {
+      DebugLogger.error('Shop getAllProducts exception: $error');
+      DebugLogger.error('Stack trace: $stackTrace');
+      // Set empty data on error to prevent stuck loading state
+      _products = {};
+      _gifts = {};
+      notifyListeners();
     }
   }
 

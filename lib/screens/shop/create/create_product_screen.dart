@@ -471,7 +471,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
-                      'https://app.baakhapaa.com/storage/$url',
+                      'https://student.baakhapaa.com/storage/$url',
                       width: 90,
                       height: 90,
                       fit: BoxFit.cover,
@@ -720,7 +720,7 @@ class _CreateProductScreenState extends State<CreateProductScreen> {
                             )
                           else if (v.existingImageUrl != null)
                             Image.network(
-                              'https://app.baakhapaa.com/storage/${v.existingImageUrl}',
+                              'https://student.baakhapaa.com/storage/${v.existingImageUrl}',
                               width: 60,
                               height: 60,
                               fit: BoxFit.cover,

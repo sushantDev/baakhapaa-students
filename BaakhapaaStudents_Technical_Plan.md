@@ -37,7 +37,7 @@ Fork both the Laravel backend and Flutter app into separate repos per school. Co
 
 ### Infrastructure options (pick per school budget)
 
-- **Option A — Same server, new DB:** New subdomain `school1.app.baakhapaa.com`, new MySQL DB `baakhapaa_school1`, new Nginx vhost, shared Redis/queue pool. Lower cost.
+- **Option A — Same server, new DB:** New subdomain `school1.student.baakhapaa.com`, new MySQL DB `baakhapaa_school1`, new Nginx vhost, shared Redis/queue pool. Lower cost.
 - **Option B — Separate VPS:** New DigitalOcean Droplet, own DB, own SSL, fully isolated. Higher cost, zero blast radius.
 
 ### New migrations

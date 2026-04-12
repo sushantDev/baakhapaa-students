@@ -705,7 +705,7 @@ When fetching shorts via `GET /api/shorts_v2`, the response includes complex lin
             "id": 456,
             "title": "Gaming Mouse Pro",
             "coin": 5000,
-            "image": "https://app.baakhapaa.com/storage/products/456/thumb.jpg"
+            "image": "https://student.baakhapaa.com/storage/products/456/thumb.jpg"
           }
         ]
       },

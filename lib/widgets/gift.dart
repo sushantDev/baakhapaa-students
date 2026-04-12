@@ -108,7 +108,7 @@ class GiftItem extends StatelessWidget {
           RegExp(r'^(storage/storage/)+'), 'storage/');
       normalizedPath = normalizedPath.replaceFirst(RegExp(r'^storage/'), '');
 
-      return 'https://app.baakhapaa.com/storage/storage/$normalizedPath';
+      return 'https://student.baakhapaa.com/storage/storage/$normalizedPath';
     } catch (e) {
       DebugLogger.info('Error parsing gift image URL: $e');
       return 'https://baakhapaa.com/images/logo.png';

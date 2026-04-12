@@ -935,7 +935,7 @@ class _GiftScreenState extends State<GiftScreen> with PuppetInteractionMixin {
           normalizedPath =
               normalizedPath.replaceFirst(RegExp(r'^storage/'), '');
           imageUrl =
-              'https://app.baakhapaa.com/storage/storage/$normalizedPath';
+              'https://student.baakhapaa.com/storage/storage/$normalizedPath';
         }
       }
     } catch (e) {

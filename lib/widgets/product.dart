@@ -349,7 +349,7 @@ class ProductItem extends StatelessWidget {
         RegExp(r'^(storage/storage/)+'), 'storage/');
     normalizedPath = normalizedPath.replaceFirst(RegExp(r'^storage/'), '');
 
-    return 'https://app.baakhapaa.com/storage/storage/$normalizedPath';
+    return 'https://student.baakhapaa.com/storage/storage/$normalizedPath';
   }
 
   int? _normalizedId() {
@@ -1107,7 +1107,7 @@ class _QuickBuyDialogState extends State<QuickBuyDialog> {
 
       // Create cart items map for single product
       final imageUrl =
-          'https://app.baakhapaa.com/storage/storage/${json.decode(json.encode(widget.item['images']))[0]['full']}';
+          'https://student.baakhapaa.com/storage/storage/${json.decode(json.encode(widget.item['images']))[0]['full']}';
       Map<String, CartItem> cartItems = {
         widget.item['id'].toString(): CartItem(
           id: widget.item['id'].toString(),

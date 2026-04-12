@@ -206,7 +206,7 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
 
   String get productImageUrl {
     final images = json.encode(gift['images']);
-    return 'https://app.baakhapaa.com/storage/${json.decode(images)[0]['full']}';
+    return 'https://student.baakhapaa.com/storage/${json.decode(images)[0]['full']}';
   }
 
   // Helper function to parse boolean values from different data types
@@ -429,7 +429,7 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
                         ),
                         child: CachedNetworkImage(
                           imageUrl:
-                              'https://app.baakhapaa.com/storage/${image['full']}',
+                              'https://student.baakhapaa.com/storage/${image['full']}',
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
                             decoration: BoxDecoration(

@@ -618,7 +618,7 @@ class _LevelMapScreenState extends State<LevelMapScreen> {
               final images = match['images'];
               if (images != null && images is List && images.isNotEmpty) {
                 imageUrl =
-                    'https://app.baakhapaa.com/storage/${images[0]['full']}';
+                    'https://student.baakhapaa.com/storage/${images[0]['full']}';
               }
             }
           } else if (options == 'challenge') {

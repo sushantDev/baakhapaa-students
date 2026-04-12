@@ -94,7 +94,7 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
 
       final response = await http.get(
         Uri.parse(
-          'https://app.baakhapaa.com/api/products/filter?sort=$sortParam',
+          'https://student.baakhapaa.com/api/products/filter?sort=$sortParam',
         ),
         headers: headers,
       );
@@ -219,7 +219,10 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
           _productSliders = _productProvider.productSliders;
         });
       }
+    }).catchError((e) {
+      DebugLogger.error('Error fetching product slider: $e');
     });
+
     // Fetch For You products from API
     _productProvider.getForYouProducts().then((_) {
       if (mounted) {
@@ -227,17 +230,57 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
           // Trigger rebuild when forYou products are loaded
         });
       }
+    }).catchError((e) {
+      DebugLogger.error('Error fetching for-you products: $e');
     });
-    Provider.of<Shop>(context, listen: false).getAllProducts().then((_) {
+
+    // Fetch all products with timeout protection
+    Provider.of<Shop>(context, listen: false)
+        .getAllProducts()
+        .timeout(Duration(seconds: 10), onTimeout: () async {
+      DebugLogger.error('getAllProducts timed out after 10 seconds');
       if (mounted) {
         setState(() {
-          products = Provider.of<Shop>(context, listen: false).products;
-          productKeys = products.keys.toList();
           _isLoading = true;
+          products = {};
+          productKeys = [];
+        });
+      }
+    }).then((_) {
+      if (mounted) {
+        final shop = Provider.of<Shop>(context, listen: false);
+        products = shop.products;
+        productKeys = products.keys.toList();
+
+        DebugLogger.info('📦 Products received: ${productKeys.length} vendors');
+        productKeys.forEach((key) {
+          final vendorProducts = products[key];
+          if (vendorProducts is List) {
+            DebugLogger.info(
+                '  • Vendor $key: ${(vendorProducts as List).length} products');
+          } else {
+            DebugLogger.error(
+                '  ❌ Vendor $key has invalid type: ${vendorProducts.runtimeType}');
+          }
+        });
+
+        setState(() {
+          _isLoading = true;
+          DebugLogger.success('✅ Shop screen UI updated');
         });
 
         // Refresh puppet suggestions when products load
         refreshPuppetSuggestions();
+      }
+    }).catchError((e) {
+      if (mounted) {
+        DebugLogger.error('Error fetching all products: $e');
+        setState(() {
+          // Still set loading to true to show empty state even on error
+          _isLoading = true;
+          products = {};
+          productKeys = [];
+        });
       }
     });
   }
@@ -287,8 +330,11 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
                             // Active Filters Section
                             if (filtered.isNotEmpty) _buildActiveFilters(),
 
-                            // Products Section
-                            _buildProductsSection(),
+                            // Products Section or Empty State
+                            if (productKeys.isNotEmpty)
+                              _buildProductsSection()
+                            else
+                              _buildEmptyState(),
                           ] else ...[
                             // Show sorted/filtered products (API-based filters)
                             _buildSortedProductsSection(),
@@ -1647,8 +1693,22 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
 // Method to build all vendor sections
   List<Widget> _buildAllVendorSections() {
     return productKeys.map((key) {
-      final vendorProducts = products[key] as List;
-      return _buildVendorSection(vendorProducts);
+      try {
+        final value = products[key];
+        if (value is! List) {
+          DebugLogger.error(
+              'Invalid product type for vendor $key: ${value.runtimeType}');
+          return SizedBox.shrink();
+        }
+        final vendorProducts = value as List;
+        if (vendorProducts.isEmpty) {
+          return SizedBox.shrink();
+        }
+        return _buildVendorSection(vendorProducts);
+      } catch (e) {
+        DebugLogger.error('Error building vendor section for $key: $e');
+        return SizedBox.shrink();
+      }
     }).toList();
   }
 
@@ -1986,6 +2046,41 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
       ),
     );
   }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 60),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.shopping_bag_outlined,
+              size: 80,
+              color: Colors.grey[600],
+            ),
+            SizedBox(height: 16),
+            Text(
+              'No Products Available',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[400],
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Check back soon for new products!',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // Compact "For You" card style with dark theme and discount badge
@@ -2042,7 +2137,7 @@ class _ForYouCard extends StatelessWidget {
         RegExp(r'^(storage/storage/)+'), 'storage/');
     normalizedPath = normalizedPath.replaceFirst(RegExp(r'^storage/'), '');
 
-    return 'https://app.baakhapaa.com/storage/$normalizedPath';
+    return 'https://student.baakhapaa.com/storage/$normalizedPath';
   }
 
   bool _hasDiscount() {

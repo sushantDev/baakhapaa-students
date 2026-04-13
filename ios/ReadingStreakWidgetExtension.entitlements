@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.baakhapaa.com</string>
+		<string>group.com.baakhapaa.student</string>
 	</array>
 </dict>
 </plist>

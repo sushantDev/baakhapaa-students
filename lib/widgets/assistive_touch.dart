@@ -248,6 +248,47 @@ class _AssistiveTouchState extends State<AssistiveTouch>
     if (mounted) {
       _startMessageSequence();
     }
+
+    // Listen for puppet message changes so multi-message puppets (e.g. those
+    // with a level hint) are cycled through automatically.
+    final assistiveProvider =
+        Provider.of<AssistiveTouchProvider>(context, listen: false);
+    assistiveProvider.addListener(_onAssistiveTouchChanged);
+  }
+
+  bool _lastShowMessage = false;
+
+  void _onAssistiveTouchChanged() {
+    if (!mounted) return;
+    final provider =
+        Provider.of<AssistiveTouchProvider>(context, listen: false);
+    final showing = provider.showMessage;
+    final msgs = provider.messages;
+
+    // When a new puppet message appears with multiple messages, start cycling.
+    if (showing && !_lastShowMessage && msgs.length > 1) {
+      messageTimer?.cancel();
+      currentMessageIndex = 0;
+      messageTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
+        if (currentMessageIndex < msgs.length - 1) {
+          setState(() => currentMessageIndex++);
+        } else {
+          timer.cancel();
+        }
+      });
+    }
+
+    // Reset index when message is cleared.
+    if (!showing && _lastShowMessage) {
+      messageTimer?.cancel();
+      setState(() => currentMessageIndex = 0);
+    }
+
+    _lastShowMessage = showing;
   }
 
   void _setupPusherEventListener(RewardsProvider rewardsProvider) {
@@ -1844,6 +1885,12 @@ class _AssistiveTouchState extends State<AssistiveTouch>
 
   @override
   void dispose() {
+    // Remove provider listener added in _initializeProvider
+    try {
+      final provider =
+          Provider.of<AssistiveTouchProvider>(context, listen: false);
+      provider.removeListener(_onAssistiveTouchChanged);
+    } catch (_) {}
     messageTimer?.cancel();
     _visibilityTimer?.cancel();
     _rewardStreamSubscription?.cancel();

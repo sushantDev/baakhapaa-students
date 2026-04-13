@@ -389,156 +389,223 @@ class _ConversationsScreenState extends State<ConversationsScreen>
     final lastMessage = conversation['lastMessage'] ?? '';
     final time = conversation['time'] ?? '';
     final displayName = name.isNotEmpty ? name : username;
+    final conversationId = conversation['conversation_id'] as int;
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
+    return Dismissible(
+      key: ValueKey(conversationId),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.red.shade600,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: InkWell(
-          onTap: () {
-            Navigator.pushNamed(
-              context,
-              MessagesScreen.routeName,
-              arguments: {
-                'conversation_id': conversation['conversation_id'],
-                'user_name': displayName,
-              },
-            );
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Profile picture with modern styling
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Colors.amber, Colors.orange],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.amber.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                      padding: EdgeInsets.all(2),
-                      child: ClipOval(
-                        child: userImage.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: userImage,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  color: Colors.amber.withValues(alpha: 0.1),
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Colors.amber,
-                                    size: 30,
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: Colors.amber.withValues(alpha: 0.1),
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Colors.amber,
-                                    size: 30,
-                                  ),
-                                ),
-                              )
-                            : Container(
-                                color: Colors.amber.withValues(alpha: 0.1),
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.amber,
-                                  size: 30,
-                                ),
-                              ),
-                      ),
-                    ),
-                    // Online indicator (you can add logic for this)
-                    Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Theme.of(context).cardColor,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(width: 16),
-
-                // Conversation details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.only(right: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.delete_outline, color: Colors.white, size: 28),
+            SizedBox(height: 4),
+            Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+      confirmDismiss: (_) async {
+        return await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: Text('Delete Conversation'),
+                content: Text(
+                    'Delete chat with $displayName? This only removes it from your account.'),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: Text('Delete'),
+                  ),
+                ],
+              ),
+            ) ??
+            false;
+      },
+      onDismissed: (_) async {
+        setState(() {
+          _conversations
+              .removeWhere((c) => c['conversation_id'] == conversationId);
+        });
+        try {
+          final auth = Provider.of<Auth>(context, listen: false);
+          await auth.deleteConversation(conversationId);
+        } catch (_) {
+          // If API call fails, re-fetch to restore correct state
+          _initializeData();
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: InkWell(
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                MessagesScreen.routeName,
+                arguments: {
+                  'conversation_id': conversation['conversation_id'],
+                  'user_name': displayName,
+                },
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Profile picture with modern styling
+                  Stack(
+                    alignment: Alignment.bottomRight,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              displayName,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Colors.amber, Colors.orange],
                           ),
-                          Text(
-                            _formatTime(time),
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.amber.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              spreadRadius: 1,
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        lastMessage,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                          height: 1.3,
+                          ],
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        padding: EdgeInsets.all(2),
+                        child: ClipOval(
+                          child: userImage.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: userImage,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.amber.withValues(alpha: 0.1),
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.amber,
+                                      size: 30,
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                    color: Colors.amber.withValues(alpha: 0.1),
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.amber,
+                                      size: 30,
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  color: Colors.amber.withValues(alpha: 0.1),
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Colors.amber,
+                                    size: 30,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      // Online indicator (you can add logic for this)
+                      Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Theme.of(context).cardColor,
+                            width: 2,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
+                  SizedBox(width: 16),
 
-                SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey[400],
-                ),
-              ],
+                  // Conversation details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                displayName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              _formatTime(time),
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          lastMessage,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(width: 8),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.grey[400],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      ), // end of Container (child of Dismissible)
+    ); // end of Dismissible
   }
 
   @override

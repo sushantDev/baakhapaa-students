@@ -19,8 +19,7 @@ class TutorialIndicator extends StatefulWidget {
 class _TutorialIndicatorState extends State<TutorialIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  // ignore: unused_field
-  late Animation<Offset> _slideAnimation;
+  // late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -30,13 +29,13 @@ class _TutorialIndicatorState extends State<TutorialIndicator>
       duration: Duration(milliseconds: 1000),
     )..repeat(reverse: true);
 
-    _slideAnimation = Tween<Offset>(
-      begin: Offset(-0.3, 0.0),
-      end: Offset(0.3, 0.0),
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOutSine,
-    ));
+    // _slideAnimation = Tween<Offset>(
+    //   begin: Offset(-0.3, 0.0),
+    //   end: Offset(0.3, 0.0),
+    // ).animate(CurvedAnimation(
+    //   parent: _animationController,
+    //   curve: Curves.easeInOutSine,
+    // ));
   }
 
   @override
@@ -47,7 +46,14 @@ class _TutorialIndicatorState extends State<TutorialIndicator>
 
   @override
   Widget build(BuildContext context) {
-    // Tutorial pointer is intentionally hidden
-    return const SizedBox.shrink();
+    return Container();
+    // SlideTransition(
+    //   position: _slideAnimation,
+    //   child: Icon(
+    //     Icons.touch_app_rounded,
+    //     size: widget.size,
+    //     color: widget.color.withValues(alpha: widget.opacity),
+    //   ),
+    // );
   }
 }

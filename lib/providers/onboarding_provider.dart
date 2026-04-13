@@ -7,7 +7,33 @@ class OnboardingProvider with ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  List<OnboardingSlide> get slides => localSlides;
+  List<OnboardingSlide> get slides => _normalizeStepNumbers(localSlides);
+
+  /// Remaps [stepNumber] and [totalSteps] on every slide so the displayed
+  /// step counter always reflects reality, regardless of which slides are
+  /// commented-out in [localSlides].
+  ///
+  /// Multiple slides that share the same original [stepNumber] are treated as
+  /// a single logical step (e.g. an auto-advance gif followed by its caption).
+  static List<OnboardingSlide> _normalizeStepNumbers(
+      List<OnboardingSlide> raw) {
+    // Collect unique stepNumber values in order of first appearance.
+    final uniqueSteps = <int>[];
+    for (final s in raw) {
+      final sn = s.stepNumber;
+      if (sn != null && !uniqueSteps.contains(sn)) uniqueSteps.add(sn);
+    }
+    if (uniqueSteps.isEmpty) return raw;
+    final total = uniqueSteps.length;
+    final stepMap = <int, int>{
+      for (var i = 0; i < uniqueSteps.length; i++) uniqueSteps[i]: i + 1
+    };
+    return raw.map((s) {
+      final sn = s.stepNumber;
+      if (sn == null) return s;
+      return s.copyWith(stepNumber: stepMap[sn], totalSteps: total);
+    }).toList();
+  }
 
   /// CDN base path for all onboarding assets.
   static const _cdn =

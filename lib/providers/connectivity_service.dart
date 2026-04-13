@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../utils/debug_logger.dart';
 
-class ConnectivityService with ChangeNotifier {
+class ConnectivityService with ChangeNotifier, WidgetsBindingObserver {
   bool _isConnected = true;
   bool _hasCheckedInitially = false;
   bool _hasActualInternet = true;
@@ -18,9 +18,18 @@ class ConnectivityService with ChangeNotifier {
   bool get hasCheckedInitially => _hasCheckedInitially;
 
   ConnectivityService() {
+    WidgetsBinding.instance.addObserver(this);
     _initConnectivity();
     _setupConnectivityListener();
     _startPeriodicInternetCheck();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      DebugLogger.info('📡 App resumed — triggering connectivity check');
+      checkNow();
+    }
   }
 
   Future<void> _initConnectivity() async {
@@ -137,6 +146,7 @@ class ConnectivityService with ChangeNotifier {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _connectivitySubscription?.cancel();
     _periodicInternetCheck?.cancel();
     super.dispose();

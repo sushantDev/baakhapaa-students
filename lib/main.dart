@@ -908,6 +908,8 @@ class _MyAppState extends State<MyApp> {
                           child ?? const SizedBox.shrink(),
                           // Global event listener for Pusher/FCM (replaces floating AssistiveTouch)
                           _GlobalEventListener(mainNavKey: mainNavigatorKey),
+                          // Quest guidance hint — below header, pointing to puppet
+                          const QuestHintBubble(),
                           // Bottom-of-screen puppet speech bubble
                           const PuppetSpeechOverlay(),
                         ],
@@ -1085,6 +1087,35 @@ class _GlobalEventListenerState extends State<_GlobalEventListener> {
 
     // Listen to FCM notification events
     _fcmSub = rewardNotificationStream.stream.listen(_handleFcmEvent);
+
+// First-launch onboarding: show quest hint pointing to header puppet
+    _showFirstLaunchQuestIntroIfNeeded();
+  }
+
+  /// Shows a golden speech bubble below the header on first launch, teaching
+  /// the user that the puppet icon leads to their quests.
+  void _showFirstLaunchQuestIntroIfNeeded() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final alreadyShown = prefs.getBool('puppet_quest_intro_shown') ?? false;
+      if (alreadyShown) return;
+
+      final auth = Provider.of<Auth>(context, listen: false);
+      if (!auth.isAuth) return;
+
+      // Delay so the app has fully rendered before showing the hint
+      await Future.delayed(const Duration(seconds: 3));
+      if (!mounted) return;
+
+      final provider =
+          Provider.of<AssistiveTouchProvider>(context, listen: false);
+      provider.showQuestGuidance(
+        '👆 Tap the puppet here to see your quests and level up!',
+        seconds: 10,
+      );
+
+      await prefs.setBool('puppet_quest_intro_shown', true);
+    } catch (_) {}
   }
 
   void _handlePusherEvent(PusherEventData event) {
@@ -1134,7 +1165,8 @@ class _GlobalEventListenerState extends State<_GlobalEventListener> {
     required IconData icon,
   }) {
     if (!mounted) return;
-    final overlay = Overlay.of(context);
+    final overlay = widget.mainNavKey.currentState?.overlay;
+    if (overlay == null) return;
 
     late OverlayEntry entry;
     entry = OverlayEntry(

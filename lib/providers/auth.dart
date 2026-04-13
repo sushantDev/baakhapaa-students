@@ -1925,6 +1925,15 @@ class Auth with ChangeNotifier {
     }
   }
 
+  Future<void> deleteConversation(int conversationId) async {
+    await http.delete(
+      Uri.parse(Url.baakhapaaApi('/conversations/$conversationId')),
+      headers: Url.baakhapaaAuthHeaders(_token),
+    );
+    _conversations.removeWhere((c) => c['conversation_id'] == conversationId);
+    notifyListeners();
+  }
+
   Future<void> getUnreadMessageCount() async {
     try {
       final response = await http.get(

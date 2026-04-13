@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.view.View
 import android.widget.RemoteViews
+import com.baakhapaa.student.R
 
 class ReadingStreakWidget : AppWidgetProvider() {
 

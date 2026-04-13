@@ -7,6 +7,231 @@ import '../providers/auth.dart';
 import '../models/url.dart';
 import '../main.dart' show mainNavigatorKey;
 
+// ═══════════════════════════════════════════════════════════════════════
+// QuestHintBubble — header-pinned yellow speech bubble pointing to puppet
+// ═══════════════════════════════════════════════════════════════════════
+
+/// Renders a yellow-bordered speech bubble just below the AppBar,
+/// with a triangular tail pointing up-left toward the header puppet icon.
+/// Shown after quest-tap navigation and on first launch.
+class QuestHintBubble extends StatelessWidget {
+  const QuestHintBubble({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector<AssistiveTouchProvider, (bool, String?)>(
+      selector: (_, p) => (p.showQuestHint, p.questHint),
+      builder: (context, data, _) {
+        final showing = data.$1;
+        final message = data.$2;
+        if (!showing || message == null || message.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        final topPad = MediaQuery.of(context).padding.top;
+        // AppBar height is 57 (toolbarHeight in header.dart)
+        const appBarH = 57.0;
+        return Positioned(
+          top: topPad + appBarH,
+          left: 8,
+          right: 8,
+          child: _QuestHintBar(
+            key: ValueKey(message),
+            message: message,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _QuestHintBar extends StatefulWidget {
+  final String message;
+
+  const _QuestHintBar({Key? key, required this.message}) : super(key: key);
+
+  @override
+  State<_QuestHintBar> createState() => _QuestHintBarState();
+}
+
+class _QuestHintBarState extends State<_QuestHintBar>
+    with SingleTickerProviderStateMixin {
+  static const _kAccent = Color(0xFFF4B625);
+  static const _kBg = Color(0xFF1A1400);
+
+  late AnimationController _ctrl;
+  late Animation<Offset> _slideAnim;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    );
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, -1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    _fadeAnim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _dismiss() {
+    _ctrl.reverse().then((_) {
+      if (!mounted) return;
+      context.read<AssistiveTouchProvider>().clearQuestHint();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnim,
+      child: SlideTransition(
+        position: _slideAnim,
+        child: Material(
+          color: Colors.transparent,
+          // Stack: arrow sits above (-8px) the container body to form tail
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // ── Arrow tail pointing UP-LEFT toward header puppet ──
+              // Header puppet center ≈ x=29 from screen edge.
+              // Bubble starts at left=8, so arrow left offset = 29 - 8 - 8 = 13.
+              Positioned(
+                left: 13,
+                top: -8,
+                child: CustomPaint(
+                  size: const Size(18, 10),
+                  painter: _UpArrowPainter(),
+                ),
+              ),
+
+              // ── Bubble body ──
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+                decoration: BoxDecoration(
+                  color: _kBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _kAccent, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _kAccent.withValues(alpha: 0.25),
+                      blurRadius: 14,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Pulsing star icon
+                    _PulsingIcon(),
+                    const SizedBox(width: 8),
+                    // Message
+                    Expanded(
+                      child: Text(
+                        widget.message,
+                        style: const TextStyle(
+                          color: Color(0xFFFFE082),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Dismiss
+                    GestureDetector(
+                      onTap: _dismiss,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: Colors.white38,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Arrow tail: filled amber triangle pointing upward.
+class _UpArrowPainter extends CustomPainter {
+  const _UpArrowPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFF4B625)
+      ..style = PaintingStyle.fill;
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+/// Pulsing auto_awesome icon shown inside the bubble.
+class _PulsingIcon extends StatefulWidget {
+  const _PulsingIcon();
+
+  @override
+  State<_PulsingIcon> createState() => _PulsingIconState();
+}
+
+class _PulsingIconState extends State<_PulsingIcon>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulse;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+    _scaleAnim = Tween<double>(begin: 0.85, end: 1.15).animate(
+      CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnim,
+      child: const Icon(Icons.auto_awesome_rounded,
+          color: Color(0xFFF4B625), size: 18),
+    );
+  }
+}
+
 /// Bottom-of-screen puppet speech overlay.
 /// Replaces the old floating cloud bubble with a fixed bottom bar
 /// similar to onboarding step 10's speech style.
@@ -395,25 +620,4 @@ class _PuppetSpeechBarState extends State<_PuppetSpeechBar>
       ),
     );
   }
-}
-
-/// Upward-pointing arrow for the speech bubble (points toward puppet avatar).
-class _UpArrowPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFF4B625)
-      ..style = PaintingStyle.fill;
-
-    final path = Path()
-      ..moveTo(0, size.height)
-      ..lineTo(size.width, size.height)
-      ..lineTo(size.width * 0.5, 0)
-      ..close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

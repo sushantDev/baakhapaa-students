@@ -216,8 +216,8 @@ class _SingleProductScreenState extends State<SingleProductScreen>
       final images = product['images'] as List;
       if (images.isNotEmpty) {
         final firstImage = images[0];
-        if (firstImage is Map && firstImage['full'] != null) {
-          return _getImageUrl(firstImage['full'].toString());
+        if (firstImage is Map && firstImage['url'] != null) {
+          return _getImageUrl(firstImage['url'].toString());
         }
       }
     }
@@ -240,9 +240,15 @@ class _SingleProductScreenState extends State<SingleProductScreen>
 
   // Helper method to construct proper image URL from API response
   String _getImageUrl(String? imagePath) {
-    print(imagePath);
     if (imagePath == null || imagePath.isEmpty) {
       return '';
+    }
+
+    // Fix double URL: backend sometimes returns "https://app.baakhapaa.com/storage/https://cdn..."
+    // Strip everything up to and including "/storage/" when the remainder is itself a full URL.
+    final storageIdx = imagePath.indexOf('/storage/http');
+    if (storageIdx != -1) {
+      return imagePath.substring(storageIdx + '/storage/'.length);
     }
 
     // If it already starts with http, return as-is
@@ -250,8 +256,7 @@ class _SingleProductScreenState extends State<SingleProductScreen>
       return imagePath;
     }
 
-    // If it doesn't start with 'storage/', the API might have already prefixed it
-    // Just prepend the base URL
+    // Prepend the CDN base URL for relative paths
     return '${Url.mediaUrl}$imagePath';
   }
 
@@ -549,8 +554,8 @@ class _SingleProductScreenState extends State<SingleProductScreen>
                 if (product['images'] != null && product['images'] is List) {
                   final images = product['images'] as List;
                   for (var image in images) {
-                    if (image is Map && image['full'] != null) {
-                      final imageUrl = _getImageUrl(image['full'].toString());
+                    if (image is Map && image['url'] != null) {
+                      final imageUrl = _getImageUrl(image['url'].toString());
                       if (!imageUrls.contains(imageUrl)) {
                         imageUrls.add(imageUrl);
                       }
@@ -582,6 +587,7 @@ class _SingleProductScreenState extends State<SingleProductScreen>
                   return Container(
                     height: 280,
                     child: ImageSlideshow(
+                      key: ValueKey(_selectedVariantId ?? 'no_variant'),
                       initialPage: 0,
                       indicatorColor: Colors.blue.shade400,
                       indicatorBackgroundColor:
@@ -1210,7 +1216,7 @@ class _SingleProductScreenState extends State<SingleProductScreen>
 
   // Get the selected variant based on color and size
   Map<String, dynamic>? _getSelectedVariant() {
-    if (_selectedColor == null || _selectedSize == null) {
+    if (_selectedColor == null) {
       return null;
     }
 
@@ -1229,7 +1235,8 @@ class _SingleProductScreenState extends State<SingleProductScreen>
 
       final optionValues = variant['option_values'] as List;
       bool matchesColor = false;
-      bool matchesSize = false;
+      // If no size is selected, skip size matching entirely
+      bool matchesSize = _selectedSize == null;
 
       for (var optionValue in optionValues) {
         if (optionValue is Map &&
@@ -1388,14 +1395,29 @@ class _SingleProductScreenState extends State<SingleProductScreen>
                     onTap: () {
                       setState(() {
                         _selectedColor = colorName;
-                        // Auto-select first available size if none selected
-                        if (_selectedSize == null && sizes.isNotEmpty) {
-                          _selectedSize = sizes.first;
-                        }
-                        // Update selected variant
+                        // Reset size so _getSelectedVariant() matches any variant
+                        // with the new color (avoids cross-color size mismatch).
+                        _selectedSize = null;
+                        // Find the first variant for this color
                         final selectedVariant = _getSelectedVariant();
                         if (selectedVariant != null) {
-                          _selectedVariantId = selectedVariant['id'];
+                          _selectedVariantId = selectedVariant['id'] is int
+                              ? selectedVariant['id'] as int
+                              : int.tryParse(selectedVariant['id'].toString());
+                          // Sync size from the matched variant for UI consistency
+                          if (selectedVariant['option_values'] is List) {
+                            for (var ov
+                                in selectedVariant['option_values'] as List) {
+                              if (ov is Map && ov['option'] is Map) {
+                                if ((ov['option']['name'] as String?)
+                                        ?.toLowerCase() ==
+                                    'size') {
+                                  _selectedSize = ov['value']?.toString();
+                                  break;
+                                }
+                              }
+                            }
+                          }
                         }
                       });
                     },

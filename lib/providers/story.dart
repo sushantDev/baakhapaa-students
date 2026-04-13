@@ -784,6 +784,28 @@ class Story with ChangeNotifier {
             break;
           }
         }
+        // Update nested seasons inside each difficult-seasons category
+        for (int i = 0; i < _difficultSeasons.length; i++) {
+          final List<dynamic> catSeasons =
+              (_difficultSeasons[i]['seasons'] as List?) ?? [];
+          bool found = false;
+          for (int j = 0; j < catSeasons.length; j++) {
+            if (catSeasons[j]['id'].toString() == sid) {
+              final updated = Map<String, dynamic>.from(catSeasons[j] as Map);
+              updated['watched'] = true;
+              catSeasons[j] = updated;
+              found = true;
+              break;
+            }
+          }
+          if (found) {
+            // Replace category map so listeners see a new reference
+            final updatedCat = Map<String, dynamic>.from(_difficultSeasons[i]);
+            updatedCat['seasons'] = catSeasons;
+            _difficultSeasons[i] = updatedCat;
+            break;
+          }
+        }
 
         notifyListeners();
       }
@@ -1753,8 +1775,7 @@ class Story with ChangeNotifier {
           )
           .timeout(const Duration(seconds: 10));
 
-      DebugLogger.auth(
-          'recoverStreak status=${response.statusCode}');
+      DebugLogger.auth('recoverStreak status=${response.statusCode}');
       final responseData = json.decode(utf8.decode(response.bodyBytes));
       if (responseData['success'] == true) {
         final data = Map<String, dynamic>.from(responseData['data'] ?? {});

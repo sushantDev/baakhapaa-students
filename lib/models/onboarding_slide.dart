@@ -58,4 +58,39 @@ class OnboardingSlide {
     this.infoCardCaption,
     this.rewardPoints,
   });
+
+  /// Returns a new [OnboardingSlide] with the given fields overridden.
+  /// Used by [OnboardingProvider.slides] to rewrite step numbers dynamically.
+  OnboardingSlide copyWith({
+    int? stepNumber,
+    int? totalSteps,
+  }) =>
+      OnboardingSlide(
+        id: id,
+        order: order,
+        title: title,
+        subtitle: subtitle,
+        bodyText: bodyText,
+        ctaText: ctaText,
+        slideType: slideType,
+        assetPath: assetPath,
+        secondaryAssetPath: secondaryAssetPath,
+        bgColor: bgColor,
+        accentColor: accentColor,
+        stepNumber: stepNumber ?? this.stepNumber,
+        totalSteps: totalSteps ?? this.totalSteps,
+        options: options,
+        isSkippable: isSkippable,
+        showPuppetAvatar: showPuppetAvatar,
+        showGiftIcon: showGiftIcon,
+        speechBubble: speechBubble,
+        autoAdvanceMs: autoAdvanceMs,
+        quizTimerSeconds: quizTimerSeconds,
+        quizCorrectIndex: quizCorrectIndex,
+        hintText: hintText,
+        infoCardLabel: infoCardLabel,
+        infoCardValue: infoCardValue,
+        infoCardCaption: infoCardCaption,
+        rewardPoints: rewardPoints,
+      );
 }

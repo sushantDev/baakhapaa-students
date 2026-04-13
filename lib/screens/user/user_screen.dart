@@ -46,6 +46,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:baakhapaa/utils/debug_logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/ad_service.dart';
 
 class UserScreen extends StatefulWidget {
@@ -219,7 +220,17 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
     try {
       final story = Provider.of<Story>(context, listen: false);
-
+// ── Frequency guard: show at most 2× per calendar day ──────────
+      final prefs = await SharedPreferences.getInstance();
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      final countKey = 'streak_recovery_shown_$today';
+      final shownToday = prefs.getInt(countKey) ?? 0;
+      if (shownToday >= 2) {
+        DebugLogger.info(
+            '🔥 [STREAK] Already shown streak recovery dialog $shownToday time(s) today — skipping');
+        return;
+      }
+      // ────────────────────────────────────────────────────────────────
       DebugLogger.info('🔥 [STREAK] Checking streak recovery eligibility');
 
       // Fetch reading streak

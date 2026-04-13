@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:baakhapaa/models/url.dart';
+import 'package:baakhapaa/providers/assistive_touch_provider.dart';
 import 'package:baakhapaa/providers/auth.dart';
 import 'package:baakhapaa/providers/levels.dart';
 import 'package:baakhapaa/providers/rewards_provider.dart';
@@ -94,8 +95,13 @@ class _PuppetDashboardState extends State<PuppetDashboard>
   @override
   void initState() {
     super.initState();
-    _loadData();
-    _loadRewardedAd();
+    // Defer data load to post-frame to avoid setState/notifyListeners during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadData();
+        _loadRewardedAd();
+      }
+    });
   }
 
   @override
@@ -153,6 +159,18 @@ class _PuppetDashboardState extends State<PuppetDashboard>
     widget.navigatorKey.currentState?.push(
       PageTransition(child: screen, type: PageTransitionType.fade),
     );
+  }
+
+  void _pushNamed(String routeName, {Object? arguments}) {
+    try {
+      final videoState =
+          Provider.of<VideoStateProvider>(context, listen: false);
+      videoState.pauseVideo();
+      videoState.clearAllActiveVideos();
+    } catch (_) {}
+    widget.onClose();
+    widget.navigatorKey.currentState
+        ?.pushNamed(routeName, arguments: arguments);
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -448,7 +466,7 @@ class _PuppetDashboardState extends State<PuppetDashboard>
         Expanded(
           child: Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: _HomeTab(onNavigate: _navigateTo),
+            child: _HomeTab(onNavigate: _navigateTo, onPushNamed: _pushNamed),
           ),
         ),
       ],
@@ -466,11 +484,11 @@ class _PuppetDashboardState extends State<PuppetDashboard>
         null,
       ),
       (
-        null,
+        Icons.redeem,
         'Gifts',
         _kAccent,
         GiftScreen(),
-        'https://bkp-v1.blr1.cdn.digitaloceanspaces.com/onboarding/gift.png',
+        null,
       ),
       (
         Icons.people_rounded,
@@ -485,7 +503,7 @@ class _PuppetDashboardState extends State<PuppetDashboard>
         const Color(0xFF4CAF50),
         ConversationsScreen() as Widget,
         null,
-      ),
+      )
     ];
 
     return Padding(
@@ -522,15 +540,17 @@ class _PuppetDashboardState extends State<PuppetDashboard>
                       ),
                       child: item.$5 != null
                           ? ClipOval(
-                              child: CachedNetworkImage(
-                                imageUrl: item.$5!,
-                                width: 15,
-                                height: 15,
-                                fit: BoxFit.contain,
-                                errorWidget: (_, __, ___) => Icon(
-                                  Icons.card_giftcard_rounded,
-                                  size: 15,
-                                  color: item.$3,
+                              child: SizedBox(
+                                width: 28,
+                                height: 28,
+                                child: CachedNetworkImage(
+                                  imageUrl: item.$5!,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) => Icon(
+                                    Icons.card_giftcard_rounded,
+                                    size: 15,
+                                    color: item.$3,
+                                  ),
                                 ),
                               ),
                             )
@@ -584,15 +604,20 @@ class _PuppetDashboardState extends State<PuppetDashboard>
 
 class _HomeTab extends StatelessWidget {
   final void Function(Widget screen) onNavigate;
+  final void Function(String route, {Object? arguments}) onPushNamed;
 
-  const _HomeTab({required this.onNavigate});
+  const _HomeTab({
+    required this.onNavigate,
+    required this.onPushNamed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
-          _CurrentQuestSection(onNavigate: onNavigate),
+          _CurrentQuestSection(
+              onNavigate: onNavigate, onPushNamed: onPushNamed),
           const SizedBox(height: 10),
           _RewardProgressSection(onNavigate: onNavigate),
           const SizedBox(height: 10),
@@ -610,8 +635,12 @@ class _HomeTab extends StatelessWidget {
 
 class _CurrentQuestSection extends StatefulWidget {
   final void Function(Widget screen) onNavigate;
+  final void Function(String route, {Object? arguments}) onPushNamed;
 
-  const _CurrentQuestSection({required this.onNavigate});
+  const _CurrentQuestSection({
+    required this.onNavigate,
+    required this.onPushNamed,
+  });
 
   @override
   State<_CurrentQuestSection> createState() => _CurrentQuestSectionState();
@@ -619,6 +648,220 @@ class _CurrentQuestSection extends StatefulWidget {
 
 class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
   bool _expanded = true;
+
+  /// Navigates directly to a specific season's episode list by ID.
+  /// Fetches season details first, sets the provider state, then navigates.
+  /// Shows a quest guidance hint below the header after navigation.
+  Future<void> _navigateToSeasonById(int seasonId, {String? seasonName}) async {
+    // Set guidance hint first (provider persists after dialog closes)
+    try {
+      final hint = (seasonName != null && seasonName.isNotEmpty)
+          ? 'Tap any episode in "$seasonName" to watch and complete the quiz! 📺'
+          : 'Tap any episode to watch it and complete the quiz! 📺';
+      Provider.of<AssistiveTouchProvider>(context, listen: false)
+          .showQuestGuidance(hint);
+    } catch (_) {}
+
+    try {
+      final storyProvider = Provider.of<Story>(context, listen: false);
+      final details = await storyProvider.fetchSeasonDetails(seasonId);
+      if (!mounted) return;
+      if (details != null) {
+        await storyProvider.setSelectedSeason(details);
+      }
+      if (!mounted) return;
+      widget.onPushNamed('/episode-screen');
+    } catch (_) {
+      if (mounted) widget.onPushNamed('/story-screen');
+    }
+  }
+
+  /// Returns a short, actionable guidance message for the given route +
+  /// actionKey combination. The same route can have different guidance
+  /// depending on which quest sent the user there.
+  String _guidanceFor(String route, {Map? actionData}) {
+    final actionKey = actionData?['action_key']?.toString() ?? '';
+
+    // Donation — goes to /shorts-screen but the action is donating coins,
+    // not watching. Guide user to the coin icon under the comment button.
+    if (actionKey == 'points_donated') {
+      return 'Tap the cup below the comment to donate points to that creator!';
+    }
+    // Watching shorts
+    if (actionKey == 'shorts_watched') {
+      return 'Watch a short video here — the quiz will appear at the end! ▶️';
+    }
+
+    switch (route) {
+      case '/story-screen':
+        return 'Browse the seasons below and tap one to open it! 🎬';
+      case '/episode-screen':
+        return 'Tap any episode to watch it and complete the quiz! 📺';
+      case '/shorts-screen':
+        return 'Watch a short video — tap question mark and quiz will appear to test you! ▶️';
+      case '/single-shorts-screen':
+        return 'Watch this short and answer the quiz correctly! ✅';
+      case '/achievements-screen':
+        return 'Tap an achievement card to see how to earn it! 🏆';
+      case '/points-screen':
+        return 'Watch content and complete quests to earn more coins! 🪙';
+      case '/challenges-screen':
+        return 'Join a challenge here and participate to complete your quest! 🎯';
+      case '/referrals-screen':
+        return 'Share your referral link with friends to complete this quest! 👥';
+      case '/shop-screen':
+        return 'Browse the shop and make a purchase to complete your quest! 🛍️';
+      case '/create-shorts-screen':
+        return 'Create and upload a short video to complete this quest! 🎥';
+      case '/create-story-type':
+        return 'Create a new episode here to advance to the next level! 🎬';
+      default:
+        return '';
+    }
+  }
+
+  /// Derives a route (and optional argument) from a quest action map and
+  /// closes the dashboard before navigating.
+  void _navigateForQuest(Map action) {
+    final actionData = (action['action'] as Map?) ?? {};
+    final actionKey = actionData['action_key']?.toString() ?? '';
+    final type = actionData['type']?.toString() ?? 'number';
+    final options = actionData['options'];
+
+    DebugLogger.info('🎯 QUEST NAV: full_action=$action');
+    DebugLogger.info(
+        '🎯 QUEST NAV: actionKey="$actionKey" type="$type" options="$options" (${options.runtimeType})');
+    // Normalise the options field to a plain string for matching.
+    String optionsStr = '';
+    if (options is String) {
+      optionsStr = options;
+    } else if (options is Map && options.isNotEmpty) {
+      optionsStr =
+          (options['entity_type'] ?? options['type'] ?? options.values.first)
+              .toString();
+    } else if (options is List && options.isNotEmpty) {
+      optionsStr = options.first.toString();
+    }
+    // Strip embedded JSON quotes (e.g. DB stores '"badge"' → 'badge')
+    optionsStr = optionsStr.replaceAll('"', '').trim();
+
+    String route;
+    Object? arguments;
+
+    if (type == 'selection' || type == 'checkbox') {
+      switch (optionsStr) {
+        case 'shorts':
+          final id = _parseQuestId(action['required_value']);
+          if (id > 0) {
+            route = '/single-shorts-screen';
+            arguments = id;
+          } else {
+            route = '/shorts-screen';
+          }
+          break;
+        case 'episode':
+        case 'season':
+          final rawId = action['required_id'];
+          final seasonId =
+              rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '') ?? 0;
+          final seasonName = action['required_value']?.toString() ?? '';
+          if (seasonId > 0) {
+            _navigateToSeasonById(seasonId, seasonName: seasonName);
+            return;
+          }
+          route = '/story-screen';
+          break;
+        case 'badge':
+          route = '/achievements-screen';
+          break;
+        default:
+          route = '/shorts-screen';
+      }
+    } else {
+      switch (actionKey) {
+        case 'earned_coins':
+        case 'available_coins':
+          route = '/points-screen';
+          break;
+        case 'used_coins':
+        case 'total_product_purchased':
+          route = '/shop-screen';
+          break;
+        case 'shorts_watched':
+          route = '/shorts-screen';
+          break;
+        case 'episodes_watched':
+        case 'season_unlocked':
+        case 'unlock_a_season':
+          route = '/story-screen';
+          break;
+        case 'points_donated':
+          route = '/shorts-screen';
+          break;
+        case 'shorts_uploaded':
+          route = '/create-shorts-screen';
+          break;
+        case 'episodes_uploaded':
+          route = '/create-story-type';
+          break;
+        case 'achievements_claimed':
+        case 'badge_required':
+          route = '/achievements-screen';
+          break;
+        case 'total_referals_count':
+        case 'refer_others':
+          route = '/referrals-screen';
+          break;
+        case 'challenge_participation_number':
+          route = '/challenges-screen';
+          break;
+        default:
+          // Fallback: infer route from title/description when action_key is
+          // missing (e.g. backend didn't include it in the response).
+          final title = (actionData['title'] ?? '').toString().toLowerCase();
+          final desc =
+              (actionData['description'] ?? '').toString().toLowerCase();
+          final combined = '$title $desc';
+          if (combined.contains('episode') || combined.contains('season')) {
+            route = '/story-screen';
+          } else if (combined.contains('short')) {
+            route = '/shorts-screen';
+          } else if (combined.contains('donat') || combined.contains('point')) {
+            route = '/shorts-screen';
+          } else if (combined.contains('challenge')) {
+            route = '/challenges-screen';
+          } else if (combined.contains('achievement') ||
+              combined.contains('badge')) {
+            route = '/achievements-screen';
+          } else if (combined.contains('product') ||
+              combined.contains('purchas')) {
+            route = '/shop-screen';
+          } else if (combined.contains('refer')) {
+            route = '/referrals-screen';
+          } else if (combined.contains('creator')) {
+            route = '/creator-request-screen';
+          } else {
+            DebugLogger.info('🎯 QUEST NAV: no route match — skipping');
+            return; // Unknown action — skip navigation.
+          }
+      }
+    }
+
+    DebugLogger.info(
+        '\ud83c\udfaf QUEST NAV: navigating to route="$route" arguments=$arguments');
+    // Show quest guidance hint below the header on the destination screen
+    final guidance = _guidanceFor(route, actionData: actionData);
+    if (guidance.isNotEmpty) {
+      try {
+        Provider.of<AssistiveTouchProvider>(context, listen: false)
+            .showQuestGuidance(guidance);
+      } catch (_) {}
+    }
+    widget.onPushNamed(route, arguments: arguments);
+  }
+
+  static int _parseQuestId(dynamic v) =>
+      v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
 
   @override
   Widget build(BuildContext context) {
@@ -747,6 +990,7 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
                             progress: pct.toDouble(),
                             progressText:
                                 '${current.toInt()}/${required.toInt()}',
+                            onTap: () => _navigateForQuest(action),
                           );
                         }),
                       ],
@@ -1122,6 +1366,7 @@ class _TaskRow extends StatelessWidget {
   final double progress;
   final String progressText;
   final Color? accentColor;
+  final VoidCallback? onTap;
 
   const _TaskRow({
     required this.title,
@@ -1129,63 +1374,73 @@ class _TaskRow extends StatelessWidget {
     required this.progress,
     required this.progressText,
     this.accentColor,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: _kWhite,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                if (subtitle.isNotEmpty) ...[
-                  const SizedBox(height: 2),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    subtitle,
+                    title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: _kMuted, fontSize: 10),
+                    style: const TextStyle(
+                      color: _kWhite,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: _kMuted, fontSize: 10),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            progressText,
-            style: TextStyle(
-              color: accentColor ?? _kAccent,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(width: 6),
-          SizedBox(
-            width: 60,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 4,
-                color: accentColor ?? _kAccent,
-                backgroundColor: _kBorderColor,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Text(
+              progressText,
+              style: TextStyle(
+                color: accentColor ?? _kAccent,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 6),
+            SizedBox(
+              width: 60,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 4,
+                  color: accentColor ?? _kAccent,
+                  backgroundColor: _kBorderColor,
+                ),
+              ),
+            ),
+            if (onTap != null) ...[
+              const SizedBox(width: 4),
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  size: 10, color: _kMuted)
+            ],
+          ],
+        ),
       ),
     );
   }

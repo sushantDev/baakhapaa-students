@@ -16,7 +16,7 @@
     </queries>
     
    <application
-        android:label="Baakhapaa"
+        android:label="Fun Learn"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true"

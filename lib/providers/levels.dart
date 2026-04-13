@@ -235,30 +235,147 @@ class Levels with ChangeNotifier {
       return null;
     }
 
-    // Get the first incomplete action
-    final firstRemaining = remainingActions.first;
-    final action = firstRemaining['action'];
-    final currentProgress = firstRemaining['current_progress'] ?? 0;
-    final requiredValue =
-        int.tryParse(firstRemaining['required_value']?.toString() ?? '0') ?? 0;
-    final remaining = requiredValue - currentProgress;
+    final nextLevelName = nextLevel?['name'] ?? 'the next level';
 
-    final actionTitle = action['title'] ?? '';
+    // Collect all remaining hints (not just first) for richer context.
+    final hints = <String>[];
 
-    // Generate contextual hints based on action type
-    if (actionTitle.toLowerCase().contains('challenge')) {
-      return 'Complete $remaining more ${remaining == 1 ? "challenge" : "challenges"} to reach ${nextLevel?["name"] ?? "the next level"}! 🎯';
-    } else if (actionTitle.toLowerCase().contains('episode')) {
-      return 'Watch $remaining more ${remaining == 1 ? "episode" : "episodes"} to level up! 📺';
-    } else if (actionTitle.toLowerCase().contains('daily')) {
-      return 'Claim your daily rewards for $remaining more ${remaining == 1 ? "day" : "days"} to advance! 🎁';
-    } else if (actionTitle.toLowerCase().contains('streak')) {
-      return 'Maintain your streak for $remaining more ${remaining == 1 ? "day" : "days"}! 🔥';
-    } else if (actionTitle.toLowerCase().contains('quiz')) {
-      return 'Complete $remaining more ${remaining == 1 ? "quiz" : "quizzes"} correctly! 📝';
-    } else {
-      return '$actionTitle: $currentProgress/$requiredValue - ${remaining} more to go! 💪';
+    for (final item in remainingActions) {
+      final action = (item['action'] as Map?) ?? {};
+      final actionKey = action['action_key']?.toString() ?? '';
+      final type = action['type']?.toString() ?? 'number';
+      final options =
+          (action['options']?.toString() ?? '').replaceAll('"', '').trim();
+      final requiredValue = item['required_value'];
+      final currentProgress = (item['current_progress'] as num?)?.toInt() ?? 0;
+      final requiredNum = int.tryParse(requiredValue?.toString() ?? '0') ?? 0;
+      final remaining = (requiredNum - currentProgress).clamp(0, requiredNum);
+
+      if (type == 'selection' || type == 'checkbox') {
+        // For selection actions the required_value is the target item's name.
+        final targetName = requiredValue?.toString() ?? '';
+        switch (options) {
+          case 'season':
+            hints.add(targetName.isNotEmpty
+                ? 'Unlock the season "$targetName" to level up! 🎬'
+                : 'Unlock a season to level up! 🎬');
+            break;
+          case 'episode':
+            hints.add(targetName.isNotEmpty
+                ? 'Complete the episode "$targetName" to progress! 📺'
+                : 'Complete an episode to progress! 📺');
+            break;
+          case 'shorts':
+            hints.add(targetName.isNotEmpty
+                ? 'Watch the short "$targetName" to advance! ▶️'
+                : 'Watch a specific short to advance! ▶️');
+            break;
+          case 'badge':
+            hints.add(targetName.isNotEmpty
+                ? 'Earn the "$targetName" badge to level up! 🏅'
+                : 'Earn a badge to level up! 🏅');
+            break;
+          default:
+            if (targetName.isNotEmpty) {
+              hints.add('Complete "$targetName" to advance! 💪');
+            }
+        }
+        continue;
+      }
+
+      // Number-type actions — match by action_key first, then title keywords.
+      switch (actionKey) {
+        case 'episodes_watched':
+          hints.add(remaining == 1
+              ? 'Watch 1 more episode to reach $nextLevelName! 📺'
+              : 'Watch $remaining more episodes to reach $nextLevelName! 📺');
+          break;
+        case 'season_unlocked':
+        case 'unlock_a_season':
+          hints.add(remaining == 1
+              ? 'Unlock 1 more season to reach $nextLevelName! 🎬'
+              : 'Unlock $remaining more seasons to reach $nextLevelName! 🎬');
+          break;
+        case 'shorts_watched':
+          hints.add(remaining == 1
+              ? 'Watch 1 more short to level up! ▶️'
+              : 'Watch $remaining more shorts to level up! ▶️');
+          break;
+        case 'shorts_uploaded':
+          hints.add(remaining == 1
+              ? 'Upload 1 more short to advance! 🎥'
+              : 'Upload $remaining more shorts to advance! 🎥');
+          break;
+        case 'episodes_uploaded':
+          hints.add(remaining == 1
+              ? 'Upload 1 more episode to reach $nextLevelName! 🎬'
+              : 'Upload $remaining more episodes to reach $nextLevelName! 🎬');
+          break;
+        case 'earned_coins':
+          hints.add('Earn $remaining more coins to advance! 🪙');
+          break;
+        case 'used_coins':
+        case 'available_coins':
+          hints.add('Spend $remaining more coins to reach $nextLevelName! 🛍️');
+          break;
+        case 'points_donated':
+          hints.add('Donate $remaining more coins to level up! 🎁');
+          break;
+        case 'achievements_claimed':
+        case 'badge_required':
+          hints.add(remaining == 1
+              ? 'Claim 1 more achievement to reach $nextLevelName! 🏆'
+              : 'Claim $remaining more achievements to reach $nextLevelName! 🏆');
+          break;
+        case 'challenge_participation_number':
+          hints.add(remaining == 1
+              ? 'Join 1 more challenge to level up! 🎯'
+              : 'Join $remaining more challenges to level up! 🎯');
+          break;
+        case 'total_referals_count':
+        case 'refer_others':
+          hints.add(remaining == 1
+              ? 'Refer 1 more friend to reach $nextLevelName! 👥'
+              : 'Refer $remaining more friends to reach $nextLevelName! 👥');
+          break;
+        case 'total_product_purchased':
+          hints.add(remaining == 1
+              ? 'Purchase 1 more product from the shop! 🛒'
+              : 'Purchase $remaining more products from the shop! 🛒');
+          break;
+        default:
+          // Fallback to title keyword matching.
+          final title = (action['title'] ?? '').toString().toLowerCase();
+          if (title.contains('challenge')) {
+            hints.add(
+                'Complete $remaining more ${remaining == 1 ? "challenge" : "challenges"} to reach $nextLevelName! 🎯');
+          } else if (title.contains('episode')) {
+            hints.add(
+                'Watch $remaining more ${remaining == 1 ? "episode" : "episodes"} to level up! 📺');
+          } else if (title.contains('short')) {
+            hints.add(
+                'Watch $remaining more ${remaining == 1 ? "short" : "shorts"} to advance! ▶️');
+          } else if (title.contains('coin') || title.contains('point')) {
+            hints.add('Earn $remaining more coins to reach $nextLevelName! 🪙');
+          } else if (title.contains('achievement') || title.contains('badge')) {
+            hints.add(
+                'Claim $remaining more ${remaining == 1 ? "achievement" : "achievements"}! 🏆');
+          } else if (title.contains('refer')) {
+            hints.add(
+                'Refer $remaining more ${remaining == 1 ? "friend" : "friends"} to advance! 👥');
+          } else {
+            final actionTitle = action['title']?.toString() ?? actionKey;
+            hints.add(
+                '$actionTitle: $currentProgress/$requiredNum — $remaining more to go! 💪');
+          }
+      }
+
+      // Limit to 2 hints to stay concise.
+      if (hints.length >= 2) break;
     }
+
+    if (hints.isEmpty) return null;
+    return hints.join('\n');
   }
 
   // Get progress data for assistive touch

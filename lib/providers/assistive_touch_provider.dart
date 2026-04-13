@@ -16,6 +16,14 @@ class AssistiveTouchProvider with ChangeNotifier {
   int _maxPuppetShows =
       kDebugMode ? 100 : 25; // Show puppet many times per session
 
+  // Quest guidance hint — shown below header, pointing to header puppet
+  String? _questHint;
+  bool _showQuestHint = false;
+  Timer? _questHintTimer;
+
+  String? get questHint => _questHint;
+  bool get showQuestHint => _showQuestHint;
+
   // Smart timing settings
   static const int _maxDisplayDuration = 15; // 15 seconds max
   static const int _minDisplayDuration = 5; // 5 seconds min
@@ -64,7 +72,25 @@ class AssistiveTouchProvider with ChangeNotifier {
 
   void dispose() {
     _autoDismissTimer?.cancel();
+    _questHintTimer?.cancel();
     super.dispose();
+  }
+
+  /// Show a brief guidance hint below the header, pointing to the puppet.
+  /// Used after quest-tap navigation and for first-launch onboarding.
+  void showQuestGuidance(String message, {int seconds = 10}) {
+    _questHintTimer?.cancel();
+    _questHint = message;
+    _showQuestHint = true;
+    notifyListeners();
+    _questHintTimer = Timer(Duration(seconds: seconds), clearQuestHint);
+  }
+
+  void clearQuestHint() {
+    _questHintTimer?.cancel();
+    _questHint = null;
+    _showQuestHint = false;
+    notifyListeners();
   }
 
   void setMessages(List<String> messages) {
@@ -109,11 +135,18 @@ class AssistiveTouchProvider with ChangeNotifier {
     _autoDismissTimer?.cancel();
 
     _currentPuppet = puppet;
-    _messages = [puppet.message];
+    // Build the message list. Include the level hint as the primary message
+    // when available so the puppet guides the user on completing their task.
+    if (puppet.levelHint != null && puppet.levelHint!.isNotEmpty) {
+      _messages = [puppet.message, puppet.levelHint!];
+    } else {
+      _messages = [puppet.message];
+    }
     _showMessage = true;
 
-    // Calculate display duration based on message length
-    int displayDuration = _calculateDisplayDuration(puppet.message);
+    // Calculate display duration based on combined message length
+    final combinedMessage = _messages.join(' ');
+    int displayDuration = _calculateDisplayDuration(combinedMessage);
 
     // Set auto-dismiss timer
     _autoDismissTimer = Timer(Duration(seconds: displayDuration), () {

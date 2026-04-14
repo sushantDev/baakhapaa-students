@@ -9,6 +9,18 @@ import '../providers/auth.dart';
 class ContentTypeSelectorSheet extends StatelessWidget {
   const ContentTypeSelectorSheet({Key? key}) : super(key: key);
 
+  bool _isEmailVerified(Auth auth) {
+    return auth.isEmailVerified;
+  }
+
+  void _showEmailVerificationRequired(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Email not verified yet. Please verify your email first.'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -81,6 +93,10 @@ class ContentTypeSelectorSheet extends StatelessWidget {
                 isDark: isDark,
                 onTap: () {
                   HapticFeedback.lightImpact();
+                  if (!_isEmailVerified(auth)) {
+                    _showEmailVerificationRequired(context);
+                    return;
+                  }
                   Navigator.of(context).pop();
                   Navigator.of(context).pushNamed(
                     CreateShortsScreen.routeName,
@@ -100,6 +116,10 @@ class ContentTypeSelectorSheet extends StatelessWidget {
                 isDark: isDark,
                 onTap: () {
                   HapticFeedback.lightImpact();
+                  if (!_isEmailVerified(auth)) {
+                    _showEmailVerificationRequired(context);
+                    return;
+                  }
                   Navigator.of(context).pop();
                   Navigator.of(context).pushNamed(
                     CreateStoryTypeScreen.routeName,

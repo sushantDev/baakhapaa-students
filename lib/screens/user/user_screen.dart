@@ -2195,6 +2195,38 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
   }
 
   Widget _buildUserContainer() {
+    bool isProfileEmailVerified() {
+      final value = _user['email_verified_at'] ??
+          (_user['information'] is Map<String, dynamic>
+              ? (_user['information'] as Map<String, dynamic>)['email_verified_at']
+              : null);
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is num) return value > 0;
+      final normalized = value.toString().trim().toLowerCase();
+      if (normalized.isEmpty ||
+          normalized == 'null' ||
+          normalized == 'false' ||
+          normalized == '0' ||
+          normalized == 'no' ||
+          normalized == 'not_verified' ||
+          normalized == 'unverified') {
+        return false;
+      }
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      return DateTime.tryParse(value.toString()) != null;
+    }
+
+    void showEmailVerificationWarning() {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email not verified yet. Please verify your email first.'),
+        ),
+      );
+    }
+
     final categories = [
       'Shorts',
       'Stories',
@@ -2205,6 +2237,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     Widget buildAddShortCard() {
       return InkWell(
         onTap: () {
+          if (!isProfileEmailVerified()) {
+            showEmailVerificationWarning();
+            return;
+          }
           final auth = Provider.of<Auth>(context, listen: false);
           if (auth.role != 'creator') {
             Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);
@@ -2304,6 +2340,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     Widget _buildAddStoryCard() {
       return InkWell(
         onTap: () {
+          if (!isProfileEmailVerified()) {
+            showEmailVerificationWarning();
+            return;
+          }
           final auth = Provider.of<Auth>(context, listen: false);
           if (auth.role != 'creator') {
             Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);
@@ -3219,38 +3259,37 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                                 .withValues(alpha: 0.25),
                                       ),
                                     ),
-                                    child: Center(
-                                      child: ClipRRect(
-                                        child: (url != null &&
-                                                url
-                                                    .toString()
-                                                    .trim()
-                                                    .isNotEmpty)
-                                            ? CachedNetworkImage(
-                                                imageUrl: url,
-                                                fit: BoxFit.contain,
-                                                width: 34,
-                                                height: 34,
-                                                placeholder: (context, _) =>
-                                                    Icon(
-                                                  Icons.emoji_events,
-                                                  color: Colors.amber.shade700,
-                                                  size: 24,
-                                                ),
-                                                errorWidget: (context, _, __) =>
-                                                    Icon(
-                                                  Icons.emoji_events,
-                                                  color: Colors.amber.shade700,
-                                                  size: 24,
-                                                ),
-                                              )
-                                            : Icon(
+                                    child: (url != null &&
+                                            url.toString().trim().isNotEmpty)
+                                        ? CachedNetworkImage(
+                                            imageUrl: url,
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                            placeholder: (context, _) =>
+                                                Container(
+                                              alignment: Alignment.center,
+                                              child: Icon(
                                                 Icons.emoji_events,
                                                 color: Colors.amber.shade700,
                                                 size: 24,
                                               ),
-                                      ),
-                                    ),
+                                            ),
+                                            errorWidget: (context, _, __) =>
+                                                Container(
+                                              alignment: Alignment.center,
+                                              child: Icon(
+                                                Icons.emoji_events,
+                                                color: Colors.amber.shade700,
+                                                size: 24,
+                                              ),
+                                            ),
+                                          )
+                                        : Icon(
+                                            Icons.emoji_events,
+                                            color: Colors.amber.shade700,
+                                            size: 24,
+                                          ),
                                   ),
                                 ),
                                 const SizedBox(height: 5),
@@ -4388,21 +4427,21 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                             ),
                           ],
                         ),
-                        child: Center(
-                          child: (imageUrl != null &&
-                                  imageUrl.toString().trim().isNotEmpty)
-                              ? CachedNetworkImage(
-                                  imageUrl: imageUrl.toString(),
-                                  width: 28,
-                                  height: 28,
-                                  fit: BoxFit.contain,
-                                )
-                              : const Icon(
+                        child: (imageUrl != null &&
+                                imageUrl.toString().trim().isNotEmpty)
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl.toString(),
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              )
+                            : const Center(
+                                child: Icon(
                                   Icons.emoji_events,
                                   color: Colors.amber,
                                   size: 20,
                                 ),
-                        ),
+                              ),
                       ),
                     ),
                   ),

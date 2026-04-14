@@ -1126,6 +1126,7 @@ class _QuickBuyDialogState extends State<QuickBuyDialog> {
       // Place the order
       await Provider.of<Orders>(dialogContext, listen: false).addOrder(
         cartItems: cartItems,
+        paymentMethod: 'Cash on Delivery',
       );
 
       DebugLogger.success('Quick buy COD order placed successfully');

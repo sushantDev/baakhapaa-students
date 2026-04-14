@@ -1,5 +1,3 @@
-// ignore_for_file: duplicate_ignore, unused_element
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -30,7 +28,6 @@ class CreatorsScreen extends StatefulWidget {
 class _CreatorsScreenState extends State<CreatorsScreen> {
   bool _isLoading = true;
   bool _isLoadingCounts = false;
-  Map<int, Map<String, int>> _counts = {};
 
   List<dynamic> _creators = [];
   List<dynamic> _filtered = [];
@@ -38,6 +35,7 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
   String _searchQuery = "";
   String _filter = "All";
 
+  final Map<int, Map<String, int>> _counts = {};
   Timer? _debounce;
 
   bool get _isActiveRoute =>
@@ -58,6 +56,8 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
 
       _creators = auth.creators;
       _filtered = _creators;
+
+      _loadCreatorCountsBatched();
     } catch (e) {
       DebugLogger.error("Failed loading creators: $e");
       if (mounted) {
@@ -70,7 +70,6 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  // ignore: unused_element
   void _loadCreatorCountsBatched() async {
     if (_isLoadingCounts) return;
     _isLoadingCounts = true;
@@ -168,7 +167,7 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
       final auth = Provider.of<Auth>(context, listen: false);
       final response = await http.get(
         Uri.parse(
-            'https://student.baakhapaa.com/api/creators/filter?filter=${_mapFilterToBackend(filter)}'),
+            'https://app.baakhapaa.com/api/creators/filter?filter=${_mapFilterToBackend(filter)}'),
         headers: {
           'Authorization': 'Bearer ${auth.token}',
           'Content-Type': 'application/json',
@@ -181,29 +180,6 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
           _filtered = List<dynamic>.from(data['data']['values'] ?? []);
           _isLoading = false;
         });
-
-        DebugLogger.info(
-          '✅ Filtered creators loaded: ${_filtered.length} creators for filter "$filter"',
-        );
-
-        // Debug: Log first creator structure
-        if (_filtered.isNotEmpty) {
-          final firstCreator = _filtered.first;
-          DebugLogger.info(
-              '👤 First creator keys: ${firstCreator.keys.toString()}');
-          DebugLogger.info(
-              '👤 First creator has images: ${firstCreator['images'] != null}');
-          if (firstCreator['images'] is List) {
-            DebugLogger.info(
-                '👤 First creator images count: ${(firstCreator['images'] as List).length}');
-            if ((firstCreator['images'] as List).isNotEmpty) {
-              final firstImage = (firstCreator['images'] as List).first;
-              DebugLogger.info('👤 First creator image structure: $firstImage');
-            }
-          }
-        }
-
-        // Load counts for filtered creators
         _loadCreatorCountsBatchedForFiltered();
       } else {
         throw Exception('Filter failed: ${response.statusCode}');
@@ -214,7 +190,6 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
     }
   }
 
-  // Load counts for filtered creators
   void _loadCreatorCountsBatchedForFiltered() async {
     if (_isLoadingCounts) return;
     _isLoadingCounts = true;
@@ -223,8 +198,6 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
     final shorts = Provider.of<Shorts>(context, listen: false);
 
     final ids = _filtered.map((c) => c['id'] as int).toList();
-
-    // Clear previous counts for this batch
     for (var id in ids) {
       _counts.remove(id);
     }
@@ -280,19 +253,9 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
     super.dispose();
   }
 
-  int _countStory(int id) {
-    final creator =
-        _filtered.firstWhere((c) => c['id'] == id, orElse: () => null);
-    return creator != null ? (creator['seasons_count'] ?? 0) as int : 0;
-  }
-
-  int _countShort(int id) {
-    final creator =
-        _filtered.firstWhere((c) => c['id'] == id, orElse: () => null);
-    return creator != null ? (creator['shorts_count'] ?? 0) as int : 0;
-  }
-
-  bool _countLoading(int id) => false;
+  int _countStory(int id) => _counts[id]?['story'] ?? 0;
+  int _countShort(int id) => _counts[id]?['shorts'] ?? 0;
+  bool _countLoading(int id) => !_counts.containsKey(id);
 
   @override
   Widget build(BuildContext context) {
@@ -303,38 +266,31 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
           isDark ? const Color(0xFF0F0F0F) : const Color(0xFFF5F5F7),
       appBar: header(
         context: context,
-        titleText: 'Teachers',
+        titleText: 'Tutors',
       ),
       body: RefreshIndicator(
         onRefresh: _loadCreators,
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDark
-                  ? [const Color(0xFF090909), const Color(0xFF082032)]
-                  : [Colors.white, Colors.grey.shade300],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+        color: Colors.amber,
+        child: Column(
+          children: [
+            _SubHeader(),
+            _SearchSection(onSearch: _onSearchChanged),
+            const SizedBox(height: 6),
+            _FilterSection(onFilter: _onFilterChanged),
+            const SizedBox(height: 8),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: Loading())
+                  : _filtered.isEmpty
+                      ? _EmptyState()
+                      : _CreatorsList(
+                          creators: _filtered,
+                          storyCount: _countStory,
+                          shortsCount: _countShort,
+                          isLoading: _countLoading,
+                        ),
             ),
-          ),
-          child: Column(
-            children: [
-              const _SubHeader(),
-              _SearchSection(onSearch: _onSearchChanged),
-              _FilterSection(onFilter: _onFilterChanged),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: Loading())
-                    : _filtered.isEmpty
-                        ? const _EmptyState()
-                        : _CreatorsList(
-                            creators: _filtered,
-                            storyCount: _countStory,
-                            shortsCount: _countShort,
-                          ),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -361,7 +317,7 @@ class _SubHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Discover Teachers',
+                  'Discover Tutors',
                   style: GoogleFonts.poppins(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -371,7 +327,7 @@ class _SubHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Find teachers you\'ll love',
+                  'Find creators you\'ll love',
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     color: isDark ? Colors.white38 : Colors.black38,
@@ -451,7 +407,7 @@ class _SearchSection extends StatelessWidget {
             fontSize: 15,
           ),
           decoration: InputDecoration(
-            hintText: '${context.l10n.search} teachers...',
+            hintText: '${context.l10n.search} tutors...',
             hintStyle: TextStyle(
               color: isDark ? Colors.white30 : Colors.black26,
               fontSize: 15,
@@ -505,7 +461,7 @@ class _FilterSectionState extends State<_FilterSection> {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         scrollDirection: Axis.horizontal,
         itemCount: _filters.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (_, i) {
           final f = _filters[i];
           final isSelected = _selected == f.label;
@@ -515,13 +471,32 @@ class _FilterSectionState extends State<_FilterSection> {
               setState(() => _selected = f.label);
               widget.onFilter(f.label);
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.blue.shade500
-                    : (isDark ? Colors.grey.shade800 : Colors.grey.shade200),
-                borderRadius: BorderRadius.circular(20),
+                    ? Colors.amber
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : Colors.white),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: Colors.amber.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : isDark
+                        ? []
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 4,
+                            ),
+                          ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -530,18 +505,18 @@ class _FilterSectionState extends State<_FilterSection> {
                     f.icon,
                     size: 16,
                     color: isSelected
-                        ? Colors.white
-                        : (isDark ? Colors.white70 : Colors.grey.shade700),
+                        ? Colors.black87
+                        : (isDark ? Colors.white54 : Colors.black45),
                   ),
                   const SizedBox(width: 6),
                   Text(
                     f.label,
                     style: GoogleFonts.inter(
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: isSelected
-                          ? Colors.white
-                          : (isDark ? Colors.white70 : Colors.grey.shade700),
+                          ? Colors.black87
+                          : (isDark ? Colors.white70 : Colors.black54),
                     ),
                   ),
                 ],
@@ -549,71 +524,6 @@ class _FilterSectionState extends State<_FilterSection> {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-//
-// -----------------------------
-// Count Badge
-// -----------------------------
-class CountBadge extends StatelessWidget {
-  final List<Color> colors;
-  final String? assetIcon;
-  final IconData? iconData;
-  final bool loading;
-  final int count;
-
-  const CountBadge({
-    super.key,
-    required this.colors,
-    required this.count,
-    this.loading = false,
-    this.assetIcon,
-    this.iconData,
-  });
-
-  String _format(int n) {
-    if (n >= 1000000) return "${(n / 1000000).toStringAsFixed(1)}M";
-    if (n >= 1000) return "${(n / 1000).toStringAsFixed(1)}K";
-    return n.toString();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: colors),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          if (loading)
-            const SizedBox(
-              width: 12,
-              height: 12,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-            )
-          else if (assetIcon != null)
-            Image.asset(assetIcon!, width: 12, height: 12)
-          else if (iconData != null)
-            Icon(iconData, size: 14, color: Colors.white),
-          const SizedBox(width: 4),
-          if (!loading)
-            Text(
-              _format(count),
-              style: GoogleFonts.poppins(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-        ],
       ),
     );
   }
@@ -638,11 +548,8 @@ class _CreatorsList extends StatelessWidget {
     required this.creators,
     required this.storyCount,
     required this.shortsCount,
-    // ignore: unused_element_parameter
-    this.isLoading = _defaultIsLoading,
+    required this.isLoading,
   });
-
-  static bool _defaultIsLoading(int id) => false;
 
   @override
   Widget build(BuildContext context) {
@@ -709,7 +616,6 @@ class _CreatorCard extends StatelessWidget {
     final imageUrl = _image(creator);
     final name = (creator['name'] ?? creator['username'] ?? '').toString();
     final username = (creator['username'] ?? '').toString();
-    // ignore: unused_local_variable
     final totalPoints =
         int.tryParse(creator['total_points']?.toString() ?? '0') ?? 0;
 
@@ -819,25 +725,45 @@ class _CreatorCard extends StatelessWidget {
                         ),
                       ),
                     const SizedBox(height: 8),
+                    // Stats row
                     Row(
                       children: [
-                        CountBadge(
-                          colors: const [Color(0xFFF9F5FF), Color(0xFF9191FD)],
-                          assetIcon: "assets/images/story-playlist.png",
-                          count: storyCount(id),
+                        _StatChip(
+                          icon: Icons.auto_stories_rounded,
+                          label: _formatCount(storyCount(id)),
+                          color: const Color(0xFF6B5CE7),
                           loading: isLoading(id),
+                          isDark: isDark,
                         ),
-                        const Spacer(),
-                        CountBadge(
-                          colors: const [Color(0xFF990000), Color(0xFFFF0000)],
-                          iconData: Icons.play_circle,
-                          count: shortsCount(id),
+                        const SizedBox(width: 8),
+                        _StatChip(
+                          icon: Icons.play_circle_rounded,
+                          label: _formatCount(shortsCount(id)),
+                          color: const Color(0xFFE74C3C),
                           loading: isLoading(id),
+                          isDark: isDark,
                         ),
+                        if (totalPoints > 0) ...[
+                          const SizedBox(width: 8),
+                          _StatChip(
+                            icon: Icons.star_rounded,
+                            label: _formatCount(totalPoints),
+                            color: Colors.amber.shade700,
+                            loading: false,
+                            isDark: isDark,
+                          ),
+                        ],
                       ],
-                    )
+                    ),
                   ],
                 ),
+              ),
+
+              // Arrow
+              Icon(
+                Icons.chevron_right_rounded,
+                color: isDark ? Colors.white24 : Colors.black12,
+                size: 24,
               ),
             ],
           ),
@@ -925,7 +851,7 @@ class _EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'No teachers found',
+            'No tutors found',
             style: GoogleFonts.inter(
               color: isDark ? Colors.white38 : Colors.black38,
               fontSize: 16,

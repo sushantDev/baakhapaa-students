@@ -83,6 +83,7 @@ class Orders with ChangeNotifier {
   Future<void> addOrder(
       {List<CartItem>? cartProducts,
       int? paymentId,
+      String? paymentMethod,
       Map<String, CartItem>? cartItems,
       int? shippingAddressId}) async {
     try {

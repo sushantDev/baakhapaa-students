@@ -1007,10 +1007,50 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
       bio = data['about']?.toString();
     }
 
+    final roleValue = _resolveCreatorRoleValue(data);
+    final roleDisplayName = _getRoleDisplayName(roleValue);
+
     final trimmed = bio?.trim();
     return (trimmed != null && trimmed.isNotEmpty)
         ? trimmed
-        : 'Content Creator & Influencer';
+        : '$roleDisplayName and Guide';
+  }
+
+  // Helper method to convert role to display name
+  String _getRoleDisplayName(dynamic role) {
+    if (role == null) return 'Tutor';
+    final roleStr = role.toString().toLowerCase().trim();
+    switch (roleStr) {
+      case 'creator':
+      case 'teacher':
+      case 'tutor':
+        return 'Tutor';
+      case 'player':
+      case 'student':
+        return 'Student';
+      case 'vendor':
+        return 'Vendor';
+      default:
+        return roleStr.replaceAllMapped(
+          RegExp(r'(^\w|\s\w)'),
+          (match) => match.group(0)!.toUpperCase(),
+        );
+    }
+  }
+
+  dynamic _resolveCreatorRoleValue(Map<String, dynamic> rankings) {
+    return _creatorData?['role'] ??
+        _creatorData?['user_type'] ??
+        _creatorData?['type'] ??
+        _creatorProfile['role'] ??
+        _creatorProfile['user_type'] ??
+        _creatorProfile['type'] ??
+        rankings['role'] ??
+        rankings['user_type'] ??
+        rankings['type'] ??
+        (rankings['user'] is Map ? rankings['user']['role'] : null) ??
+        (rankings['user'] is Map ? rankings['user']['user_type'] : null) ??
+        (rankings['user'] is Map ? rankings['user']['type'] : null);
   }
 
   @override
@@ -1215,6 +1255,8 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
       child: Consumer<Auth>(
         builder: (_, auth, __) {
           final rankings = auth.creatorsRankings;
+          final roleValue = _resolveCreatorRoleValue(rankings);
+          final creatorRoleLabel = _getRoleDisplayName(roleValue);
           final int bpts = _resolveCreatorPoints(rankings);
           final int leaderboardRank = _resolveLeaderboardRank(rankings);
           final int referralRank = _parseStatValue(rankings['referral_rank']);
@@ -1369,9 +1411,9 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // "Creator" label
+                                  // Role label
                                   Text(
-                                    'Creator',
+                                    creatorRoleLabel,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color:
@@ -3545,21 +3587,21 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                             ),
                           ],
                         ),
-                        child: Center(
-                          child: (imageUrl != null &&
-                                  imageUrl.toString().trim().isNotEmpty)
-                              ? CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  width: 28,
-                                  height: 28,
-                                  fit: BoxFit.contain,
-                                )
-                              : const Icon(
+                        child: (imageUrl != null &&
+                                imageUrl.toString().trim().isNotEmpty)
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              )
+                            : const Center(
+                                child: Icon(
                                   Icons.emoji_events,
                                   color: Colors.amber,
                                   size: 20,
                                 ),
-                        ),
+                              ),
                       ),
                     ),
                   ),

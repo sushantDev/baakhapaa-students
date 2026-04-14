@@ -838,6 +838,7 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
 
         await Provider.of<Orders>(context, listen: false).addOrder(
           cartItems: widget.cart.items,
+          paymentMethod: 'Cash on Delivery',
           shippingAddressId: shippingAddr?.id,
         );
         DebugLogger.success('COD order placed successfully');

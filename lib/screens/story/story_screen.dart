@@ -1064,12 +1064,36 @@ class _StoryScreenState extends State<StoryScreen>
     double cardSize =
         cardWidth < 50 ? 50 : cardWidth; // Minimum size constraint
 
-    // Get the image URL if available
+    // Get the image URL if available (supports new CDN urls + legacy paths)
     String? imageUrl;
-    if (gift['images'] != null && gift['images'].isNotEmpty) {
-      // Use the same URL pattern as the working gift screen
-      imageUrl =
-          'https://student.baakhapaa.com/storage/${gift['images'][0]['full']}';
+    final images = gift['images'];
+    if (images is List && images.isNotEmpty) {
+      final firstImage = images.first;
+      String? rawImage;
+
+      if (firstImage is Map) {
+        rawImage = firstImage['url']?.toString();
+        rawImage ??= firstImage['thumbnail']?.toString();
+        rawImage ??= firstImage['full']?.toString();
+        rawImage ??= firstImage['path']?.toString();
+      } else if (firstImage is String) {
+        rawImage = firstImage;
+      }
+
+      if (rawImage != null && rawImage.trim().isNotEmpty) {
+        if (rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
+          imageUrl = rawImage;
+        } else {
+          var normalizedPath = rawImage.trim();
+          normalizedPath = normalizedPath.replaceFirst(RegExp(r'^/+'), '');
+          normalizedPath = normalizedPath.replaceFirst(
+              RegExp(r'^(storage/storage/)+'), 'storage/');
+          normalizedPath =
+              normalizedPath.replaceFirst(RegExp(r'^storage/'), '');
+          imageUrl =
+              'https://student.baakhapaa.com/storage/storage/$normalizedPath';
+        }
+      }
     }
     final auth = Provider.of<Auth>(context, listen: false);
     return InkWell(

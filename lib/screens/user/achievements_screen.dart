@@ -653,55 +653,52 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                           width: 1,
                         ),
                       ),
-                      child: Center(
-                        child: (url != null && url.toString().trim().isNotEmpty)
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                    12), // adjust radius as needed
-                                child: CachedNetworkImage(
-                                  imageUrl: url,
-                                  fit: BoxFit.contain, // no crop/stretch
-                                  width: 56,
-                                  height: 56,
-                                  placeholder: (context, _) => Icon(
-                                    Icons.shield,
-                                    color: claimed
-                                        ? accentColor
-                                        : (canClaim
-                                            ? Colors.green
-                                            : Colors.grey.shade400),
-                                    size: 36,
-                                  ),
-                                  errorWidget: (context, _, __) => Icon(
-                                    Icons.shield,
-                                    color: claimed
-                                        ? accentColor
-                                        : (canClaim
-                                            ? Colors.green
-                                            : Colors.grey.shade400),
-                                    size: 36,
-                                  ),
-                                ),
-                              )
-                            : ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                    12), // same rounding for placeholder
-                                child: Container(
-                                  color: Colors.white,
-                                  width: 56,
-                                  height: 56,
-                                  child: Icon(
-                                    Icons.shield,
-                                    color: claimed
-                                        ? accentColor
-                                        : (canClaim
-                                            ? Colors.green
-                                            : Colors.grey.shade400),
-                                    size: 36,
-                                  ),
+                      child: (url != null && url.toString().trim().isNotEmpty)
+                          ? CachedNetworkImage(
+                              imageUrl: url,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              placeholder: (context, _) => Container(
+                                color: Colors.white,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.shield,
+                                  color: claimed
+                                      ? accentColor
+                                      : (canClaim
+                                          ? Colors.green
+                                          : Colors.grey.shade400),
+                                  size: 36,
                                 ),
                               ),
-                      ),
+                              errorWidget: (context, _, __) => Container(
+                                color: Colors.white,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.shield,
+                                  color: claimed
+                                      ? accentColor
+                                      : (canClaim
+                                          ? Colors.green
+                                          : Colors.grey.shade400),
+                                  size: 36,
+                                ),
+                              ),
+                            )
+                          : Container(
+                              color: Colors.white,
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.shield,
+                                color: claimed
+                                    ? accentColor
+                                    : (canClaim
+                                        ? Colors.green
+                                        : Colors.grey.shade400),
+                                size: 36,
+                              ),
+                            ),
                     ),
                   ),
                 ),

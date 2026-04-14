@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>587678856071-cd45gc2v591glv3hoctt9bu0etf2u2d6.apps.googleusercontent.com</string>
+	<string>587678856071-hiksj30dutr0crvbrp7j8phvpu6ojcs1.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.587678856071-cd45gc2v591glv3hoctt9bu0etf2u2d6</string>
+	<string>com.googleusercontent.apps.587678856071-hiksj30dutr0crvbrp7j8phvpu6ojcs1</string>
 	<key>ANDROID_CLIENT_ID</key>
-	<string>587678856071-mth3vepd88i97t7uek79dupgh1j2g8i7.apps.googleusercontent.com</string>
+	<string>587678856071-4uf75rt9k86eo0je8fv43tl5rhn7afn3.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyA4S-JK_gY73LL6r4elhrRT8oCsjy9VIus</string>
 	<key>GCM_SENDER_ID</key>
@@ -15,11 +15,11 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.baakhapaa.com</string>
+	<string>com.baakhapaa.student</string>
 	<key>PROJECT_ID</key>
 	<string>baakhapaa-flutter</string>
 	<key>STORAGE_BUCKET</key>
-	<string>baakhapaa-flutter.appspot.com</string>
+	<string>baakhapaa-flutter.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:587678856071:ios:2b71313834447e67c85922</string>
+	<string>1:587678856071:ios:47ac7ead3dc9b333c85922</string>
 </dict>
 </plist>

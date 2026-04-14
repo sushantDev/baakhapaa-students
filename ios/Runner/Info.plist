@@ -28,7 +28,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.baakhapaa.com</string>
+			<string>com.baakhapaa.student</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>kpg</string>

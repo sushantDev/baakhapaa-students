@@ -69,7 +69,7 @@ class Orders with ChangeNotifier {
       }
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      if (responseData['success']) {
+      if (responseData['success'] == true) {
         if (!_disposed) notifyListeners();
       } else {
         throw Exception('API returned error: ${responseData.toString()}');
@@ -118,7 +118,7 @@ class Orders with ChangeNotifier {
 
       final data = json.encode({
         'products': products,
-        'payment_id': paymentId,
+        if (paymentId != null) 'payment_id': paymentId,
         if (shippingAddressId != null) 'shipping_address_id': shippingAddressId,
       });
 
@@ -145,7 +145,7 @@ class Orders with ChangeNotifier {
       }
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      if (responseData['success']) {
+      if (responseData['success'] == true) {
         if (!_disposed) notifyListeners();
       } else {
         throw Exception('API returned error: ${responseData.toString()}');
@@ -170,7 +170,7 @@ class Orders with ChangeNotifier {
       );
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      if (responseData['success']) {
+      if (responseData['success'] == true) {
         if (!_disposed) notifyListeners();
       } else {
         throw ('error');
@@ -188,7 +188,7 @@ class Orders with ChangeNotifier {
       );
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      if (responseData['success']) {
+      if (responseData['success'] == true) {
         _orders = responseData['data']['items'];
         if (!_disposed) notifyListeners();
       }

@@ -1591,15 +1591,16 @@ class _LockSectionState extends State<LockSection> {
         if (seasonData['title'] != null) {
           currentSeason['title'] = seasonData['title'];
         }
+        if (seasonData['content_type'] != null) {
+          currentSeason['content_type'] = seasonData['content_type'];
+        }
 
         story.setSelectedSeason(currentSeason).then((_) {
           if (mounted) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                final isReadable =
-                    (currentSeason['content_type'] ?? 'video') == 'readable';
                 Navigator.of(context).pushNamed(
-                  isReadable
+                  isReadableContent
                       ? ReadableEpisodeScreen.routeName
                       : VideoScreen.routeName,
                   arguments: episodeToPlay,

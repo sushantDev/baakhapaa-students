@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../providers/auth.dart';
 import '../../../providers/story_creation.dart';
 import '../../../providers/challenge.dart';
 import '../../../utils/debug_logger.dart';
@@ -34,6 +35,19 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
   @override
   void initState() {
     super.initState();
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (!auth.isEmailVerified) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email not verified yet. Please verify your email first.'),
+          ),
+        );
+        Navigator.of(context).maybePop();
+      });
+      return;
+    }
     _loadChallengeSeasonIds();
     _loadChallenges(); // Load challenges first
     _loadSeasons();
@@ -424,13 +438,13 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
 
   Widget _buildSeasonsList(bool isDark) {
     // Calculate statistics
-    final totalEpisodes = _mySeasons.fold<int>(
-      0,
-      (sum, season) =>
-          sum +
-          ((season['episodes_count'] ?? season['episodes']?.length ?? 0)
-              as int),
-    );
+    final totalEpisodes = _mySeasons.fold<int>(0, (sum, season) {
+      final dynamic rawCount =
+          season['episodes_count'] ?? season['episodes']?.length ?? 0;
+      final int count =
+          rawCount is int ? rawCount : int.tryParse(rawCount.toString()) ?? 0;
+      return sum + count;
+    });
 
     return CustomScrollView(
       slivers: [
@@ -651,7 +665,7 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
     }
 
     // Fallback 2: Check if any episode has is_challenge flag
-    if (!isChallenge && season['episodes'] != null) {
+    if (!isChallenge && season['episodes'] is List) {
       final episodes = season['episodes'] as List;
       if (episodes.isNotEmpty) {
         isChallenge = episodes

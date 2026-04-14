@@ -2195,6 +2195,38 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
   }
 
   Widget _buildUserContainer() {
+    bool isProfileEmailVerified() {
+      final value = _user['email_verified_at'] ??
+          (_user['information'] is Map<String, dynamic>
+              ? (_user['information'] as Map<String, dynamic>)['email_verified_at']
+              : null);
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is num) return value > 0;
+      final normalized = value.toString().trim().toLowerCase();
+      if (normalized.isEmpty ||
+          normalized == 'null' ||
+          normalized == 'false' ||
+          normalized == '0' ||
+          normalized == 'no' ||
+          normalized == 'not_verified' ||
+          normalized == 'unverified') {
+        return false;
+      }
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      return DateTime.tryParse(value.toString()) != null;
+    }
+
+    void showEmailVerificationWarning() {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email not verified yet. Please verify your email first.'),
+        ),
+      );
+    }
+
     final categories = [
       'Shorts',
       'Stories',
@@ -2205,6 +2237,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     Widget buildAddShortCard() {
       return InkWell(
         onTap: () {
+          if (!isProfileEmailVerified()) {
+            showEmailVerificationWarning();
+            return;
+          }
           final auth = Provider.of<Auth>(context, listen: false);
           if (auth.role != 'creator') {
             Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);
@@ -2304,6 +2340,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     Widget _buildAddStoryCard() {
       return InkWell(
         onTap: () {
+          if (!isProfileEmailVerified()) {
+            showEmailVerificationWarning();
+            return;
+          }
           final auth = Provider.of<Auth>(context, listen: false);
           if (auth.role != 'creator') {
             Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);

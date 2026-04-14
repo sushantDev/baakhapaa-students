@@ -201,6 +201,35 @@ class Auth with ChangeNotifier {
     return role == 'guest' || _token.isEmpty;
   }
 
+  bool get isEmailVerified {
+    final value = _user['email_verified_at'] ??
+        (_user['information'] is Map<String, dynamic>
+            ? (_user['information'] as Map<String, dynamic>)['email_verified_at']
+            : null);
+
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is num) return value > 0;
+
+    final normalized = value.toString().trim().toLowerCase();
+    if (normalized.isEmpty ||
+        normalized == 'null' ||
+        normalized == 'false' ||
+        normalized == '0' ||
+        normalized == 'no' ||
+        normalized == 'not_verified' ||
+        normalized == 'unverified') {
+      return false;
+    }
+
+    if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+      return true;
+    }
+
+    // For string timestamps, only treat as verified if it parses as a valid date.
+    return DateTime.tryParse(value.toString()) != null;
+  }
+
   int get userRank {
     final rank = _user['rank'];
     if (rank == null) return 0;

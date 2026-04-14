@@ -66,6 +66,19 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
   @override
   void initState() {
     super.initState();
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (!auth.isEmailVerified) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email not verified yet. Please verify your email first.'),
+          ),
+        );
+        Navigator.of(context).maybePop();
+      });
+      return;
+    }
     WidgetsBinding.instance.addObserver(this);
 
     // Initialize animations
@@ -2194,14 +2207,14 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                         } else if (collaborator['offer_type'] == 'gift') {
                           offerText = ' (Gift)';
                         }
-                        final hasImage = collaborator['image'] != null &&
-                            (collaborator['image'] as String).isNotEmpty;
+                        final imageUrl =
+                            collaborator['image']?.toString() ?? '';
+                        final hasImage = imageUrl.isNotEmpty;
                         return Chip(
                           avatar: CircleAvatar(
                             backgroundColor: Colors.amber,
                             backgroundImage: hasImage
-                                ? CachedNetworkImageProvider(
-                                    collaborator['image'])
+                                ? CachedNetworkImageProvider(imageUrl)
                                 : null,
                             child: hasImage
                                 ? null

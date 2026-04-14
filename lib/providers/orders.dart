@@ -83,6 +83,7 @@ class Orders with ChangeNotifier {
   Future<void> addOrder(
       {List<CartItem>? cartProducts,
       int? paymentId,
+      String? paymentMethod,
       Map<String, CartItem>? cartItems,
       int? shippingAddressId}) async {
     try {
@@ -119,6 +120,7 @@ class Orders with ChangeNotifier {
       final data = json.encode({
         'products': products,
         'payment_id': paymentId,
+        if (paymentMethod != null) 'payment_method': paymentMethod,
         if (shippingAddressId != null) 'shipping_address_id': shippingAddressId,
       });
 

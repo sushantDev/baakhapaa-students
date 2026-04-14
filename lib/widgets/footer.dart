@@ -58,6 +58,15 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       return;
     }
 
+    if (!auth.isEmailVerified) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email not verified yet. Please verify your email first.'),
+        ),
+      );
+      return;
+    }
+
     if (auth.role == 'vendor' || auth.role == 'creator') {
       showModalBottomSheet(
         context: context,

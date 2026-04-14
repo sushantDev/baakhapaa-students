@@ -164,7 +164,8 @@ class _VideoScreenState extends State<VideoScreen>
         }
 
         if (_navArgs.runtimeType == int) {
-          story.fetchEpisode(_navArgs).then((_) {
+          final episodeId = _navArgs as int;
+          story.fetchEpisode(episodeId).then((_) {
             if (mounted) {
               setState(() {
                 episode = story.episode;
@@ -176,9 +177,9 @@ class _VideoScreenState extends State<VideoScreen>
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
                   DebugLogger.info(
-                      '🎭 🎭 SCREEN: Setting puppet context for episode ${_navArgs['id']}');
+                      '🎭 🎭 SCREEN: Setting puppet context for episode $episodeId');
                   // Set puppet context for this specific episode
-                  setPuppetEpisodeContext(_navArgs['id'] as int);
+                  setPuppetEpisodeContext(episodeId);
                 }
               });
             }
@@ -190,10 +191,13 @@ class _VideoScreenState extends State<VideoScreen>
               });
             }
           });
-        } else if (_navArgs is Map<String, dynamic>) {
+        } else if (_navArgs is Map) {
           // Handle episode map - ALWAYS fetch fresh data to get duration skip fields
-          final episodeId = _navArgs['id'];
-          if (episodeId != null && episodeId is int) {
+          final rawEpisodeId = (_navArgs as Map)['id'];
+          final episodeId = rawEpisodeId is int
+              ? rawEpisodeId
+              : int.tryParse(rawEpisodeId?.toString() ?? '');
+          if (episodeId != null) {
             DebugLogger.info(
                 '🔄 VideoScreen: Fetching fresh episode data for ID: $episodeId');
             // DON'T use old episode data - wait for fresh fetch
@@ -2626,8 +2630,8 @@ class _VideoScreenState extends State<VideoScreen>
   }
 
   Widget buildShortsThumbnailCard(Map<String, dynamic> short) {
-    final String imageUrl = short['thumbnail'] ?? '';
-    final String title = short['title'] ?? 'Short';
+    final String imageUrl = short['thumbnail']?.toString() ?? '';
+    final String title = short['title']?.toString() ?? 'Short';
 
     return GestureDetector(
       onTap: () {
@@ -2828,9 +2832,11 @@ class _VideoScreenState extends State<VideoScreen>
               CircleAvatar(
                 radius: 18,
                 backgroundColor: Colors.grey[800],
-                backgroundImage: user['image'] != null
-                    ? CachedNetworkImageProvider(user['image'] as String)
-                    : AssetImage('assets/images/logo.png') as ImageProvider,
+                backgroundImage: (user['image']?.toString().isNotEmpty ?? false)
+                    ? CachedNetworkImageProvider(user['image'].toString())
+                        as ImageProvider
+                    : const AssetImage('assets/images/logo.png')
+                        as ImageProvider,
               ),
               SizedBox(width: 12),
               Expanded(
@@ -2953,9 +2959,10 @@ class _VideoScreenState extends State<VideoScreen>
             child: CircleAvatar(
               radius: 16,
               backgroundColor: Colors.grey[800],
-              backgroundImage: user['image'] != null
-                  ? CachedNetworkImageProvider(user['image'] as String)
-                  : AssetImage('assets/images/logo.png') as ImageProvider,
+              backgroundImage: (user['image']?.toString().isNotEmpty ?? false)
+                  ? CachedNetworkImageProvider(user['image'].toString())
+                      as ImageProvider
+                  : const AssetImage('assets/images/logo.png') as ImageProvider,
             ),
           ),
           SizedBox(width: 12),

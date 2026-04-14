@@ -52,10 +52,6 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
   late DateTime _lastRedeemed;
   late int _cooldownDuration = 0;
 
-  // Level restriction
-  bool _hasRequiredLevel = false;
-  int _userLevel = 0;
-  static const int REQUIRED_LEVEL = 10;
 
   @override
   void initState() {
@@ -89,26 +85,6 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
         // If guest user, show login dialog and navigate back
         WidgetsBinding.instance.addPostFrameCallback((_) {
           GuestAuthHelper.showGuestLoginDialog(context, 'view gift details');
-          Navigator.of(context).pop();
-        });
-        return;
-      }
-
-      // Check user level
-      _userLevel = auth.user['level'] ?? 0;
-      _hasRequiredLevel = _userLevel >= REQUIRED_LEVEL;
-
-      if (!_hasRequiredLevel) {
-        // If user doesn't meet level requirement, show message and navigate back
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  'You need to reach Level $REQUIRED_LEVEL to access gifts'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 3),
-            ),
-          );
           Navigator.of(context).pop();
         });
         return;
@@ -1529,8 +1505,7 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
               onPressed: userAvailableCoins >= gift['coin'] &&
                       _isRedeemable &&
                       qty > 0 &&
-                      !isCooldownActive &&
-                      _hasRequiredLevel
+                      !isCooldownActive
                   ? () async {
                       // Check if all episodes are watched
                       if (!areAllEpisodesWatched) {

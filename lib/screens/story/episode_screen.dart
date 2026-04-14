@@ -1244,8 +1244,8 @@ class TrailerSection extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Get trailer URL or fallback to thumbnail
-    final String trailerUrl = story['trailer_url'] ?? '';
-    final String thumbnailUrl = story['thumbnail'] ?? '';
+    final String trailerUrl = story['trailer_url']?.toString() ?? '';
+    final String thumbnailUrl = story['thumbnail']?.toString() ?? '';
 
     // Use trailer if available, otherwise use thumbnail
     final String imageUrl = trailerUrl.isNotEmpty ? trailerUrl : thumbnailUrl;
@@ -2794,8 +2794,10 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final achievement = achievements[index];
-                  final String title = achievement['title'] ?? 'Badge';
-                  final String imageUrl = achievement['url'] ?? '';
+                  final String title =
+                      achievement['title']?.toString() ?? 'Badge';
+                  final String imageUrl =
+                      achievement['url']?.toString() ?? '';
                   final List<dynamic> progress = achievement['progress'] ?? [];
                   final double progressValue = progress.isNotEmpty ? 1.0 : 0.0;
                   final bool isEarned = progress.isNotEmpty;
@@ -3398,8 +3400,10 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final achievement = achievements[index];
-                  final String title = achievement['title'] ?? 'Achievement';
-                  final String imageUrl = achievement['image_url'] ?? '';
+                  final String title =
+                      achievement['title']?.toString() ?? 'Achievement';
+                  final String imageUrl =
+                      achievement['image_url']?.toString() ?? '';
                   final bool isClaimed = achievement['is_claimed'] ?? false;
                   final List<dynamic> progress = achievement['progress'] ?? [];
                   final double progressValue =
@@ -3541,7 +3545,8 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final product = products[index];
-                  final String imageUrl = product['image_url'] ?? '';
+                  final String imageUrl =
+                      product['image_url']?.toString() ?? '';
                   final int productId = product['id'] ?? 0;
 
                   return GestureDetector(
@@ -3906,13 +3911,14 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
   // Method to show achievement details modal
   void _showAchievementModal(
       BuildContext context, Map<String, dynamic> achievement) {
-    final String title = achievement['title'] ?? 'Achievement';
+    final String title = achievement['title']?.toString() ?? 'Achievement';
     final String description =
         achievement['description'] ?? 'No description available.';
-    final String imageUrl = achievement['url'] ?? '';
+    final String imageUrl = achievement['url']?.toString() ?? '';
     final List<dynamic> progress = achievement['progress'] ?? [];
     final bool isEarned = achievement['is_claimed'] ?? false;
-    final String category = achievement['achievement_category'] ?? 'General';
+    final String category =
+        achievement['achievement_category']?.toString() ?? 'General';
 
     showDialog(
       context: context,
@@ -4826,7 +4832,7 @@ class _SuggestedSeasonsSectionState extends State<SuggestedSeasonsSection> {
             ? rawRewards
             : Map<String, dynamic>.from(rawRewards as Map))
         : null;
-    final String difficulty = season['difficulty'] ?? 'low';
+    final String difficulty = season['difficulty']?.toString() ?? 'low';
     final double completionPercentage =
         season['completion_percentage']?.toDouble() ?? 0.0;
 

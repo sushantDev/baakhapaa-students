@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
@@ -48,11 +47,6 @@ class _GiftScreenState extends State<GiftScreen> with PuppetInteractionMixin {
   late DateTime _lastRedeemed;
   late int _cooldownDuration = 0;
   late List<dynamic> _giftSliders = [];
-  bool _hasRequiredLevel = false;
-  int _userLevel = 0;
-  static const int REQUIRED_LEVEL = 10;
-  Map<String, dynamic>? _userProgressData;
-  bool _isLoadingProgress = true;
 
   /// Category definitions: API value (as used in `gifts/{Category}`) + UI label.
   /// The `api` string should match exactly what the backend expects after `gifts/`.
@@ -110,27 +104,13 @@ class _GiftScreenState extends State<GiftScreen> with PuppetInteractionMixin {
   }
 
   Future<void> _mainInit() async {
-    // Check user level first
-    final authProvider = Provider.of<Auth>(context, listen: false);
-    _userLevel = authProvider.user['level'] ?? 0;
-    _hasRequiredLevel = _userLevel >= REQUIRED_LEVEL;
-
-    // Fetch gifts for all users (so locked users can see preview)
+    // Fetch gifts for all users
     var _shopProvider = Provider.of<Shop>(context, listen: false);
     _shopProvider.fetchGiftSlider().then((___) {
       _giftSliders = _shopProvider.giftSliders;
     });
     await _fetchForYou();
     await _fetchGiftsByCategory(_selectedCategoryApi);
-
-    if (!_hasRequiredLevel) {
-      // Fetch user progress data for locked screen
-      await _fetchUserProgress();
-      setState(() {
-        _isLoading = true;
-      });
-      return;
-    }
 
     // Refresh puppet suggestions when gifts load
     refreshPuppetSuggestions();
@@ -173,45 +153,6 @@ class _GiftScreenState extends State<GiftScreen> with PuppetInteractionMixin {
     }
 
     _cooldownDuration = authProvider.cooldownTime ?? 24;
-  }
-
-  Future<void> _fetchUserProgress() async {
-    setState(() {
-      _isLoadingProgress = true;
-    });
-
-    try {
-      final authProvider = Provider.of<Auth>(context, listen: false);
-      final token = authProvider.token;
-
-      final response = await http.get(
-        Uri.parse('${Url.rootUrl}/levels/user-progress'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          setState(() {
-            _userProgressData = data['data'];
-            _isLoadingProgress = false;
-          });
-          DebugLogger.info('✅ User progress data fetched successfully');
-        } else {
-          throw Exception('API returned success: false');
-        }
-      } else {
-        throw Exception('Failed to load user progress: ${response.statusCode}');
-      }
-    } catch (e) {
-      DebugLogger.error('❌ Error fetching user progress: $e');
-      setState(() {
-        _isLoadingProgress = false;
-      });
-    }
   }
 
   /// Fetch "For You" gifts from backend API `gift/forYou`.
@@ -478,237 +419,41 @@ class _GiftScreenState extends State<GiftScreen> with PuppetInteractionMixin {
             _mainInit();
           },
           child: _isLoading
-              ? (!_hasRequiredLevel
-                  ? _buildLockedScreen()
-                  : Container(
-                      child: SingleChildScrollView(
-                        physics: BouncingScrollPhysics(),
-                        child: Column(
-                          children: <Widget>[
-                            // Quick Actions (title, search, points chip)
-                            _buildQuickActions(),
+              ? Container(
+                  child: SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
+                    child: Column(
+                      children: <Widget>[
+                        // Quick Actions (title, search, points chip)
+                        _buildQuickActions(),
 
-                            // For You Section
-                            _buildForYouSection(),
+                        // For You Section
+                        _buildForYouSection(),
 
-                            // Featured Gifts Section
-                            // _buildFeaturedGiftsSection(),
+                        // Featured Gifts Section
+                        // _buildFeaturedGiftsSection(),
 
-                            // Gifts by Category Section
-                            _buildCategoryGiftsSection(),
+                        // Gifts by Category Section
+                        // _buildCategoryGiftsSection(),
 
-                            // Hero Banner Section
-                            _buildHeroBanner(),
+                        // Hero Banner Section
+                        _buildHeroBanner(),
 
-                            // Cooldown Message
-                            if (cooldownMessage != SizedBox.shrink())
-                              cooldownMessage,
+                        // Cooldown Message
+                        if (cooldownMessage != SizedBox.shrink())
+                          cooldownMessage,
 
-                            // All Gifts Section
-                            _buildAllGiftsSection(),
+                        // All Gifts Section
+                        _buildAllGiftsSection(),
 
-                            SizedBox(height: 100), // Bottom padding
-                          ],
-                        ),
-                      ),
-                    ))
+                        SizedBox(height: 100), // Bottom padding
+                      ],
+                    ),
+                  ),
+                )
               : const GiftScreenSkeleton(),
         ),
       ),
-    );
-  }
-
-  /// Locked screen for users below level 10 - shows blurred preview of gifts
-  Widget _buildLockedScreen() {
-    final currentLevelData = _userProgressData?['current_level'];
-    final currentLevelName = currentLevelData?['name'] ?? 'Level $_userLevel';
-
-    return Stack(
-      children: [
-        // Background: Gift content preview (blurred)
-        IgnorePointer(
-          child: SingleChildScrollView(
-            physics: NeverScrollableScrollPhysics(),
-            child: Column(
-              children: <Widget>[
-                // Quick Actions (title, search, points chip)
-                _buildQuickActions(),
-                // For You Section
-                _buildForYouSection(),
-                // Gifts by Category Section
-                _buildCategoryGiftsSection(),
-                // Hero Banner Section
-                _buildHeroBanner(),
-                // All Gifts Section (main gift list)
-                _buildAllGiftsSection(),
-                SizedBox(height: 100),
-              ],
-            ),
-          ),
-        ),
-        // Blur overlay (reduced intensity)
-        Positioned.fill(
-          child: ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-              child: Container(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.black.withValues(alpha: 0.5)
-                    : Colors.white.withValues(alpha: 0.5),
-              ),
-            ),
-          ),
-        ),
-        // Lock modal on top
-        Center(
-          child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              padding: EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Color(0xFF2A2A2A)
-                        : Colors.white,
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Color(0xFF1E1E1E)
-                        : Colors.grey.shade50,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.purple.withValues(alpha: 0.3),
-                    blurRadius: 30,
-                    spreadRadius: 0,
-                    offset: Offset(0, 10),
-                  ),
-                ],
-                border: Border.all(
-                  color: Colors.purple.withValues(alpha: 0.4),
-                  width: 2,
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Lock Icon with gradient background
-                  Container(
-                    padding: EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.purple.shade400,
-                          Colors.purple.shade600,
-                        ],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.purple.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.lock_rounded,
-                      size: 64,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 32),
-
-                  // Title
-                  Text(
-                    'Gifts Locked',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 16),
-
-                  // Description
-                  Text(
-                    'You need to reach Level $REQUIRED_LEVEL to unlock the Gift Store',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 24),
-
-                  // Current Level Display
-                  _isLoadingProgress
-                      ? const ShimmerLoading(
-                          child: SkeletonBox(
-                              width: 160, height: 50, borderRadius: 20),
-                        )
-                      : Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.amber.shade400.withValues(alpha: 0.2),
-                                Colors.amber.shade600.withValues(alpha: 0.2),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.amber.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.stars_rounded,
-                                color: Colors.amber.shade700,
-                                size: 28,
-                              ),
-                              SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Your Current Level',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    currentLevelName,
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.amber.shade700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                  SizedBox(height: 32),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -1357,6 +1102,7 @@ class _GiftScreenState extends State<GiftScreen> with PuppetInteractionMixin {
   // }
 
   /// Gifts by Category section - horizontal carousel for the selected category.
+  // ignore: unused_element
   Widget _buildCategoryGiftsSection() {
     final currentCategoryApi = _selectedCategoryApi;
     final isLoading = _categoryLoading[currentCategoryApi] == true;

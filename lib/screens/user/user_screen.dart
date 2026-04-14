@@ -3259,38 +3259,37 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                                 .withValues(alpha: 0.25),
                                       ),
                                     ),
-                                    child: Center(
-                                      child: ClipRRect(
-                                        child: (url != null &&
-                                                url
-                                                    .toString()
-                                                    .trim()
-                                                    .isNotEmpty)
-                                            ? CachedNetworkImage(
-                                                imageUrl: url,
-                                                fit: BoxFit.contain,
-                                                width: 34,
-                                                height: 34,
-                                                placeholder: (context, _) =>
-                                                    Icon(
-                                                  Icons.emoji_events,
-                                                  color: Colors.amber.shade700,
-                                                  size: 24,
-                                                ),
-                                                errorWidget: (context, _, __) =>
-                                                    Icon(
-                                                  Icons.emoji_events,
-                                                  color: Colors.amber.shade700,
-                                                  size: 24,
-                                                ),
-                                              )
-                                            : Icon(
+                                    child: (url != null &&
+                                            url.toString().trim().isNotEmpty)
+                                        ? CachedNetworkImage(
+                                            imageUrl: url,
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                            placeholder: (context, _) =>
+                                                Container(
+                                              alignment: Alignment.center,
+                                              child: Icon(
                                                 Icons.emoji_events,
                                                 color: Colors.amber.shade700,
                                                 size: 24,
                                               ),
-                                      ),
-                                    ),
+                                            ),
+                                            errorWidget: (context, _, __) =>
+                                                Container(
+                                              alignment: Alignment.center,
+                                              child: Icon(
+                                                Icons.emoji_events,
+                                                color: Colors.amber.shade700,
+                                                size: 24,
+                                              ),
+                                            ),
+                                          )
+                                        : Icon(
+                                            Icons.emoji_events,
+                                            color: Colors.amber.shade700,
+                                            size: 24,
+                                          ),
                                   ),
                                 ),
                                 const SizedBox(height: 5),
@@ -4428,21 +4427,21 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                             ),
                           ],
                         ),
-                        child: Center(
-                          child: (imageUrl != null &&
-                                  imageUrl.toString().trim().isNotEmpty)
-                              ? CachedNetworkImage(
-                                  imageUrl: imageUrl.toString(),
-                                  width: 28,
-                                  height: 28,
-                                  fit: BoxFit.contain,
-                                )
-                              : const Icon(
+                        child: (imageUrl != null &&
+                                imageUrl.toString().trim().isNotEmpty)
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl.toString(),
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              )
+                            : const Center(
+                                child: Icon(
                                   Icons.emoji_events,
                                   color: Colors.amber,
                                   size: 20,
                                 ),
-                        ),
+                              ),
                       ),
                     ),
                   ),

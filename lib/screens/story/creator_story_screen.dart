@@ -3545,21 +3545,21 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                             ),
                           ],
                         ),
-                        child: Center(
-                          child: (imageUrl != null &&
-                                  imageUrl.toString().trim().isNotEmpty)
-                              ? CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  width: 28,
-                                  height: 28,
-                                  fit: BoxFit.contain,
-                                )
-                              : const Icon(
+                        child: (imageUrl != null &&
+                                imageUrl.toString().trim().isNotEmpty)
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              )
+                            : const Center(
+                                child: Icon(
                                   Icons.emoji_events,
                                   color: Colors.amber,
                                   size: 20,
                                 ),
-                        ),
+                              ),
                       ),
                     ),
                   ),

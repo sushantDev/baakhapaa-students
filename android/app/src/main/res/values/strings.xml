@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Fun Learn</string>
-    
+    <string name="app_name">Skill Sikka</string>
+
     <!-- Facebook Configuration -->
     <!-- Replace with your actual Facebook App ID -->
     <string name="facebook_app_id">591287309442411</string>

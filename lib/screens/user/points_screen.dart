@@ -11,7 +11,6 @@ import 'package:baakhapaa/screens/user/achievements_screen.dart';
 // import 'package:baakhapaa/widgets/subscriptionBanner.dart';
 import 'package:baakhapaa/widgets/wallet_widget.dart';
 import 'package:baakhapaa/widgets/wallet_security_settings.dart';
-import 'package:baakhapaa/screens/user/wallet_auth_screen.dart';
 import 'package:baakhapaa/screens/story/story_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -106,9 +105,8 @@ class _PointsScreenState extends State<PointsScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // Re-check authentication when app returns to foreground
     if (state == AppLifecycleState.resumed && _isAuthChecked) {
-      _validateSessionOrReauth();
+      _resetAutoLockTimer();
     }
   }
 
@@ -193,20 +191,6 @@ class _PointsScreenState extends State<PointsScreen>
     }
   }
 
-  Future<void> _validateSessionOrReauth() async {
-    var auth = Provider.of<Auth>(context, listen: false);
-    await auth.loadWalletSession();
-
-    if (!auth.hasValidWalletSession) {
-      // Session expired, require re-authentication
-      setState(() {
-        _isAuthChecked = false;
-        _isLoading = true;
-      });
-      _checkWalletAccess();
-    }
-  }
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -241,77 +225,10 @@ class _PointsScreenState extends State<PointsScreen>
     // Prevent multiple simultaneous auth checks
     if (_isAuthChecked) return;
 
-    // Check if 2FA is enabled
-    final prefs = await SharedPreferences.getInstance();
-    final is2FAEnabled = prefs.getBool('wallet_2fa_enabled') ?? true;
-
-    if (!is2FAEnabled) {
-      // 2FA disabled — skip authentication, grant access directly
-      setState(() {
-        _isAuthChecked = true;
-      });
-      _startAutoLockTimer();
-      _initData();
-      return;
-    }
-
-    var auth = Provider.of<Auth>(context, listen: false);
-
-    // ALWAYS clear wallet session on entry - require fresh authentication every time
-    await auth.clearWalletSession();
-
-    // Session is now always invalid after clear - navigate to auth screen
-    if (!auth.hasValidWalletSession) {
-      // Navigate to wallet authentication screen
-      if (!mounted) return;
-
-      final authenticated = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(
-          builder: (context) => const WalletAuthScreen(),
-        ),
-      );
-
-      if (!mounted) return;
-
-      if (authenticated == true) {
-        // Re-validate session after authentication
-        await auth.loadWalletSession();
-
-        if (auth.hasValidWalletSession) {
-          // Authentication successful and session valid, mark as checked and load data
-          setState(() {
-            _isAuthChecked = true;
-          });
-          // Start auto-lock timer after successful authentication
-          _startAutoLockTimer();
-          _initData();
-        } else {
-          // Session not properly set, show error and go back
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Authentication failed. Please try again.'),
-                backgroundColor: Colors.red,
-              ),
-            );
-            Navigator.of(context).pop();
-          }
-        }
-      } else {
-        // User cancelled or failed authentication, go back
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      }
-    } else {
-      // Session is valid, mark as checked and load data directly
-      setState(() {
-        _isAuthChecked = true;
-      });
-      // Start auto-lock timer
-      _startAutoLockTimer();
-      _initData();
-    }
+    setState(() {
+      _isAuthChecked = true;
+    });
+    _initData();
   }
 
   Future<void> _initData() async {

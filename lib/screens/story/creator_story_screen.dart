@@ -22,7 +22,6 @@ import '../../widgets/header.dart';
 import '../../widgets/TicketWidget.dart';
 import '../../widgets/footer.dart';
 import '../../widgets/share_with_qr_modal.dart';
-import '../../widgets/premium_badge.dart';
 import '../messages/messages_screen.dart';
 import './episode_screen.dart';
 import '../others/referrals_screen.dart';
@@ -1487,10 +1486,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                                                 'Creator Story Screen - Subscription field: ${profileToUse['subscription_expires_at']}');
                                             DebugLogger.info(
                                                 'Creator Story Screen - Premium field: ${profileToUse['premium_expires_at']}');
-                                            return SimplePremiumBadge(
-                                              userData: profileToUse,
-                                              size: 16,
-                                            );
+                                            return const SizedBox.shrink();
                                           },
                                         ),
                                       ],
@@ -2033,11 +2029,6 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
-              const SizedBox(width: 8),
-              SimplePremiumBadge(
-                userData: _creatorProfile,
-                size: 20,
               ),
             ],
           ),

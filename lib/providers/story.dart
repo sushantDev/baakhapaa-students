@@ -139,7 +139,7 @@ class Story with ChangeNotifier {
         }
       }
     } catch (e) {
-      DebugLogger.error('🔥 Error loading cached streak: $e');
+      DebugLogger.error('đĽ Error loading cached streak: $e');
     }
   }
 
@@ -152,7 +152,7 @@ class Story with ChangeNotifier {
             'cached_reading_streak', json.encode(_readingStreak));
       }
     } catch (e) {
-      DebugLogger.error('🔥 Error saving streak to cache: $e');
+      DebugLogger.error('đĽ Error saving streak to cache: $e');
     }
   }
 
@@ -408,25 +408,25 @@ class Story with ChangeNotifier {
   // New method to fetch episodes for a specific season
   Future<List<dynamic>> fetchSeasonEpisodes(int seasonId) async {
     try {
-      DebugLogger.api('🎬 Fetching episodes for season ID: $seasonId');
+      DebugLogger.api('đŹ Fetching episodes for season ID: $seasonId');
       final response = await http.get(
         Uri.parse(Url.baakhapaaApi('/season/$seasonId/episodes')),
         headers: Url.baakhapaaAuthHeaders(authToken),
       );
 
-      DebugLogger.api('🎬 Episode API Response Status: ${response.statusCode}');
+      DebugLogger.api('đŹ Episode API Response Status: ${response.statusCode}');
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      DebugLogger.api('🎬 Episode API Response: ${responseData.toString()}');
+      DebugLogger.api('đŹ Episode API Response: ${responseData.toString()}');
 
       if (responseData['success'] == true) {
         final episodes = responseData['data']['episodes'] ?? [];
-        DebugLogger.info('🎬 Found ${episodes.length} episodes');
+        DebugLogger.info('đŹ Found ${episodes.length} episodes');
 
         // Store episodes in the selected season for navigation purposes
         if (_selectedSeason['id'] == seasonId) {
           _selectedSeason['episodes'] = episodes;
           DebugLogger.info(
-            '🎬 Updated selected season with ${episodes.length} episodes',
+            'đŹ Updated selected season with ${episodes.length} episodes',
           );
           notifyListeners();
         }
@@ -436,7 +436,7 @@ class Story with ChangeNotifier {
         throw ('Error fetching episodes');
       }
     } catch (error) {
-      DebugLogger.api('🎬 Error fetching episodes: $error');
+      DebugLogger.api('đŹ Error fetching episodes: $error');
       throw error;
     }
   }
@@ -448,7 +448,7 @@ class Story with ChangeNotifier {
   ) async {
     try {
       DebugLogger.api(
-        '🎬 Fetching creator episodes for creator ID: $creatorId, season ID: $seasonId',
+        'đŹ Fetching creator episodes for creator ID: $creatorId, season ID: $seasonId',
       );
       final response = await http.get(
         Uri.parse(
@@ -464,17 +464,17 @@ class Story with ChangeNotifier {
         final userId = data['user_id'];
         final seasonIdFromApi = data['season_id'];
         DebugLogger.info(
-            '🎬 Found [33m${episodes.length}[0m creator episodes');
-        DebugLogger.api('👤 Creator user_id: $userId');
+            'đŹ Found [33m${episodes.length}[0m creator episodes');
+        DebugLogger.api('đ¤ Creator user_id: $userId');
 
         // Store episodes and creator_id in the selected season for navigation purposes
         if (_selectedSeason['id'] == seasonIdFromApi) {
           _selectedSeason['episodes'] = episodes;
-          _selectedSeason['creator_id'] = userId; // ✅ ADD THIS!
+          _selectedSeason['creator_id'] = userId; // â ADD THIS!
           notifyListeners();
         }
 
-        // ✅ Return full data structure
+        // â Return full data structure
         return {
           'user_id': userId,
           'season_id': seasonIdFromApi,
@@ -484,7 +484,7 @@ class Story with ChangeNotifier {
         throw ('Error fetching creator episodes');
       }
     } catch (error) {
-      DebugLogger.error('🎬 Error fetching creator episodes: $error');
+      DebugLogger.error('đŹ Error fetching creator episodes: $error');
       throw error;
     }
   }
@@ -492,9 +492,9 @@ class Story with ChangeNotifier {
   // Future<void> fetchCreatorSeasons(int creatorId) async {
   //   try {
   //     DebugLogger.info(
-  //         '📺 Fetching creator seasons for creator ID: $creatorId');
+  //         'đş Fetching creator seasons for creator ID: $creatorId');
   //     final url = Url.baakhapaaApi('/v3/seasons/$creatorId');
-  //     DebugLogger.info('🌐 API URL: $url');
+  //     DebugLogger.info('đ API URL: $url');
 
   //     final response = await http.get(
   //       Uri.parse(url),
@@ -502,37 +502,37 @@ class Story with ChangeNotifier {
   //     );
 
   //     DebugLogger.info(
-  //         '📡 Creator seasons API response status: ${response.statusCode}');
-  //     DebugLogger.info('📦 Raw response body length: ${response.body.length}');
+  //         'đĄ Creator seasons API response status: ${response.statusCode}');
+  //     DebugLogger.info('đŚ Raw response body length: ${response.body.length}');
 
   //     var responseData = json.decode(utf8.decode((response.bodyBytes)));
-  //     DebugLogger.info('✅ Creator seasons success: ${responseData['success']}');
-  //     DebugLogger.info('📊 Full response keys: ${responseData.keys.toList()}');
+  //     DebugLogger.info('â Creator seasons success: ${responseData['success']}');
+  //     DebugLogger.info('đ Full response keys: ${responseData.keys.toList()}');
 
   //     final preview = responseData.toString();
   //     DebugLogger.info(
-  //         '📄 Response preview: ${preview.length > 200 ? preview.substring(0, 200) : preview}...');
+  //         'đ Response preview: ${preview.length > 200 ? preview.substring(0, 200) : preview}...');
 
   //     if (responseData['success'] == true) {
   //       final dataField = responseData['data'];
-  //       DebugLogger.info('📊 Data field type: ${dataField.runtimeType}');
+  //       DebugLogger.info('đ Data field type: ${dataField.runtimeType}');
 
   //       // Handle different possible structures
   //       List<dynamic> rawItems = [];
   //       if (dataField is List) {
-  //         DebugLogger.info('📊 Data is a List directly');
+  //         DebugLogger.info('đ Data is a List directly');
   //         rawItems = dataField;
   //       } else if (dataField is Map<String, dynamic>) {
   //         DebugLogger.info(
-  //             '📊 Data is a Map with keys: ${dataField.keys.toList()}');
+  //             'đ Data is a Map with keys: ${dataField.keys.toList()}');
   //         if (dataField.containsKey('items')) {
   //           rawItems = dataField['items'] ?? [];
   //           DebugLogger.info(
-  //               '📊 Found items field with ${rawItems.length} items');
+  //               'đ Found items field with ${rawItems.length} items');
   //         } else if (dataField.containsKey('seasons')) {
   //           rawItems = dataField['seasons'] ?? [];
   //           DebugLogger.info(
-  //               '📊 Found seasons field with ${rawItems.length} items');
+  //               'đ Found seasons field with ${rawItems.length} items');
   //         } else {
   //           // Try to find any array field in the data
   //           final arrayFields = dataField.entries.where(
@@ -541,13 +541,13 @@ class Story with ChangeNotifier {
   //           if (arrayFields.isNotEmpty) {
   //             rawItems = arrayFields.first.value;
   //             DebugLogger.info(
-  //                 '📊 Found array field "${arrayFields.first.key}" with ${rawItems.length} items');
+  //                 'đ Found array field "${arrayFields.first.key}" with ${rawItems.length} items');
   //           }
   //         }
   //       }
 
   //       DebugLogger.info(
-  //           '📊 Raw items count before filtering: ${rawItems.length}');
+  //           'đ Raw items count before filtering: ${rawItems.length}');
 
   //       // Filter out null items and ensure each season has required fields
   //       _creatorSeasons = rawItems.where((season) => season != null).map((
@@ -565,27 +565,27 @@ class Story with ChangeNotifier {
   //       }).toList();
 
   //       DebugLogger.info(
-  //           '✨ Creator seasons SET to: ${_creatorSeasons.length} items');
-  //       DebugLogger.info('🔔 Calling notifyListeners() for creator seasons');
+  //           'â¨ Creator seasons SET to: ${_creatorSeasons.length} items');
+  //       DebugLogger.info('đ Calling notifyListeners() for creator seasons');
   //       try {
   //         notifyListeners();
-  //         DebugLogger.info('✅ notifyListeners() completed for creator seasons');
+  //         DebugLogger.info('â notifyListeners() completed for creator seasons');
   //       } catch (e) {
   //         DebugLogger.info(
-  //             '⚠️ notifyListeners() called after disposal (widget navigated away)');
+  //             'â ď¸ notifyListeners() called after disposal (widget navigated away)');
   //       }
   //     } else {
-  //       DebugLogger.error('❌ API returned success=false');
+  //       DebugLogger.error('â API returned success=false');
   //       _creatorSeasons = [];
   //       try {
   //         notifyListeners();
   //       } catch (e) {
-  //         DebugLogger.info('⚠️ notifyListeners() called after disposal');
+  //         DebugLogger.info('â ď¸ notifyListeners() called after disposal');
   //       }
   //       throw ('Error');
   //     }
   //   } catch (error) {
-  //     DebugLogger.error('💥 Error in fetchCreatorSeasons: $error');
+  //     DebugLogger.error('đĽ Error in fetchCreatorSeasons: $error');
   //     if (!error.toString().contains('was used after being disposed')) {
   //       DebugLogger.error('Stack trace: ${StackTrace.current}');
   //     }
@@ -593,7 +593,7 @@ class Story with ChangeNotifier {
   //     try {
   //       notifyListeners();
   //     } catch (e) {
-  //       DebugLogger.info('⚠️ notifyListeners() called after disposal');
+  //       DebugLogger.info('â ď¸ notifyListeners() called after disposal');
   //     }
   //     rethrow;
   //   }
@@ -603,53 +603,53 @@ class Story with ChangeNotifier {
       {bool returnList = false}) async {
     try {
       DebugLogger.info(
-          '📺 Fetching creator seasons for creator ID: $creatorId');
+          'đş Fetching creator seasons for creator ID: $creatorId');
       final url = Url.baakhapaaApi('/v3/seasons/$creatorId');
-      DebugLogger.info('📺 API URL: $url');
+      DebugLogger.info('đş API URL: $url');
 
       final response = await http.get(
         Uri.parse(url),
         headers: Url.baakhapaaAuthHeaders(authToken),
       );
 
-      DebugLogger.info('📺 Response status: ${response.statusCode}');
+      DebugLogger.info('đş Response status: ${response.statusCode}');
 
       // Handle rate limiting
       if (response.statusCode == 429) {
-        DebugLogger.error('📺 Rate limited for creator $creatorId');
+        DebugLogger.error('đş Rate limited for creator $creatorId');
         throw Exception('429');
       }
 
       var responseData = json.decode(utf8.decode(response.bodyBytes));
-      DebugLogger.info('📺 Response success: ${responseData['success']}');
+      DebugLogger.info('đş Response success: ${responseData['success']}');
 
       if (responseData['success'] == true) {
         final dataField = responseData['data'];
-        DebugLogger.info('📺 Data field type: ${dataField.runtimeType}');
+        DebugLogger.info('đş Data field type: ${dataField.runtimeType}');
 
         // Normalize to list regardless of backend shape
         List<dynamic> rawItems = [];
         if (dataField is List) {
           rawItems = dataField;
-          DebugLogger.info('📺 Data is List with ${rawItems.length} items');
+          DebugLogger.info('đş Data is List with ${rawItems.length} items');
         } else if (dataField is Map<String, dynamic>) {
           DebugLogger.info(
-              '📺 Data is Map with keys: ${dataField.keys.toList()}');
+              'đş Data is Map with keys: ${dataField.keys.toList()}');
           if (dataField.containsKey('items')) {
             rawItems = dataField['items'] ?? [];
             DebugLogger.info(
-                '📺 Extracted ${rawItems.length} items from data.items');
+                'đş Extracted ${rawItems.length} items from data.items');
           } else if (dataField.containsKey('seasons')) {
             rawItems = dataField['seasons'] ?? [];
             DebugLogger.info(
-                '📺 Extracted ${rawItems.length} items from data.seasons');
+                'đş Extracted ${rawItems.length} items from data.seasons');
           } else {
             // fallback: first list field if any
             final arrayFields = dataField.entries.where((e) => e.value is List);
             if (arrayFields.isNotEmpty) {
               rawItems = arrayFields.first.value;
               DebugLogger.info(
-                  '📺 Fallback: extracted ${rawItems.length} from ${arrayFields.first.key}');
+                  'đş Fallback: extracted ${rawItems.length} from ${arrayFields.first.key}');
             }
           }
         }
@@ -659,8 +659,8 @@ class Story with ChangeNotifier {
             .map((e) => Map<String, dynamic>.from(e))
             .toList();
 
-        DebugLogger.info('📺 Final list size after filtering: ${list.length}');
-        DebugLogger.info('📺 Returning list for creator $creatorId');
+        DebugLogger.info('đş Final list size after filtering: ${list.length}');
+        DebugLogger.info('đş Returning list for creator $creatorId');
 
         if (!returnList) {
           // update provider state (unchanged behavior)
@@ -881,7 +881,7 @@ class Story with ChangeNotifier {
           if (episodes[i]['id'] == episodeId) {
             episodes[i]['watched'] = true;
             DebugLogger.success(
-              '📺 Story Provider: Updated episode $episodeId watched status to true in selectedSeason',
+              'đş Story Provider: Updated episode $episodeId watched status to true in selectedSeason',
             );
             break;
           }
@@ -892,7 +892,7 @@ class Story with ChangeNotifier {
       if (_episode['id'] == episodeId) {
         _episode['watched'] = true;
         DebugLogger.success(
-          '📺 Story Provider: Updated current episode $episodeId watched status to true',
+          'đş Story Provider: Updated current episode $episodeId watched status to true',
         );
       }
 
@@ -900,7 +900,7 @@ class Story with ChangeNotifier {
       notifyListeners();
     } catch (error) {
       DebugLogger.error(
-        '❌ Story Provider: Failed to update episode watched status locally: $error',
+        'â Story Provider: Failed to update episode watched status locally: $error',
       );
     }
   }
@@ -959,7 +959,7 @@ class Story with ChangeNotifier {
       if (responseData['success'] == true) {
         // Refresh comments from server to get the latest list
         await getEpisodeComments(episodeId);
-        DebugLogger.success('💬 Comment posted and list refreshed');
+        DebugLogger.success('đŹ Comment posted and list refreshed');
       } else {
         throw Exception(responseData['message'] ?? 'Failed to post comment');
       }
@@ -987,15 +987,15 @@ class Story with ChangeNotifier {
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success'] == true) {
         DebugLogger.info(
-          '📊 Episode progress updated: ${progressSeconds}s/${durationSeconds}s for episode $episodeId',
+          'đ Episode progress updated: ${progressSeconds}s/${durationSeconds}s for episode $episodeId',
         );
       } else {
         DebugLogger.error(
-          '❌ Failed to update episode progress: ${responseData['message']}',
+          'â Failed to update episode progress: ${responseData['message']}',
         );
       }
     } catch (error) {
-      DebugLogger.error('❌ Error updating episode progress: $error');
+      DebugLogger.error('â Error updating episode progress: $error');
     }
   }
 
@@ -1015,7 +1015,7 @@ class Story with ChangeNotifier {
       }
 
       DebugLogger.info(
-        '📊 Updating local episode progress: Episode $episodeId -> ${completionPercent.toStringAsFixed(1)}% (${progressSeconds}s/${durationSeconds}s)',
+        'đ Updating local episode progress: Episode $episodeId -> ${completionPercent.toStringAsFixed(1)}% (${progressSeconds}s/${durationSeconds}s)',
       );
 
       // Update in selected season if it contains episodes
@@ -1026,7 +1026,7 @@ class Story with ChangeNotifier {
           if (episode is Map<String, dynamic> && episode['id'] == episodeId) {
             episode['completion_percent'] = completionPercent;
             DebugLogger.success(
-              '📊 Updated episode ${episodeId} completion_percent to ${completionPercent.toStringAsFixed(1)}%',
+              'đ Updated episode ${episodeId} completion_percent to ${completionPercent.toStringAsFixed(1)}%',
             );
             break;
           }
@@ -1036,13 +1036,13 @@ class Story with ChangeNotifier {
       // Also update in the current episode if it matches
       if (_episode.isNotEmpty && _episode['id'] == episodeId) {
         _episode['completion_percent'] = completionPercent;
-        DebugLogger.success('📊 Updated current episode completion_percent');
+        DebugLogger.success('đ Updated current episode completion_percent');
       }
 
       // Notify listeners to trigger UI updates
       notifyListeners();
     } catch (error) {
-      DebugLogger.error('❌ Error updating local episode progress: $error');
+      DebugLogger.error('â Error updating local episode progress: $error');
     }
   }
 
@@ -1065,7 +1065,7 @@ class Story with ChangeNotifier {
       }
     } catch (error) {
       DebugLogger.error('Error fetching story slider: $error');
-      // Don't rethrow — caller should not crash for non-critical slider data
+      // Don't rethrow â caller should not crash for non-critical slider data
     }
   }
 
@@ -1088,18 +1088,18 @@ class Story with ChangeNotifier {
       }
     } catch (error) {
       DebugLogger.error('Error fetching story popup: $error');
-      // Don't rethrow — popups are non-critical
+      // Don't rethrow â popups are non-critical
     }
   }
 
   Future<void> fetchMyList() async {
     try {
       DebugLogger.api(
-        '📋 STARTING fetchMyList - authToken length: ${authToken.length}',
+        'đ STARTING fetchMyList - authToken length: ${authToken.length}',
       );
 
       final String apiUrl = Url.baakhapaaApi('/my-list/show');
-      DebugLogger.api('📋 API URL: $apiUrl');
+      DebugLogger.api('đ API URL: $apiUrl');
 
       final Map<String, String> headers = Url.baakhapaaAuthHeaders(authToken);
 
@@ -1114,24 +1114,24 @@ class Story with ChangeNotifier {
             responseData['data'] != null &&
             responseData['data']['items'] != null) {
           _myListItems = responseData['data']['items'];
-          DebugLogger.api('📋 Loaded ${_myListItems.length} my list items');
+          DebugLogger.api('đ Loaded ${_myListItems.length} my list items');
           notifyListeners();
         } else {
           DebugLogger.api(
-            '📋 My List API Error: ${responseData['message'] ?? 'Unknown error'}',
+            'đ My List API Error: ${responseData['message'] ?? 'Unknown error'}',
           );
           _myListItems = [];
           notifyListeners();
         }
       } else {
         DebugLogger.api(
-          '📋 My List API Error: ${response.statusCode} - ${response.body}',
+          'đ My List API Error: ${response.statusCode} - ${response.body}',
         );
         _myListItems = [];
         notifyListeners();
       }
     } catch (e) {
-      DebugLogger.api('📋 Error fetching my list: $e');
+      DebugLogger.api('đ Error fetching my list: $e');
       _myListItems = [];
       notifyListeners();
     }
@@ -1140,7 +1140,7 @@ class Story with ChangeNotifier {
   // Add or remove item from My List
   Future<bool> toggleMyListItem(int seasonId) async {
     try {
-      DebugLogger.api('📋 STARTING toggleMyListItem - Season ID: $seasonId');
+      DebugLogger.api('đ STARTING toggleMyListItem - Season ID: $seasonId');
 
       // Check if item is already in My List - prioritize selected season data
       bool isInMyList = false;
@@ -1152,7 +1152,7 @@ class Story with ChangeNotifier {
           isInMyList = _selectedSeason['my_list'] == true;
           usedSelectedSeasonData = true;
           DebugLogger.api(
-            '📋 Provider: Using selectedSeason my_list field: $isInMyList',
+            'đ Provider: Using selectedSeason my_list field: $isInMyList',
           );
         }
       }
@@ -1166,7 +1166,7 @@ class Story with ChangeNotifier {
             return season != null && season['id'] == seasonId;
           });
           DebugLogger.api(
-            '📋 Provider: Using _myListItems array check: $isInMyList',
+            'đ Provider: Using _myListItems array check: $isInMyList',
           );
         } else {
           // For non-selected seasons, always use _myListItems array
@@ -1175,7 +1175,7 @@ class Story with ChangeNotifier {
             return season != null && season['id'] == seasonId;
           });
           DebugLogger.api(
-            '📋 Provider: Using _myListItems for non-selected season: $isInMyList',
+            'đ Provider: Using _myListItems for non-selected season: $isInMyList',
           );
         }
       }
@@ -1184,7 +1184,7 @@ class Story with ChangeNotifier {
       // make sure to fetch My List data first
       if (!usedSelectedSeasonData && _myListItems.isEmpty) {
         DebugLogger.api(
-          '📋 Provider: My List items empty, ensuring fresh data',
+          'đ Provider: My List items empty, ensuring fresh data',
         );
         await fetchMyList();
 
@@ -1194,12 +1194,12 @@ class Story with ChangeNotifier {
           return season != null && season['id'] == seasonId;
         });
         DebugLogger.api(
-          '📋 Provider: Re-checked with fresh My List data: $isInMyList',
+          'đ Provider: Re-checked with fresh My List data: $isInMyList',
         );
       }
 
       DebugLogger.api(
-        '📋 Provider: Determined My List status for season $seasonId: $isInMyList',
+        'đ Provider: Determined My List status for season $seasonId: $isInMyList',
       );
 
       String apiUrl;
@@ -1215,7 +1215,7 @@ class Story with ChangeNotifier {
         // Remove from My List using DELETE API pattern
         apiUrl = Url.baakhapaaApi('/my-list/$seasonId');
         DebugLogger.api(
-          '📋 Provider: REMOVING season $seasonId from My List using DELETE $apiUrl',
+          'đ Provider: REMOVING season $seasonId from My List using DELETE $apiUrl',
         );
 
         response = await http.delete(Uri.parse(apiUrl), headers: headers);
@@ -1224,7 +1224,7 @@ class Story with ChangeNotifier {
         apiUrl = Url.baakhapaaApi('/my-list/store');
         requestBody = {'season_id': seasonId};
         DebugLogger.api(
-          '📋 Provider: ADDING season $seasonId to My List using POST $apiUrl',
+          'đ Provider: ADDING season $seasonId to My List using POST $apiUrl',
         );
 
         response = await http.post(
@@ -1235,21 +1235,21 @@ class Story with ChangeNotifier {
       }
 
       DebugLogger.api(
-        '📋 My List Toggle API Response Status: ${response.statusCode}',
+        'đ My List Toggle API Response Status: ${response.statusCode}',
       );
-      DebugLogger.api('📋 My List Toggle API Response Body: ${response.body}');
+      DebugLogger.api('đ My List Toggle API Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
 
         if (responseData['success'] == true) {
-          DebugLogger.api('📋 My List item toggled successfully');
+          DebugLogger.api('đ My List item toggled successfully');
 
           // Update the selected season's my_list field if it's the same season
           if (_selectedSeason.isNotEmpty && _selectedSeason['id'] == seasonId) {
             _selectedSeason['my_list'] = !isInMyList; // Toggle the value
             DebugLogger.api(
-              '📋 Updated selectedSeason my_list field to: ${_selectedSeason['my_list']}',
+              'đ Updated selectedSeason my_list field to: ${_selectedSeason['my_list']}',
             );
           }
 
@@ -1259,18 +1259,18 @@ class Story with ChangeNotifier {
           return true;
         } else {
           DebugLogger.api(
-            '📋 My List Toggle API Error: ${responseData['message']}',
+            'đ My List Toggle API Error: ${responseData['message']}',
           );
           return false;
         }
       } else {
         DebugLogger.api(
-          '📋 My List Toggle API Error: ${response.statusCode} - ${response.body}',
+          'đ My List Toggle API Error: ${response.statusCode} - ${response.body}',
         );
         return false;
       }
     } catch (e) {
-      DebugLogger.api('📋 Error toggling my list item: $e');
+      DebugLogger.api('đ Error toggling my list item: $e');
       return false;
     }
   }
@@ -1340,7 +1340,7 @@ class Story with ChangeNotifier {
           normalized['user_image'].toString().isEmpty) {
         // This is a fallback - normally creator data should be in a nested object
         DebugLogger.warning(
-            '⚠️ Season data missing creator object, cannot extract creator image');
+            'â ď¸ Season data missing creator object, cannot extract creator image');
       }
     }
 
@@ -1376,40 +1376,40 @@ class Story with ChangeNotifier {
 
   Future<Map<String, dynamic>?> fetchSeasonDetails(int seasonId) async {
     try {
-      DebugLogger.api('🎬 STARTING fetchSeasonDetails - Season ID: $seasonId');
+      DebugLogger.api('đŹ STARTING fetchSeasonDetails - Season ID: $seasonId');
 
       final String apiUrl = Url.baakhapaaApi('/season-details/$seasonId');
-      DebugLogger.api('🎬 API URL: $apiUrl');
+      DebugLogger.api('đŹ API URL: $apiUrl');
 
       final Map<String, String> headers = Url.baakhapaaAuthHeaders(authToken);
 
       var response = await http.get(Uri.parse(apiUrl), headers: headers);
-      DebugLogger.api('🎬 API Response Status: ${response.statusCode}');
+      DebugLogger.api('đŹ API Response Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
-        DebugLogger.api('🎬 Season Details API Response: $responseData');
+        DebugLogger.api('đŹ Season Details API Response: $responseData');
 
         if (responseData['success'] == true && responseData['data'] != null) {
           // Normalize the season data to ensure proper field mapping
           final normalizedData = _normalizeSeasonData(responseData['data']);
           DebugLogger.api(
-              '🎬 Normalized season data - user_image: ${normalizedData['user_image']}, username: ${normalizedData['username']}, challenge_image_url: ${normalizedData['challenge_image_url']}');
+              'đŹ Normalized season data - user_image: ${normalizedData['user_image']}, username: ${normalizedData['username']}, challenge_image_url: ${normalizedData['challenge_image_url']}');
           return normalizedData;
         } else {
           DebugLogger.api(
-            '🎬 Season Details API Error: ${responseData['message'] ?? 'Unknown error'}',
+            'đŹ Season Details API Error: ${responseData['message'] ?? 'Unknown error'}',
           );
           return null;
         }
       } else {
         DebugLogger.api(
-          '🎬 Season Details API Error: ${response.statusCode} - ${response.body}',
+          'đŹ Season Details API Error: ${response.statusCode} - ${response.body}',
         );
         return null;
       }
     } catch (e) {
-      DebugLogger.api('🎬 Error fetching season details: $e');
+      DebugLogger.api('đŹ Error fetching season details: $e');
       return null;
     }
   }
@@ -1419,11 +1419,11 @@ class Story with ChangeNotifier {
   Future<void> fetchContinueWatching() async {
     try {
       DebugLogger.api(
-        '⏯️ STARTING fetchContinueWatching - authToken length: ${authToken.length}',
+        'âŻď¸ STARTING fetchContinueWatching - authToken length: ${authToken.length}',
       );
 
       final String apiUrl = Url.baakhapaaApi('/continue-watching?limit=10');
-      DebugLogger.api('⏯️ API URL: $apiUrl');
+      DebugLogger.api('âŻď¸ API URL: $apiUrl');
 
       final Map<String, String> headers = Url.baakhapaaAuthHeaders(authToken);
 
@@ -1437,7 +1437,7 @@ class Story with ChangeNotifier {
         if (responseData['success'] == true &&
             responseData['data'] != null &&
             responseData['data']['items'] != null) {
-          // ✅ NORMALIZE: Transform reward keys from backend format to UI format
+          // â NORMALIZE: Transform reward keys from backend format to UI format
           _continueWatchingItems = List<dynamic>.from(
             (responseData['data']['items'] as List).map((item) {
               final rewardDetails = item['reward_details'] ?? {};
@@ -1452,7 +1452,7 @@ class Story with ChangeNotifier {
                 ...item,
                 'season': season,
                 'reward_details': {
-                  // Backend key → UI key
+                  // Backend key â UI key
                   'product': rewardDetails['product_reward'] != null ? 1 : 0,
                   'achievement':
                       rewardDetails['achievement_reward'] != null ? 1 : 0,
@@ -1463,13 +1463,13 @@ class Story with ChangeNotifier {
           );
 
           DebugLogger.api(
-            '⏯️ Loaded ${_continueWatchingItems.length} continue watching items',
+            'âŻď¸ Loaded ${_continueWatchingItems.length} continue watching items',
           );
 
           // Debug: Log first item
           if (_continueWatchingItems.isNotEmpty) {
             DebugLogger.api(
-              '⏯️ First item: ${_continueWatchingItems.first['season']['title']}, '
+              'âŻď¸ First item: ${_continueWatchingItems.first['season']['title']}, '
               'Completion: ${_continueWatchingItems.first['completion_percentage']}%',
             );
           }
@@ -1477,20 +1477,20 @@ class Story with ChangeNotifier {
           notifyListeners();
         } else {
           DebugLogger.api(
-            '⏯️ Continue Watching API Error: ${responseData['message'] ?? 'Unknown error'}',
+            'âŻď¸ Continue Watching API Error: ${responseData['message'] ?? 'Unknown error'}',
           );
           _continueWatchingItems = [];
           notifyListeners();
         }
       } else {
         DebugLogger.api(
-          '⏯️ Continue Watching API Error: ${response.statusCode} - ${response.body}',
+          'âŻď¸ Continue Watching API Error: ${response.statusCode} - ${response.body}',
         );
         _continueWatchingItems = [];
         notifyListeners();
       }
     } catch (e) {
-      DebugLogger.api('⏯️ Error fetching continue watching: $e');
+      DebugLogger.api('âŻď¸ Error fetching continue watching: $e');
       _continueWatchingItems = [];
       notifyListeners();
     }
@@ -1499,12 +1499,12 @@ class Story with ChangeNotifier {
   Future<void> fetchPremiumCreatorSeasons() async {
     try {
       DebugLogger.api(
-        '🌟 STARTING fetchPremiumCreatorSeasons - authToken length: ${authToken.length}',
+        'đ STARTING fetchPremiumCreatorSeasons - authToken length: ${authToken.length}',
       );
 
       final String apiUrl =
           Url.baakhapaaApi('/seasons/premium-creator-seasons');
-      DebugLogger.api('🌟 API URL: $apiUrl');
+      DebugLogger.api('đ API URL: $apiUrl');
 
       final Map<String, String> headers = Url.baakhapaaAuthHeaders(authToken);
 
@@ -1530,26 +1530,26 @@ class Story with ChangeNotifier {
           );
 
           DebugLogger.api(
-            '🌟 Loaded ${_premiumCreatorSeasons.length} premium creator seasons',
+            'đ Loaded ${_premiumCreatorSeasons.length} premium creator seasons',
           );
 
           notifyListeners();
         } else {
           DebugLogger.api(
-            '🌟 Premium Creator Seasons API Error: ${responseData['message'] ?? 'Unknown error'}',
+            'đ Premium Creator Seasons API Error: ${responseData['message'] ?? 'Unknown error'}',
           );
           _premiumCreatorSeasons = [];
           notifyListeners();
         }
       } else {
         DebugLogger.api(
-          '🌟 Premium Creator Seasons API Error: ${response.statusCode} - ${response.body}',
+          'đ Premium Creator Seasons API Error: ${response.statusCode} - ${response.body}',
         );
         _premiumCreatorSeasons = [];
         notifyListeners();
       }
     } catch (e) {
-      DebugLogger.api('🌟 Error fetching premium creator seasons: $e');
+      DebugLogger.api('đ Error fetching premium creator seasons: $e');
       _premiumCreatorSeasons = [];
       notifyListeners();
     }
@@ -1605,11 +1605,11 @@ class Story with ChangeNotifier {
         _readableSeasons.shuffle();
 
         DebugLogger.api(
-            '📖 Loaded ${_readableSeasons.length} readable seasons');
+            'đ Loaded ${_readableSeasons.length} readable seasons');
         notifyListeners();
       }
     } catch (e) {
-      DebugLogger.error('📖 Error fetching readable seasons: $e');
+      DebugLogger.error('đ Error fetching readable seasons: $e');
       _readableSeasons = [];
       notifyListeners();
     }
@@ -1638,12 +1638,12 @@ class Story with ChangeNotifier {
         }
         _episodePages = pages;
         DebugLogger.api(
-            '📖 Loaded ${_episodePages.length} pages for episode $episodeId');
+            'đ Loaded ${_episodePages.length} pages for episode $episodeId');
       } else {
         _episodePages = [];
       }
     } catch (e) {
-      DebugLogger.error('📖 Error fetching episode pages: $e');
+      DebugLogger.error('đ Error fetching episode pages: $e');
       _episodePages = [];
     } finally {
       _isLoadingPages = false;
@@ -1681,7 +1681,7 @@ class Story with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      DebugLogger.error('🔥 Error fetching reading streak: $e');
+      DebugLogger.error('đĽ Error fetching reading streak: $e');
     } finally {
       _isStreakFetching = false;
     }
@@ -1705,7 +1705,7 @@ class Story with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      DebugLogger.error('🔥 Error fetching reading history: $e');
+      DebugLogger.error('đĽ Error fetching reading history: $e');
     }
   }
 
@@ -1732,7 +1732,7 @@ class Story with ChangeNotifier {
         DebugLogger.error('recordChapterComplete success!=true: $responseData');
       }
     } catch (e) {
-      DebugLogger.error('🔥 Error recording chapter complete: $e');
+      DebugLogger.error('đĽ Error recording chapter complete: $e');
     }
     return {};
   }
@@ -1760,7 +1760,7 @@ class Story with ChangeNotifier {
         DebugLogger.error('recordVideoComplete success!=true: $responseData');
       }
     } catch (e) {
-      DebugLogger.error('🔥 Error recording video complete: $e');
+      DebugLogger.error('đĽ Error recording video complete: $e');
     }
     return {};
   }
@@ -1795,7 +1795,7 @@ class Story with ChangeNotifier {
         };
       }
     } catch (e) {
-      DebugLogger.error('🔥 Error recovering streak: $e');
+      DebugLogger.error('đĽ Error recovering streak: $e');
       return {'success': false, 'message': 'Network error. Please try again.'};
     }
   }
@@ -1815,7 +1815,7 @@ class Story with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      DebugLogger.error('📚 Error fetching book requests: $e');
+      DebugLogger.error('đ Error fetching book requests: $e');
     }
   }
 
@@ -1845,7 +1845,7 @@ class Story with ChangeNotifier {
       final responseData = json.decode(utf8.decode(response.bodyBytes));
       return responseData['success'] == true;
     } catch (e) {
-      DebugLogger.error('📚 Error submitting book request: $e');
+      DebugLogger.error('đ Error submitting book request: $e');
       return false;
     }
   }
@@ -1865,7 +1865,7 @@ class Story with ChangeNotifier {
         return true;
       }
     } catch (e) {
-      DebugLogger.error('📚 Error upvoting book request: $e');
+      DebugLogger.error('đ Error upvoting book request: $e');
     }
     return false;
   }
@@ -1885,7 +1885,7 @@ class Story with ChangeNotifier {
         throw (responseData['message'] ?? 'Error fetching season analytics');
       }
     } catch (error) {
-      DebugLogger.error('💥 Error in fetchSeasonAnalytics: $error');
+      DebugLogger.error('đĽ Error in fetchSeasonAnalytics: $error');
       rethrow;
     }
   }
@@ -1911,14 +1911,14 @@ class Story with ChangeNotifier {
           notifyListeners();
         }
 
-        DebugLogger.success('✅ Extra life purchased successfully');
+        DebugLogger.success('â Extra life purchased successfully');
         return responseData;
       } else {
         throw Exception(
             responseData['message'] ?? 'Failed to purchase extra life');
       }
     } catch (error) {
-      DebugLogger.error('❌ Error purchasing extra life: $error');
+      DebugLogger.error('â Error purchasing extra life: $error');
       throw error;
     }
   }
@@ -1943,14 +1943,14 @@ class Story with ChangeNotifier {
           notifyListeners();
         }
 
-        DebugLogger.success('✅ Duration skip purchased successfully');
+        DebugLogger.success('â Duration skip purchased successfully');
         return responseData;
       } else {
         throw Exception(
             responseData['message'] ?? 'Failed to purchase duration skip');
       }
     } catch (error) {
-      DebugLogger.error('❌ Error purchasing duration skip: $error');
+      DebugLogger.error('â Error purchasing duration skip: $error');
       throw error;
     }
   }
@@ -1974,14 +1974,14 @@ class Story with ChangeNotifier {
           notifyListeners();
         }
 
-        DebugLogger.success('✅ Duration skip used successfully');
+        DebugLogger.success('â Duration skip used successfully');
         return responseData;
       } else {
         throw Exception(
             responseData['message'] ?? 'Failed to use duration skip');
       }
     } catch (error) {
-      DebugLogger.error('❌ Error using duration skip: $error');
+      DebugLogger.error('â Error using duration skip: $error');
       throw error;
     }
   }
@@ -1991,7 +1991,7 @@ class Story with ChangeNotifier {
   Future<Map<String, dynamic>> resetEpisodeAttempt(int episodeId) async {
     try {
       DebugLogger.info(
-          '🔄 Resetting episode attempt for episode ID: $episodeId');
+          'đ Resetting episode attempt for episode ID: $episodeId');
 
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/episode/$episodeId/reset-attempt')),
@@ -2009,14 +2009,14 @@ class Story with ChangeNotifier {
           _episode['duration_skips_remaining'] =
               _episode['max_duration_skips'] ?? 0;
           _episode['watched'] =
-              false; // ✅ CRITICAL: Clear watched status for fresh retry
+              false; // â CRITICAL: Clear watched status for fresh retry
 
           DebugLogger.success(
-              '✅ Episode attempt reset locally (including watched status)');
+              'â Episode attempt reset locally (including watched status)');
           notifyListeners();
         }
 
-        DebugLogger.success('✅ Episode attempt reset successfully on server');
+        DebugLogger.success('â Episode attempt reset successfully on server');
         return responseData;
       } else {
         throw Exception(
@@ -2024,15 +2024,15 @@ class Story with ChangeNotifier {
         );
       }
     } catch (error) {
-      DebugLogger.error('❌ Error resetting episode attempt: $error');
+      DebugLogger.error('â Error resetting episode attempt: $error');
       throw error;
     }
   }
 
-  // ✅ Buy achievement using coins
+  // â Buy achievement using coins
   Future<Map<String, dynamic>> buyAchievement(int achievementId) async {
     try {
-      DebugLogger.info('🏆 Story: Buying achievement $achievementId...');
+      DebugLogger.info('đ Story: Buying achievement $achievementId...');
 
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/buy-achievement/$achievementId')),
@@ -2043,24 +2043,24 @@ class Story with ChangeNotifier {
 
       if (responseData['success'] == true || response.statusCode == 200) {
         DebugLogger.success(
-            '✅ Achievement purchased! Level: ${responseData['data']['level']}, Cost: ${responseData['data']['actual_cost']}');
+            'â Achievement purchased! Level: ${responseData['data']['level']}, Cost: ${responseData['data']['actual_cost']}');
         return responseData['data'] ?? responseData;
       } else {
         final errorMsg =
             responseData['message'] ?? 'Failed to purchase achievement';
-        DebugLogger.error('❌ Achievement purchase failed: $errorMsg');
+        DebugLogger.error('â Achievement purchase failed: $errorMsg');
         throw Exception(errorMsg);
       }
     } catch (error) {
-      DebugLogger.error('❌ Error buying achievement: $error');
+      DebugLogger.error('â Error buying achievement: $error');
       throw error;
     }
   }
 
-  // ✅ Get user achievements
+  // â Get user achievements
   Future<List<dynamic>> getUserAchievements() async {
     try {
-      DebugLogger.info('🏆 Story: Fetching user achievements...');
+      DebugLogger.info('đ Story: Fetching user achievements...');
 
       // Use the full userAchievements endpoint that returns all achievements with status
       final response = await http.get(
@@ -2072,14 +2072,14 @@ class Story with ChangeNotifier {
 
       if (responseData['success'] == true && responseData['data'] != null) {
         DebugLogger.success(
-            '✅ Achievements fetched: ${responseData['data'].length}');
+            'â Achievements fetched: ${responseData['data'].length}');
         return responseData['data'];
       } else {
         throw Exception(
             responseData['message'] ?? 'Failed to fetch achievements');
       }
     } catch (error) {
-      DebugLogger.error('❌ Error fetching achievements: $error');
+      DebugLogger.error('â Error fetching achievements: $error');
       throw error;
     }
   }

@@ -1506,7 +1506,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.workspace_premium_rounded,
+                    child: const Icon(Icons.receipt_long_rounded,
                         color: Colors.white, size: 26),
                   ),
                   const SizedBox(width: 14),
@@ -1515,7 +1515,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Go Premium',
+                          'Creator Plans',
                           style: GoogleFonts.poppins(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -1526,7 +1526,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Ad-free  •  Extra rewards  •  Exclusive perks',
+                          'Manage recurring plans and perks',
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,

@@ -2,7 +2,6 @@ import 'package:baakhapaa/providers/auth.dart';
 import 'package:baakhapaa/widgets/header.dart';
 import 'package:baakhapaa/widgets/footer.dart';
 import 'package:baakhapaa/widgets/loading.dart';
-import 'package:baakhapaa/widgets/premium_badge.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -192,12 +191,6 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
                         fit: BoxFit.cover,
                       ),
                     ),
-                  ),
-                  // Premium Badge with countdown functionality
-                  PremiumBadge(
-                    userData: data,
-                    size: 24,
-                    showCountdownOnTap: true,
                   ),
                 ],
               ),

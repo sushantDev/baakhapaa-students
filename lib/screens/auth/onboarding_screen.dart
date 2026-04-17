@@ -1551,7 +1551,7 @@ class _RewardSlideState extends State<_RewardSlide>
                               SizedBox(height: 10),
                               _CoinBenefitRow(
                                 icon: Icons.lock_open,
-                                text: 'Unlock premium content & episodes',
+                                text: 'Unlock more content & episodes',
                               ),
                               SizedBox(height: 8),
                               _CoinBenefitRow(

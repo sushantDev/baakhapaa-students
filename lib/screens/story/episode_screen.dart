@@ -3120,7 +3120,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'You are about to unlock this season using your premium benefit.',
+                                  'You are about to unlock this season.',
                                   style: TextStyle(fontSize: 15),
                                 ),
                                 SizedBox(height: 16),
@@ -3695,7 +3695,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'You are about to unlock this season using your premium benefit.',
+                                  'You are about to unlock this season.',
                                   style: TextStyle(fontSize: 15),
                                 ),
                                 SizedBox(height: 16),

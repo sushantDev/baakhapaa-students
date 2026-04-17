@@ -1516,7 +1516,7 @@ class _PointsScreenState extends State<PointsScreen>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.workspace_premium,
+                      Icons.account_balance_wallet_rounded,
                       color: Colors.white,
                       size: 32,
                     ),

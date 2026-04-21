@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -52,9 +54,11 @@ class _WalletAuthScreenState extends State<WalletAuthScreen>
   @override
   void initState() {
     super.initState();
-    _initAnimations();
-    _loadUserData();
-    _checkBiometricAvailability();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    });
   }
 
   void _initAnimations() {

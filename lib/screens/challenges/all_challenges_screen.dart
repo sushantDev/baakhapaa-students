@@ -332,8 +332,6 @@ class SubHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -358,45 +356,6 @@ class SubHeader extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(width: 12),
-
-          // Premium (Gradient Border)
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).pushNamed('/subscription-screen');
-              },
-              child: Container(
-                height: 44,
-                padding: const EdgeInsets.all(2), // border thickness
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF00C6FF),
-                      Color(0xFF9D00FF),
-                      Color(0xFFFF006E),
-                    ],
-                  ),
-                ),
-                child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.black : Colors.black,
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Text(
-                    "Premium",
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

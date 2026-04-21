@@ -760,7 +760,7 @@ class _WinScreenState extends State<WinScreen>
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const TextSpan(text: '\nwith premium features!'),
+                            const TextSpan(text: '\nwith extra features!'),
                           ],
                         ),
                       ),

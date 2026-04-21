@@ -61,7 +61,11 @@
 		<key>FacebookDisplayName</key>
 		<string>Baakhapaa</string>
 		<key>FlutterDeepLinkingEnabled</key>
+<<<<<<< HEAD
 		<false/>
+=======
+		<false />
+>>>>>>> 1d5519750de23768d801cb1bc1862211cefb9482
 		<key>GADApplicationIdentifier</key>
 		<string>ca-app-pub-8105529278923041~2761053767</string>
 		<key>LSApplicationQueriesSchemes</key>

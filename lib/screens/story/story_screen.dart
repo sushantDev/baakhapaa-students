@@ -10,7 +10,6 @@ import 'package:baakhapaa/screens/story/search_screen.dart';
 // import 'package:baakhapaa/screens/leaderboard/leaderboard_screen.dart';
 import 'package:baakhapaa/screens/story/video_screen.dart';
 import 'package:baakhapaa/screens/story/creator_story_screen.dart';
-import 'package:baakhapaa/screens/subscription/subscription_screen.dart';
 import 'package:baakhapaa/screens/user/points_screen.dart';
 // import 'package:baakhapaa/screens/user/points_screen.dart';
 import 'package:baakhapaa/utils/exit_confirmation_dialog.dart';
@@ -1880,7 +1879,7 @@ class _StoryScreenState extends State<StoryScreen>
             Row(
               children: [
                 Text(
-                  isWatchTitle ? 'Watch $title' : title,
+                  isWatchTitle ? '$title Courses' : title,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -2130,44 +2129,6 @@ class _StoryScreenState extends State<StoryScreen>
     );
   }
 
-  // Premium creator seasons section (shows only when API returns items)
-  Widget _buildPremiumCreatorSeasonsSection() {
-    return Selector<Story, List<dynamic>>(
-      selector: (context, story) => story.premiumCreatorSeasons,
-      builder: (context, premiumCreatorSeasons, child) {
-        DebugLogger.info(
-          '🌟 UI: Building Premium Creator Seasons section - ${premiumCreatorSeasons.length} items',
-        );
-
-        if (premiumCreatorSeasons.isEmpty) {
-          DebugLogger.info('🌟 UI: No premium creator seasons to display');
-          return SizedBox.shrink();
-        }
-
-        // Normalize items into season format expected by unified widget
-        List<dynamic> seasonsForWidget = premiumCreatorSeasons.map((item) {
-          final season = Map<String, dynamic>.from(item as Map);
-          return {
-            ...season,
-            'watched': season['watched'] ?? false,
-            'rewards': season['rewards'] ?? {'reward_points': 0},
-            'completion_percentage': season['completion_percentage'] ?? 0,
-          };
-        }).toList();
-
-        DebugLogger.info(
-            '🌟 UI: Rendering section with ${seasonsForWidget.length} seasons');
-
-        return _buildUnifiedSeasonCategory(
-          title: 'Premium Creator Seasons',
-          seasons: seasonsForWidget,
-          isWatchTitle: false,
-          showDifficulty: false,
-        );
-      },
-    );
-  }
-
   Widget _buildBannerAds() {
     return AnimatedContainer(
       duration: Duration(milliseconds: 600),
@@ -2251,10 +2212,6 @@ class _StoryScreenState extends State<StoryScreen>
                                 VideoScreen.routeName,
                                 arguments: gotoPlatformId,
                               );
-                            } else if (gotoPlatformType ==
-                                'App\\Subscription') {
-                              Navigator.pushNamed(
-                                  context, SubscriptionScreen.routeName);
                             } else {
                               if (gotoUrl != null && gotoUrl.isNotEmpty) {
                                 final Uri _url = Uri.parse(gotoUrl);
@@ -3051,9 +3008,6 @@ class _StoryScreenState extends State<StoryScreen>
 
         // 9. Difficult Seasons Section (default position)
         _buildDefaultDifficultSeasonsSection(),
-
-        // 10 Premium Creator Seasons (fetched from /seasons/premium-creator-seasons)
-        _buildPremiumCreatorSeasonsSection(),
 
         // AdMob Banner Ad
         const BaakhaBannerAd(),

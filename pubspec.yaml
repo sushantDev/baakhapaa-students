@@ -111,12 +111,12 @@ dev_dependencies:
     sdk: flutter
 
 flutter_native_splash:
-  color: "#424242"
-  image: assets/images/logo-lony.png
+  color: "#000000"
+  image: assets/images/skill-sikka.png
 
   android_12:
-    color: "#424242"
-    background_image: assets/images/logo-lony.png
+    color: "#000000"
+    background_image: assets/images/skill-sikka.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -873,6 +873,7 @@ class _MyAppState extends State<MyApp> {
         child: Consumer<LanguageProvider>(
             builder: (context, languageProvider, child) {
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
             navigatorKey: mainNavigatorKey,
             navigatorObservers: [
               SentryNavigatorObserver(),

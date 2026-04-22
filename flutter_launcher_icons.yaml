@@ -5,7 +5,7 @@ flutter_launcher_icons:
   android: "launcher_icon"
   min_sdk_android: 21
   adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/images/skill-sikka.png"
+  adaptive_icon_foreground: "assets/images/sikka.png"
 
   ios: true
   remove_alpha_ios: true

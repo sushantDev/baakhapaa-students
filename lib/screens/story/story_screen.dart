@@ -929,6 +929,7 @@ class _StoryScreenState extends State<StoryScreen>
           }
         },
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Profile Image
             Container(
@@ -2910,7 +2911,7 @@ class _StoryScreenState extends State<StoryScreen>
                 );
               }
               return Container(
-                height: 70,
+                height: 80,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.zero,

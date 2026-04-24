@@ -131,6 +131,8 @@ post_install do |installer|
       config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
       config.build_settings['DWARF_DSYM_FILE_SHOULD_ACCOMPANY_PRODUCT'] = 'YES'
       config.build_settings['DWARF_DSYM_FOLDER_PATH'] = '$(CONFIGURATION_BUILD_DIR)'
+      config.build_settings['STRIP_INSTALLED_PRODUCT'] = 'NO'
+      config.build_settings['COPY_PHASE_STRIP'] = 'NO'
       
       # Fix TweetNacl module search path
       if target.name == 'TweetNacl'

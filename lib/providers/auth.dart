@@ -204,7 +204,8 @@ class Auth with ChangeNotifier {
   bool get isEmailVerified {
     final value = _user['email_verified_at'] ??
         (_user['information'] is Map<String, dynamic>
-            ? (_user['information'] as Map<String, dynamic>)['email_verified_at']
+            ? (_user['information']
+                as Map<String, dynamic>)['email_verified_at']
             : null);
 
     if (value == null) return false;
@@ -1123,14 +1124,22 @@ class Auth with ChangeNotifier {
           .timeout(const Duration(seconds: 15));
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      if (responseData['success']) {
-        _creatorPreferences = responseData['data'];
+      final success = responseData['success'];
+      final isSuccess = success == true ||
+          success == 1 ||
+          success == '1' ||
+          success == 'true';
+      if (isSuccess) {
+        _creatorPreferences = responseData['data'] ?? {};
         notifyListeners();
       } else {
-        throw ('Error');
+        DebugLogger.error(
+            'fetchCreatorPreferences: API returned success=$success, status=${response.statusCode}, body=${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}');
+        throw ('Error: API returned success=$success');
       }
     } catch (error) {
       DebugLogger.error('Error fetching creator preferences: $error');
+      rethrow;
     }
   }
 

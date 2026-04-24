@@ -15,6 +15,7 @@ import '../../widgets/header.dart';
 import '../../widgets/loading.dart';
 import '../../utils/debug_logger.dart';
 import '../../utils/guest_auth_helper.dart';
+import '../../models/url.dart';
 
 class CreatorsScreen extends StatefulWidget {
   static const routeName = '/creators-screen';
@@ -166,8 +167,8 @@ class _CreatorsScreenState extends State<CreatorsScreen> {
 
       final auth = Provider.of<Auth>(context, listen: false);
       final response = await http.get(
-        Uri.parse(
-            'https://app.baakhapaa.com/api/creators/filter?filter=${_mapFilterToBackend(filter)}'),
+        Uri.parse(Url.baakhapaaApi(
+            '/creators/filter?filter=${_mapFilterToBackend(filter)}')),
         headers: {
           'Authorization': 'Bearer ${auth.token}',
           'Content-Type': 'application/json',

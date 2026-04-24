@@ -15,7 +15,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 3.0.52+135
+version: 3.0.52+136
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -116,7 +116,7 @@ flutter_native_splash:
 
   android_12:
     color: "#000000"
-    background_image: assets/images/skill-sikka.png
+    image: assets/images/skill-sikka.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

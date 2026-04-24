@@ -26,6 +26,13 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
   late Map<String, dynamic> _creatorPreferences = {};
   int _userBalance = 0;
 
+  int _parseIntValue(dynamic value, {int defaultValue = 0}) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    return int.tryParse(value.toString()) ?? defaultValue;
+  }
+
   @override
   void didChangeDependencies() {
     if (_isInit) {
@@ -555,6 +562,8 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
   }
 
   Widget _buildRequirementsSection() {
+    final minCreatorPoints =
+        _parseIntValue(_creatorPreferences['min_creator_points']);
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
@@ -787,6 +796,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
   }
 
   Widget _buildEpisodesSection() {
+    final episodes = _creatorPreferences['creators_episode'];
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(20),
@@ -877,7 +887,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
           SizedBox(height: 20),
 
           // Episodes List
-          _buildEpisodesRequired(_creatorPreferences['creators_episode']),
+          _buildEpisodesRequired(episodes is List ? episodes : const []),
         ],
       ),
     );
@@ -1034,7 +1044,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
       ),
       child: Column(
         children: [
-          if (_creatorPreferences['requested']) ...[
+          if (_parseBoolValue(_creatorPreferences['requested'])) ...[
             Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -1087,14 +1097,14 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    _creatorPreferences['requested']
+                    _parseBoolValue(_creatorPreferences['requested'])
                         ? Icons.pending_rounded
                         : Icons.send_rounded,
                     size: 20,
                   ),
                   SizedBox(width: 8),
                   Text(
-                    _creatorPreferences['requested']
+                    _parseBoolValue(_creatorPreferences['requested'])
                         ? '${context.l10n.requestSubmitted}'
                         : '${context.l10n.submitCreatorRequest}',
                     style: TextStyle(
@@ -1106,7 +1116,8 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
               ),
             ),
           ),
-          if (!canSubmit && !_creatorPreferences['requested']) ...[
+          if (!canSubmit &&
+              !_parseBoolValue(_creatorPreferences['requested'])) ...[
             SizedBox(height: 12),
             Container(
               padding: EdgeInsets.all(12),

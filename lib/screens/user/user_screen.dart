@@ -1973,7 +1973,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             return;
           }
           final auth = Provider.of<Auth>(context, listen: false);
-          if (auth.role != 'creator') {
+          if (auth.role != 'creator' && auth.role != 'student') {
             Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);
             return;
           }
@@ -2076,7 +2076,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             return;
           }
           final auth = Provider.of<Auth>(context, listen: false);
-          if (auth.role != 'creator') {
+          if (auth.role != 'creator' && auth.role != 'student') {
             Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);
             return;
           }

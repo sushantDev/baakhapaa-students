@@ -67,7 +67,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       return;
     }
 
-    if (auth.role == 'vendor' || auth.role == 'creator') {
+    if (auth.role == 'vendor' || auth.role == 'creator' || auth.role == 'student') {
       showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
@@ -77,9 +77,8 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       return;
     }
 
-    // Check if user is a creator
-    if (auth.role != 'creator') {
-      // User is not a creator, redirect to creator request screen
+    // Unknown role fallback: keep existing creator request path.
+    if (auth.role != 'creator' && auth.role != 'student' && auth.role != 'vendor') {
       Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);
       return;
     }

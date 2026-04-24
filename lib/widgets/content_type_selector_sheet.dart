@@ -26,6 +26,7 @@ class ContentTypeSelectorSheet extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final auth = Provider.of<Auth>(context, listen: false);
     final bool isCreator = auth.role == 'creator';
+    final bool isStudent = auth.role == 'student';
     final bool isVendor = auth.role == 'vendor';
 
     return Container(
@@ -83,7 +84,7 @@ class ContentTypeSelectorSheet extends StatelessWidget {
             SizedBox(height: 24),
 
             // Shorts Option
-            if (isCreator) ...[
+            if (isCreator || isStudent) ...[
               _buildContentOption(
                 context: context,
                 icon: Icons.video_library_rounded,

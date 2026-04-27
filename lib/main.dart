@@ -130,9 +130,9 @@ import './screens/user/player_profile_screen.dart';
 import './screens/user/user_details_screen.dart';
 import './screens/user/user_screen.dart';
 import './screens/user/social_media_screen.dart';
-import './screens/auth/onboarding_screen.dart';
+// import './screens/auth/onboarding_screen.dart';
 import './screens/auth/splash_screen.dart';
-import './providers/onboarding_provider.dart';
+// import './providers/onboarding_provider.dart';
 import './screens/messages/conversations_screen.dart';
 import './screens/messages/messages_screen.dart';
 import './screens/others/challenge_request_screen.dart';
@@ -706,9 +706,9 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(
             create: (ctx) => PuppetInteractionProvider(),
           ),
-          ChangeNotifierProvider(
-            create: (ctx) => OnboardingProvider(),
-          ),
+          // ChangeNotifierProvider(
+          //   create: (ctx) => OnboardingProvider(),
+          // ),
           // ignore: missing_required_param
           ChangeNotifierProxyProvider<Auth, Story>(
             update: (ctx, auth, previousStory) => Story(
@@ -967,7 +967,7 @@ class _MyAppState extends State<MyApp> {
               UserDetailsScreen.routeName: (ctx) => UserDetailsScreen(),
               PointLogsScreen.routeName: (ctx) => PointLogsScreen(),
               OrdersScreen.routeName: (ctx) => OrdersScreen(),
-              OnboardingScreen.routeName: (ctx) => OnboardingScreen(),
+              // OnboardingScreen.routeName: (ctx) => OnboardingScreen(),
               ContactUsScreen.routeName: (ctx) => ContactUsScreen(),
               NotificationScreen.routeName: (ctx) => NotificationScreen(),
               SearchProductScreen.routeName: (ctx) => SearchProductScreen(),

@@ -1827,7 +1827,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                 SharePlus.instance.share(
                   ShareParams(
                     text: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                     sharePositionOrigin: const Rect.fromLTWH(0, 0, 100, 100),
                   ),
                 );
@@ -1846,7 +1846,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                   ),
                   builder: (context) => ShareWithQrModal(
                     data: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                   ),
                 );
               },

@@ -493,7 +493,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     )['referral_count'];
     final message =
         "🎉 I'm a top referrer on Baakhapaa with $referralCount referrals! "
-        "Join Baakhapaa and use my referral code **$username** to get 25 points free. "
+        "Join Skill Sikka and use my referral code **$username** to get 25 points free. "
         "Download the app now: https://baakhapaa.com";
     showModalBottomSheet(
       context: context,
@@ -501,7 +501,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => ShareWithQrModal(
-          data: message, subject: "Join Baakhapaa and earn points!"),
+          data: message, subject: "Join Skill Sikka and earn points!"),
     );
   }
 

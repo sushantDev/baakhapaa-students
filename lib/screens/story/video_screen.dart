@@ -4072,7 +4072,7 @@ class _VideoScreenState extends State<VideoScreen>
                 SharePlus.instance.share(
                   ShareParams(
                     text: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                     sharePositionOrigin: Rect.fromLTWH(0, 0, 100, 100),
                   ),
                 );
@@ -4103,7 +4103,7 @@ class _VideoScreenState extends State<VideoScreen>
                   ),
                   builder: (context) => ShareWithQrModal(
                     data: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                   ),
                 );
               },

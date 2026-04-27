@@ -770,7 +770,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 SharePlus.instance.share(
                   ShareParams(
                     text: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                     sharePositionOrigin: Rect.fromLTWH(0, 0, 100, 100),
                   ),
                 );
@@ -789,7 +789,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   ),
                   builder: (context) => ShareWithQrModal(
                     data: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                   ),
                 );
               },
@@ -1137,7 +1137,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                                   👤 Username:  ${_user['username']}
                                                   🔗 View profile: $profileLink
 
-                                                  Join Baakhapaa use my refer code! 🎁 We’ll both receive 25 bonus points when you create an account.
+                                                  Join Skill Sikka use my refer code! 🎁 We’ll both receive 25 bonus points when you create an account.
                                                   '''
                                                     .trim();
 
@@ -1929,7 +1929,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     bool isProfileEmailVerified() {
       final value = _user['email_verified_at'] ??
           (_user['information'] is Map<String, dynamic>
-              ? (_user['information'] as Map<String, dynamic>)['email_verified_at']
+              ? (_user['information']
+                  as Map<String, dynamic>)['email_verified_at']
               : null);
       if (value == null) return false;
       if (value is bool) return value;
@@ -1953,7 +1954,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     void showEmailVerificationWarning() {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Email not verified yet. Please verify your email first.'),
+          content:
+              Text('Email not verified yet. Please verify your email first.'),
         ),
       );
     }

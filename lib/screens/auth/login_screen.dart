@@ -299,12 +299,13 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.remove('pending_referral_code');
 
       // Store onboarding selections + award 40 onboarding coins (idempotent)
-      final auth = Provider.of<Auth>(context, listen: false);
-      await auth.storeOnboardingSelections();
-      if (prefs.getBool('claim_onboarding_reward') == true) {
-        await auth.claimOnboardingReward();
-        await prefs.remove('claim_onboarding_reward');
-      }
+      // ONBOARDING COMMENTED OUT
+      // final auth = Provider.of<Auth>(context, listen: false);
+      // await auth.storeOnboardingSelections();
+      // if (prefs.getBool('claim_onboarding_reward') == true) {
+      //   await auth.claimOnboardingReward();
+      //   await prefs.remove('claim_onboarding_reward');
+      // }
 
       // Navigate to UserScreen after successful login
       Navigator.of(context).pushNamedAndRemoveUntil(
@@ -423,11 +424,12 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.remove('pending_referral_code');
 
       // Store onboarding selections + award 40 onboarding coins (idempotent)
-      await authProvider.storeOnboardingSelections();
-      if (prefs.getBool('claim_onboarding_reward') == true) {
-        await authProvider.claimOnboardingReward();
-        await prefs.remove('claim_onboarding_reward');
-      }
+      // ONBOARDING COMMENTED OUT
+      // await authProvider.storeOnboardingSelections();
+      // if (prefs.getBool('claim_onboarding_reward') == true) {
+      //   await authProvider.claimOnboardingReward();
+      //   await prefs.remove('claim_onboarding_reward');
+      // }
 
       // Navigate to UserScreen after successful authentication
       Navigator.of(context).pushNamedAndRemoveUntil(
@@ -813,12 +815,14 @@ class _LoginScreenState extends State<LoginScreen> {
           await prefs.remove('pending_referral_code');
 
           // Store onboarding selections + award 40 onboarding coins (idempotent)
+          // ignore: unused_local_variable
           final authSvc = Provider.of<Auth>(context, listen: false);
-          await authSvc.storeOnboardingSelections();
-          if (prefs.getBool('claim_onboarding_reward') == true) {
-            await authSvc.claimOnboardingReward();
-            await prefs.remove('claim_onboarding_reward');
-          }
+          // ONBOARDING COMMENTED OUT
+          // await authSvc.storeOnboardingSelections();
+          // if (prefs.getBool('claim_onboarding_reward') == true) {
+          //   await authSvc.claimOnboardingReward();
+          //   await prefs.remove('claim_onboarding_reward');
+          // }
 
           // Navigate to UserScreen after successful authentication
           Navigator.of(context).pushNamedAndRemoveUntil(
@@ -898,14 +902,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(20),
                                   child: Image.asset(
-                                    'assets/images/logo-lony.png',
+                                    'assets/images/sikka2.jpeg',
                                     fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
                               SizedBox(height: 20),
                               Text(
-                                context.l10n.appTitle,
+                                'Skill Sikka',
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
@@ -925,7 +929,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  'StoryTelling, Engagement & Returns',
+                                  'Knowledge, Action & Rewards',
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontFamily: 'Montserrat',

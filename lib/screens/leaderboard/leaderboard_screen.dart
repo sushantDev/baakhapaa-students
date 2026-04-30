@@ -470,9 +470,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     final rank = _myRank;
     final points = _authProvider.userAvailableCoins;
     final message =
-        "🏆 I'm ranked #$rank on the Baakhapaa Leaderboard with $points points! "
+        "🏆 I'm ranked #$rank on the Skill Sikka Leaderboard with $points points! "
         "Join me and compete for the top spot! 🔥\n"
-        "Download the app now: https://baakhapaa.com\n\n"
+        "Download the app now: https://play.google.com/store/apps/details?id=com.baakhapaa.student"
         "Use my referral code **$username** to get 25 points free!";
     showModalBottomSheet(
       context: context,
@@ -480,7 +480,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => ShareWithQrModal(
-          data: message, subject: "Check out my Baakhapaa ranking!"),
+          data: message, subject: "Check out my Skill Sikka ranking!"),
     );
   }
 
@@ -492,9 +492,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       orElse: () => {'referral_count': 0},
     )['referral_count'];
     final message =
-        "🎉 I'm a top referrer on Baakhapaa with $referralCount referrals! "
+        "🎉 I'm a top referrer on Skill Sikka with $referralCount referrals! "
         "Join Skill Sikka and use my referral code **$username** to get 25 points free. "
-        "Download the app now: https://baakhapaa.com";
+        "Download the app now: https://play.google.com/store/apps/details?id=com.baakhapaa.student";
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(

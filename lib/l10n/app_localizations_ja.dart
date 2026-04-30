@@ -66,7 +66,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get courses => 'コース';
 
   @override
-  String get teachers => '教師';
+  String get teachers => 'チューター';
 
   @override
   String get shats => 'シャッツ';
@@ -966,13 +966,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aboutOurCompany => '会社概要';
 
   @override
-  String get companyMissionStatement => 'ストーリーテリングの知識に応じてエンゲージメントを収益化する多目的コンテンツ共有アプリ。';
+  String get companyMissionStatement =>
+      'ストーリーテリングの知識に応じてエンゲージメントを収益化する多目的コンテンツ共有アプリ。';
 
   @override
-  String get companyDescription1 => 'Baakhapaa IT and Marketing Solutions LLCは、クライアントの成功事例を創造することを目指すソフトウェア開発およびマーケティング会社です。私たちは、成功するブランドを目指し、ビジネスを新たな高みへと推進する組織に、有益なマルチメディアプラットフォームを提供することに注力しています。';
+  String get companyDescription1 =>
+      'Baakhapaa IT and Marketing Solutions LLCは、クライアントの成功事例を創造することを目指すソフトウェア開発およびマーケティング会社です。私たちは、成功するブランドを目指し、ビジネスを新たな高みへと推進する組織に、有益なマルチメディアプラットフォームを提供することに注力しています。';
 
   @override
-  String get companyDescription2 => '当社のサービスにより、組織はストーリーテリングの力で人々を結びつけ、文化を促進し、精神的な意識へと向かうブランドを創造することができます。';
+  String get companyDescription2 =>
+      '当社のサービスにより、組織はストーリーテリングの力で人々を結びつけ、文化を促進し、精神的な意識へと向かうブランドを創造することができます。';
 
   @override
   String get getInTouch => 'お問い合わせ';
@@ -1146,7 +1149,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get unlockBadgesAndEarnRewards => 'バッジをアンロックして報酬を獲得';
 
   @override
-  String get earnBadgesForRewards => 'バッジを獲得してbaakhapaaアプリ内で報酬と交換しましょう。実績は進捗状況を追跡できるようにタイプ別に分類されています';
+  String get earnBadgesForRewards =>
+      'バッジを獲得してbaakhapaaアプリ内で報酬と交換しましょう。実績は進捗状況を追跡できるようにタイプ別に分類されています';
 
   @override
   String get completed => '完了';
@@ -1161,7 +1165,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noReferralCodeAvailable => '利用可能な紹介コードがありません';
 
   @override
-  String get joinCreatorCommunity => 'コンテンツクリエイターのコミュニティに参加し、あなた独自の声を世界に共有しましょう';
+  String get joinCreatorCommunity =>
+      'コンテンツクリエイターのコミュニティに参加し、あなた独自の声を世界に共有しましょう';
 
   @override
   String get creatorBenefits => 'クリエイターのメリット';
@@ -1219,6 +1224,29 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get submitCreatorRequest => 'クリエイターリクエストを送信';
+
+  @override
+  String get becomeATeacher => 'Become a Teacher';
+
+  @override
+  String get joinTeachersCommunity =>
+      'Join the community of teachers and share your knowledge with students';
+
+  @override
+  String get teaching => 'Teaching';
+
+  @override
+  String get growYourStudentsCommunity => 'Grow your student community';
+
+  @override
+  String get getRewardsForTeaching =>
+      'Get rewards for your teaching contributions';
+
+  @override
+  String get teachersBenefits => 'Teacher Benefits';
+
+  @override
+  String get submitTeacherRequest => 'Submit Teacher Request';
 
   @override
   String get learn => '学ぶ';

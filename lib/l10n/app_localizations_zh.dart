@@ -66,7 +66,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get courses => '课程';
 
   @override
-  String get teachers => '教师';
+  String get teachers => '导师';
 
   @override
   String get shats => 'Shats';
@@ -969,10 +969,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get companyMissionStatement => '一款多功能内容分享应用，根据讲故事的知识实现参与变现。';
 
   @override
-  String get companyDescription1 => 'Baakhapaa IT and Marketing Solutions LLC是一家软件开发和营销公司，致力于为客户创造成功的故事。我们专注于为那些致力于成为成功品牌并推动业务达到新高度的组织提供信息丰富的多媒体平台。';
+  String get companyDescription1 =>
+      'Baakhapaa IT and Marketing Solutions LLC是一家软件开发和营销公司，致力于为客户创造成功的故事。我们专注于为那些致力于成为成功品牌并推动业务达到新高度的组织提供信息丰富的多媒体平台。';
 
   @override
-  String get companyDescription2 => '通过我们的服务，组织可以创建一个通过讲故事的力量团结人们、促进文化并迈向精神意识的品牌。';
+  String get companyDescription2 =>
+      '通过我们的服务，组织可以创建一个通过讲故事的力量团结人们、促进文化并迈向精神意识的品牌。';
 
   @override
   String get getInTouch => '联系我们';
@@ -1219,6 +1221,29 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get submitCreatorRequest => '提交创作者请求';
+
+  @override
+  String get becomeATeacher => 'Become a Teacher';
+
+  @override
+  String get joinTeachersCommunity =>
+      'Join the community of teachers and share your knowledge with students';
+
+  @override
+  String get teaching => 'Teaching';
+
+  @override
+  String get growYourStudentsCommunity => 'Grow your student community';
+
+  @override
+  String get getRewardsForTeaching =>
+      'Get rewards for your teaching contributions';
+
+  @override
+  String get teachersBenefits => 'Teacher Benefits';
+
+  @override
+  String get submitTeacherRequest => 'Submit Teacher Request';
 
   @override
   String get learn => '学习';

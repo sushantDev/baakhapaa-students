@@ -706,7 +706,7 @@ class ProductItem extends StatelessWidget {
                                     ),
                                   ),
                                   const TextSpan(
-                                    text: ' Bpts',
+                                    text: ' Sikka',
                                     style: TextStyle(
                                       color: Colors.grey,
                                       fontSize: 10,

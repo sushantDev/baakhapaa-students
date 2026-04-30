@@ -2311,7 +2311,7 @@ class _SeasonDetailsState extends State<SeasonDetails> {
                         height: 16),
                     const SizedBox(width: 5),
                     Text(
-                      'Point Reward:\n${seasonData['total_reward_points'] ?? 0} Bpts',
+                      'Point Reward:\n${seasonData['total_reward_points'] ?? 0} Sikka',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,

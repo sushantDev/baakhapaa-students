@@ -10,7 +10,6 @@ import 'package:baakhapaa/screens/user/weekly_rewards_screen.dart';
 import 'package:baakhapaa/screens/user/achievements_screen.dart';
 // import 'package:baakhapaa/widgets/subscriptionBanner.dart';
 import 'package:baakhapaa/widgets/wallet_widget.dart';
-import 'package:baakhapaa/widgets/wallet_security_settings.dart';
 import 'package:baakhapaa/screens/story/story_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -1411,6 +1410,7 @@ class _PointsScreenState extends State<PointsScreen>
     };
   }
 
+  // ignore: unused_element
   Widget _buildDailyRewards() {
     final auth = Provider.of<Auth>(context);
     final rewardsData = auth.dailyRewardsData;
@@ -1485,6 +1485,7 @@ class _PointsScreenState extends State<PointsScreen>
     );
   }
 
+  // ignore: unused_element
   Widget _buildCreatorMonetization() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -1767,7 +1768,7 @@ class _PointsScreenState extends State<PointsScreen>
                         //   bannerType: 'png',
                         // ),
                         // _buildPointsHeader(),
-                        _buildCreatorMonetization(),
+                        // _buildCreatorMonetization(),
                         MonetizationWidget(
                           onTap: _showWithdrawalDialog,
                           title: 'Available Points',
@@ -1783,15 +1784,15 @@ class _PointsScreenState extends State<PointsScreen>
                         ),
                         _buildActionButtons(),
                         _buildPointsChart(),
-                        _buildDailyRewards(),
+                        // _buildDailyRewards(),
                         _buildWatchAds(),
                         // Wallet Security Settings
-                        WalletSecuritySettings(
-                          onSettingsChanged: () {
-                            // Reload auto-lock settings when changed
-                            _loadAutoLockSettings();
-                          },
-                        ),
+                        // WalletSecuritySettings(
+                        //   onSettingsChanged: () {
+                        //     // Reload auto-lock settings when changed
+                        //     _loadAutoLockSettings();
+                        //   },
+                        // ),
                         SizedBox(height: 20),
                       ],
                     ),

@@ -246,7 +246,7 @@ class _ReferralsScreenState extends State<ReferralsScreen>
       final appLink = 'https://baakhapaa.com/referral/$username';
 
       final shareText = '''
-🎉 Join me on Baakhapaa App!
+🎉 Join me on Skill Sikka!
 
 Use my referral code: $username
 Or click this link: $appLink
@@ -284,7 +284,7 @@ Download the app and start earning rewards by watching videos, playing games, an
       try {
         final appLink = 'https://baakhapaa.com/referral/$username';
         final shareText = '''
-🎉 Join me on Baakhapaa App!
+🎉 Join me on Skill Sikka!
 
 Use my referral code: $username
 Or click this link: $appLink
@@ -535,7 +535,7 @@ Download the app and start earning rewards by watching videos, playing games, an
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'Share your referral code with people who could benefit from the Baakhapaa App.',
+                          'Share your referral code with people who could benefit from Skill Sikka.',
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,

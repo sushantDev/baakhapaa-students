@@ -57,7 +57,7 @@ class MonetizationWidget extends StatelessWidget {
     if (showTotalValue) {
       valueSuffix = (currency != null ? ' $currency' : '');
     } else {
-      valueSuffix = ' Bpts';
+      valueSuffix = ' Sikka';
     }
 
     return InkWell(

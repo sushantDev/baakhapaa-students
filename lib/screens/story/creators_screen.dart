@@ -327,7 +327,7 @@ class _SubHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Find creators you\'ll love',
+                  'Find tutors you\'ll like',
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     color: isDark ? Colors.white38 : Colors.black38,

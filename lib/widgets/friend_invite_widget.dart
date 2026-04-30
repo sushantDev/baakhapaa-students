@@ -166,7 +166,7 @@ class FriendInviteWidget extends StatelessWidget {
 
   void _shareGeneral(BuildContext context) {
     final String shareText = customMessage ??
-        'Join me on Baakhapaa! 🎮 The amazing gaming app where you can play, compete, and win real rewards! Download now: ${appUrl ?? 'https://play.google.com/store/apps/details?id=com.baakhapaa.com'}';
+        'Join me on Skill Sikka! 🎮 The amazing learning app where you can play, compete, and win real rewards! Download now: ${appUrl ?? 'https://play.google.com/store/apps/details?id=com.baakhapaa.com'}';
 
     SharePlus.instance.share(ShareParams(text: shareText));
   }

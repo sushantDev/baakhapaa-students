@@ -2470,16 +2470,16 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
       'total_coins',
       'total_coin',
       'points',
-      'bpts',
-      'total_bpts',
+      'sikka',
+      'total_sikka',
       'points_balance',
       'coins_balance',
       'coin_balance',
       'points_total',
       'available_points',
       'available_coins',
-      'available_bpts',
-      'available_baakhapaa_points',
+      'available_sikka',
+      'available_sikka',
       'available_baakhapaa_point',
       'total_points_balance',
       'total_coins_balance',
@@ -3717,7 +3717,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
             duration: const Duration(milliseconds: 220),
             child: KeyedSubtree(
               key: ValueKey(_activeTab),
-              child: _activeTab == 'stories'
+              child: _activeTab == 'courses'
                   ? _buildStoriesSection()
                   : _buildShortsSection(),
             ),
@@ -3743,8 +3743,8 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
       },
       {
         'assetIcon': "assets/svgs/story-playlist.svg",
-        'key': 'stories',
-        'label': 'Stories',
+        'key': 'courses',
+        'label': 'Courses',
         'count': storiesCount,
         'isVisible': _isStoriesVisible(),
       },
@@ -3850,8 +3850,8 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
     if (_localCreatorSeasons.isEmpty) {
       return _buildEmptyCreationsState(
         icon: Icons.video_library_outlined,
-        title: 'No Stories Yet',
-        description: 'This creator hasn\'t posted any stories.',
+        title: 'No Courses Yet',
+        description: 'This teacher hasn\'t posted any courses.',
       );
     }
 
@@ -3916,7 +3916,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
       return _buildEmptyCreationsState(
         icon: Icons.video_collection_outlined,
         title: 'No Shorts Yet',
-        description: 'This creator hasn\'t posted any shorts.',
+        description: 'This teacher hasn\'t posted any shorts.',
       );
     }
 

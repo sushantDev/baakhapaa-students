@@ -1962,7 +1962,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
     final categories = [
       'Shorts',
-      'Stories',
+      'Courses',
       'Challenges',
       'Achievements',
     ];
@@ -2167,7 +2167,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               ),
               SizedBox(height: 12),
               Text(
-                'Add\nStory',
+                'Add\nCourse',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -2555,7 +2555,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         ),
                         SizedBox(height: 12),
                         Text(
-                          'No Stories Yet',
+                          'No Courses Yet',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -2567,7 +2567,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Tap "+" to create Stories',
+                          'Tap "+" to create Courses',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.grey[600],
@@ -2674,7 +2674,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
           return _buildChallengesGrid();
         case 'Achievements':
           return _buildAchievementsGrid();
-        case 'Stories':
+        case 'Courses':
           return _buildStoriesSliderGrid();
         default:
           return _buildShortsSliderGrid();
@@ -2751,6 +2751,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     );
   }
 
+  // ignore: unused_element
   Widget _buildAnalytics() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -4419,7 +4420,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             duration: const Duration(milliseconds: 220),
             child: KeyedSubtree(
               key: ValueKey(_activeTab),
-              child: _activeTab == 'stories'
+              child: _activeTab == 'courses'
                   ? _buildPublicStoriesSection()
                   : _buildPublicShortsSection(),
             ),
@@ -4445,8 +4446,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       },
       {
         'assetIcon': "assets/svgs/story-playlist.svg",
-        'key': 'stories',
-        'label': 'Stories',
+        'key': 'courses',
+        'label': 'Courses',
         'count': storiesCount,
         'isVisible': _isStoriesVisible(),
       },
@@ -4549,8 +4550,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     if (_localCreatorSeasons.isEmpty) {
       return _buildPublicEmptyCreationsState(
         icon: Icons.video_library_outlined,
-        title: 'No Stories Yet',
-        description: 'This user hasn\'t posted any stories.',
+        title: 'No Courses Yet',
+        description: 'This user hasn\'t posted any courses.',
       );
     }
 
@@ -4856,8 +4857,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                             currency: 'NRS',
                             imageAsset: 'assets/images/walletCoin.png',
                           ),
-                        if (_user['email_verified_at'] != null)
-                          _buildAnalytics(),
+                        // if (_user['email_verified_at'] != null)
+                        //   _buildAnalytics(),
                         _buildLevelProgress(),
                         const BaakhaBannerAd(),
                         // TaskCardWidget(),

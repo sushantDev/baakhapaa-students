@@ -66,7 +66,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get courses => 'Cours';
 
   @override
-  String get teachers => 'Enseignants';
+  String get teachers => 'Tuteurs';
 
   @override
   String get shats => 'Shats';
@@ -492,7 +492,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get giftRewards => 'Récompenses cadeaux';
 
   @override
-  String get giftRewardsInfo => 'Échangez d\'incroyables récompenses avec vos points';
+  String get giftRewardsInfo =>
+      'Échangez d\'incroyables récompenses avec vos points';
 
   @override
   String get storiesFromBaakhapa => 'Histoires de Baakhapaa';
@@ -519,13 +520,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chooseYourContent => 'Choisissez votre contenu';
 
   @override
-  String get chooseYourContentInfo => 'Sélectionnez une vidéo de votre galerie ou enregistrez-en une nouvelle';
+  String get chooseYourContentInfo =>
+      'Sélectionnez une vidéo de votre galerie ou enregistrez-en une nouvelle';
 
   @override
   String get creatorPortal => 'Portail des créateurs';
 
   @override
-  String get creatorPortalInfo => 'Accédez à des outils de création et à des analyses avancées';
+  String get creatorPortalInfo =>
+      'Accédez à des outils de création et à des analyses avancées';
 
   @override
   String get recordInfo => 'Créer une nouvelle vidéo';
@@ -543,7 +546,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get editProfile => 'Modifier le profil';
 
   @override
-  String get updateProfileInfo => 'Mettez à jour les informations de votre profil';
+  String get updateProfileInfo =>
+      'Mettez à jour les informations de votre profil';
 
   @override
   String get transactionLog => 'Journal des transactions';
@@ -648,37 +652,46 @@ class AppLocalizationsFr extends AppLocalizations {
   String get referralCodeDescription => 'Partagez et gagnez des récompenses';
 
   @override
-  String get giftRewardsDescription => 'Obtenez d\'incroyables récompenses avec vos points';
+  String get giftRewardsDescription =>
+      'Obtenez d\'incroyables récompenses avec vos points';
 
   @override
-  String get storiesFromBaakhapaDescription => 'Découvrez des histoires et des aventures incroyables';
+  String get storiesFromBaakhapaDescription =>
+      'Découvrez des histoires et des aventures incroyables';
 
   @override
-  String get discoverMoreDescription => 'Découvrez plus de conteurs, de défis et plus';
+  String get discoverMoreDescription =>
+      'Découvrez plus de conteurs, de défis et plus';
 
   @override
   String get noCreatorsShatsFound => 'Aucun Shats de créateurs trouvé';
 
   @override
-  String get selectLanguagePrompt => 'Veuillez sélectionner votre langue préférée.';
+  String get selectLanguagePrompt =>
+      'Veuillez sélectionner votre langue préférée.';
 
   @override
-  String get updateProfilePrompt => 'Mettez à jour les informations et la photo de votre profil.';
+  String get updateProfilePrompt =>
+      'Mettez à jour les informations et la photo de votre profil.';
 
   @override
-  String get viewTransactionHistory => 'Consultez votre historique de transactions pour voir tous les crédits et débits.';
+  String get viewTransactionHistory =>
+      'Consultez votre historique de transactions pour voir tous les crédits et débits.';
 
   @override
-  String get rewardsForWatchingAds => 'Regardez des annonces pour gagner plus de points !';
+  String get rewardsForWatchingAds =>
+      'Regardez des annonces pour gagner plus de points !';
 
   @override
   String get viewYourAvailablePoints => 'Vos points disponibles expireront le ';
 
   @override
-  String get dailyRewardClaimed => 'Vous avez réclamé la récompense quotidienne pour le jour ';
+  String get dailyRewardClaimed =>
+      'Vous avez réclamé la récompense quotidienne pour le jour ';
 
   @override
-  String get selectWithdrawalMethod => 'Veuillez sélectionner une méthode de retrait parmi les options ci-dessous.';
+  String get selectWithdrawalMethod =>
+      'Veuillez sélectionner une méthode de retrait parmi les options ci-dessous.';
 
   @override
   String get playLearnEarn => 'Jouer, Apprendre, Gagner';
@@ -765,7 +778,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get continueShopping => 'Continuer les achats';
 
   @override
-  String get yourCartDescription => 'Ajoutez d\'incroyables produits à votre panier et commencez à magasiner!';
+  String get yourCartDescription =>
+      'Ajoutez d\'incroyables produits à votre panier et commencez à magasiner!';
 
   @override
   String get yourCartIsEmpty => 'Votre panier est vide';
@@ -921,10 +935,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get storyTellersInfo => 'découvrez d\'incroyables conteurs';
 
   @override
-  String get challengesDescription => 'Participez à des défis passionnants et gagnez des récompenses';
+  String get challengesDescription =>
+      'Participez à des défis passionnants et gagnez des récompenses';
 
   @override
-  String get findStorytellers => 'Découvrez d\'incroyables créateurs de contenu';
+  String get findStorytellers =>
+      'Découvrez d\'incroyables créateurs de contenu';
 
   @override
   String get find => 'trouver';
@@ -966,13 +982,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get aboutOurCompany => 'À Propos de Notre Entreprise';
 
   @override
-  String get companyMissionStatement => 'Une application de partage de contenu polyvalente qui monétise l\'engagement en fonction de la connaissance de la narration.';
+  String get companyMissionStatement =>
+      'Une application de partage de contenu polyvalente qui monétise l\'engagement en fonction de la connaissance de la narration.';
 
   @override
-  String get companyDescription1 => 'Baakhapaa IT and Marketing Solutions LLC est une entreprise de développement de logiciels et de marketing qui s\'efforce de créer des histoires de succès pour ses clients. Nous nous concentrons sur la fourniture de plateformes multimédias informatives pour les organisations qui aspirent à devenir une marque à succès et à propulser leur entreprise vers de nouveaux sommets.';
+  String get companyDescription1 =>
+      'Baakhapaa IT and Marketing Solutions LLC est une entreprise de développement de logiciels et de marketing qui s\'efforce de créer des histoires de succès pour ses clients. Nous nous concentrons sur la fourniture de plateformes multimédias informatives pour les organisations qui aspirent à devenir une marque à succès et à propulser leur entreprise vers de nouveaux sommets.';
 
   @override
-  String get companyDescription2 => 'Avec nos services, les organisations peuvent créer une marque qui œuvre à unir les gens, à promouvoir la culture et à progresser vers la conscience spirituelle grâce au pouvoir de la narration.';
+  String get companyDescription2 =>
+      'Avec nos services, les organisations peuvent créer une marque qui œuvre à unir les gens, à promouvoir la culture et à progresser vers la conscience spirituelle grâce au pouvoir de la narration.';
 
   @override
   String get getInTouch => 'Contactez-nous';
@@ -1050,13 +1069,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get show => 'Afficher';
 
   @override
-  String get notificationsReadMessage => 'Vous avez lu toutes vos notifications. Excellent travail pour rester organisé !';
+  String get notificationsReadMessage =>
+      'Vous avez lu toutes vos notifications. Excellent travail pour rester organisé !';
 
   @override
   String get noNotificationsYet => 'Aucune notification pour l\'instant';
 
   @override
-  String get notificationsAppearHere => 'Lorsque vous recevrez des notifications, elles apparaîtront ici';
+  String get notificationsAppearHere =>
+      'Lorsque vous recevrez des notifications, elles apparaîtront ici';
 
   @override
   String get refresh => 'Actualiser';
@@ -1143,16 +1164,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get becomeACreator => 'Devenir Créateur';
 
   @override
-  String get unlockBadgesAndEarnRewards => 'Débloquez des badges et gagnez des récompenses';
+  String get unlockBadgesAndEarnRewards =>
+      'Débloquez des badges et gagnez des récompenses';
 
   @override
-  String get earnBadgesForRewards => 'Gagnez des badges pour échanger des récompenses dans l\'application baakhapaa. Les réalisations sont classées par type pour vous aider à suivre vos progrès';
+  String get earnBadgesForRewards =>
+      'Gagnez des badges pour échanger des récompenses dans l\'application baakhapaa. Les réalisations sont classées par type pour vous aider à suivre vos progrès';
 
   @override
   String get completed => 'Terminé';
 
   @override
-  String get shareCodeWithFriends => 'Partagez ce code avec des amis et gagnez des récompenses lorsqu\'ils rejoignent !';
+  String get shareCodeWithFriends =>
+      'Partagez ce code avec des amis et gagnez des récompenses lorsqu\'ils rejoignent !';
 
   @override
   String get copyCode => 'Copier le code';
@@ -1161,43 +1185,50 @@ class AppLocalizationsFr extends AppLocalizations {
   String get noReferralCodeAvailable => 'Aucun code de parrainage disponible';
 
   @override
-  String get joinCreatorCommunity => 'Rejoignez la communauté des créateurs de contenu et partagez votre voix unique avec le monde';
+  String get joinCreatorCommunity =>
+      'Rejoignez la communauté des créateurs de contenu et partagez votre voix unique avec le monde';
 
   @override
   String get creatorBenefits => 'Avantages pour les Créateurs';
 
   @override
-  String get whatYouCanAchieve => 'Ce que vous pouvez accomplir en tant que créateur';
+  String get whatYouCanAchieve =>
+      'Ce que vous pouvez accomplir en tant que créateur';
 
   @override
   String get contentCreation => 'Création de Contenu';
 
   @override
-  String get createAndShareContent => 'Créez et partagez des Shorts et des Stories captivants';
+  String get createAndShareContent =>
+      'Créez et partagez des Shorts et des Stories captivants';
 
   @override
   String get buildFollowing => 'Construire une Audience';
 
   @override
-  String get growYourAudience => 'Développez votre audience avec des fans engagés';
+  String get growYourAudience =>
+      'Développez votre audience avec des fans engagés';
 
   @override
   String get monetization => 'Monétisation';
 
   @override
-  String get earnThroughMonetization => 'Gagnez grâce à divers canaux de monétisation';
+  String get earnThroughMonetization =>
+      'Gagnez grâce à divers canaux de monétisation';
 
   @override
   String get recognition => 'Reconnaissance';
 
   @override
-  String get getRewardsForContributions => 'Obtenez des récompenses pour vos contributions';
+  String get getRewardsForContributions =>
+      'Obtenez des récompenses pour vos contributions';
 
   @override
   String get requirements => 'Exigences';
 
   @override
-  String get meetCreatorCriteria => 'Respectez ces critères pour devenir créateur';
+  String get meetCreatorCriteria =>
+      'Respectez ces critères pour devenir créateur';
 
   @override
   String get minimum => 'Minimum';
@@ -1206,13 +1237,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get need => 'Besoin';
 
   @override
-  String get completeEpisodesToQualify => 'Terminez ces épisodes pour vous qualifier';
+  String get completeEpisodesToQualify =>
+      'Terminez ces épisodes pour vous qualifier';
 
   @override
-  String get requestUnderReview => 'Votre demande est en cours de révision. Vous recevrez une notification par e-mail une fois qu\'une décision aura été prise.';
+  String get requestUnderReview =>
+      'Votre demande est en cours de révision. Vous recevrez une notification par e-mail une fois qu\'une décision aura été prise.';
 
   @override
-  String get meetAllRequirements => 'Veuillez respecter toutes les exigences avant de soumettre votre demande.';
+  String get meetAllRequirements =>
+      'Veuillez respecter toutes les exigences avant de soumettre votre demande.';
 
   @override
   String get requestSubmitted => 'Demande Soumise';
@@ -1221,16 +1255,41 @@ class AppLocalizationsFr extends AppLocalizations {
   String get submitCreatorRequest => 'Soumettre la Demande de Créateur';
 
   @override
+  String get becomeATeacher => 'Become a Teacher';
+
+  @override
+  String get joinTeachersCommunity =>
+      'Join the community of teachers and share your knowledge with students';
+
+  @override
+  String get teaching => 'Teaching';
+
+  @override
+  String get growYourStudentsCommunity => 'Grow your student community';
+
+  @override
+  String get getRewardsForTeaching =>
+      'Get rewards for your teaching contributions';
+
+  @override
+  String get teachersBenefits => 'Teacher Benefits';
+
+  @override
+  String get submitTeacherRequest => 'Submit Teacher Request';
+
+  @override
   String get learn => 'Apprendre';
 
   @override
-  String get learnDescription => 'Regardez des stories • Téléchargez des vidéos • Relevez des défis pour gagner des récompenses';
+  String get learnDescription =>
+      'Regardez des stories • Téléchargez des vidéos • Relevez des défis pour gagner des récompenses';
 
   @override
   String get monetizeYourSCREENTIME => 'Monétisez votre temps d\'écran';
 
   @override
-  String get storiesArePowerStoriesAreRewards => 'Les histoires sont le pouvoir. Les histoires sont des récompenses.';
+  String get storiesArePowerStoriesAreRewards =>
+      'Les histoires sont le pouvoir. Les histoires sont des récompenses.';
 
   @override
   String get storiesArePower => 'Les histoires sont le pouvoir.';
@@ -1239,10 +1298,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get storiesAreRewards => 'Les histoires sont des récompenses.';
 
   @override
-  String get browseByVendorsAndCollections => 'Parcourir par vendeurs et collections';
+  String get browseByVendorsAndCollections =>
+      'Parcourir par vendeurs et collections';
 
   @override
-  String get startJourney => 'Commencez votre voyage en regardant des courts métrages, en jouant à des jeux et en gagnant des récompenses !';
+  String get startJourney =>
+      'Commencez votre voyage en regardant des courts métrages, en jouant à des jeux et en gagnant des récompenses !';
 
   @override
   String get iAgreeToThe => 'J\'accepte les';
@@ -1251,5 +1312,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get andKeyword => 'et';
 
   @override
-  String get applyToBecomeCreator => 'Postuler pour devenir créateur de contenu';
+  String get applyToBecomeCreator =>
+      'Postuler pour devenir créateur de contenu';
 }

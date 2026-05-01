@@ -98,6 +98,7 @@ class _StoryScreenState extends State<StoryScreen>
   List<dynamic> _cachedReadableSeasons = [];
   bool _hasCheckedInterestPrompt = false;
   bool _showInterestPrompt = false;
+  bool _booksRetryTriggered = false;
 
   // Cache positioning decisions to prevent excessive recalculation
   // REMOVED: Dynamic positioning variables - now using fixed bottom position
@@ -357,6 +358,19 @@ class _StoryScreenState extends State<StoryScreen>
         // in-flight (triggered by Auth.notifyListeners inside getUser()).
         if (!mounted) return;
         _storyProvider = Provider.of<Story>(context, listen: false);
+
+        // Books can disappear if the provider is recreated while the initial
+        // readable request was still in-flight on the previous instance.
+        if (_storyProvider.readableSeasons.isEmpty) {
+          try {
+            await _storyProvider.fetchReadableSeasons();
+            if (mounted) {
+              _storyProvider = Provider.of<Story>(context, listen: false);
+            }
+          } catch (e) {
+            DebugLogger.error('Readable seasons retry failed: $e');
+          }
+        }
 
         // Cache the featured seasons data to prevent loss during rebuilds
         if (_storyProvider.featuredSeasons.isNotEmpty) {
@@ -3037,6 +3051,25 @@ class _StoryScreenState extends State<StoryScreen>
         }
 
         if (readableSeasonsToShow.isEmpty) {
+          if (!_isLoading && !_booksRetryTriggered) {
+            _booksRetryTriggered = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              if (!mounted) return;
+              try {
+                final storyProvider =
+                    Provider.of<Story>(context, listen: false);
+                await storyProvider.fetchReadableSeasons();
+              } catch (e) {
+                DebugLogger.error('Books section retry failed: $e');
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _booksRetryTriggered = false;
+                  });
+                }
+              }
+            });
+          }
           return SizedBox.shrink();
         }
 

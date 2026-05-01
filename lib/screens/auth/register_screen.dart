@@ -171,12 +171,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         await prefs.remove('pending_referral_code');
 
         // Store onboarding selections + award 40 onboarding coins (idempotent)
-        final authProvider = Provider.of<Auth>(context, listen: false);
-        await authProvider.storeOnboardingSelections();
-        if (prefs.getBool('claim_onboarding_reward') == true) {
-          await authProvider.claimOnboardingReward();
-          await prefs.remove('claim_onboarding_reward');
-        }
+        // ONBOARDING COMMENTED OUT
+        // final authProvider = Provider.of<Auth>(context, listen: false);
+        // await authProvider.storeOnboardingSelections();
+        // if (prefs.getBool('claim_onboarding_reward') == true) {
+        //   await authProvider.claimOnboardingReward();
+        //   await prefs.remove('claim_onboarding_reward');
+        // }
 
         // Pre-fetch story data before navigation to prevent loading state
         if (mounted) {

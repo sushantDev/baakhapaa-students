@@ -1746,8 +1746,11 @@ class _StoryScreenState extends State<StoryScreen>
         try {
           for (int i = 0; i < difficultSeasonsToShow.length; i++) {
             final category = difficultSeasonsToShow[i];
-            final String title = category['heading_title'] ?? '';
+            String title = category['heading_title'] ?? '';
             final List<dynamic> seasons = category['seasons'] ?? [];
+
+            // Transform "Stories" to "Courses" in the title for consistency
+            title = title.replaceAll('Stories', 'Courses');
 
             // Skip categories with no seasons
             if (seasons.isEmpty) {
@@ -2875,7 +2878,7 @@ class _StoryScreenState extends State<StoryScreen>
                   if (auth.isGuest) {
                     await GuestAuthHelper.showGuestLoginDialog(
                       context,
-                      'browse teachers',
+                      'browse tutors',
                     );
                     return;
                   }
@@ -2904,7 +2907,7 @@ class _StoryScreenState extends State<StoryScreen>
                   height: 80,
                   child: Center(
                     child: Text(
-                      'No teachers available',
+                      'No tutors available',
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                   ),

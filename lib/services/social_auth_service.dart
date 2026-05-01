@@ -163,7 +163,7 @@ class SocialAuthService {
   //     final String defaultUrl = appUrl ??
   //         'https://play.google.com/store/apps/details?id=your.baakhapaa.app';
   //     final String defaultMessage = message ??
-  //         'Join me on Baakhapaa! The amazing gaming app where you can play, compete, and win real rewards! 🎮';
+  //         'Join me on Skill Sikka! The amazing gaming app where you can play, compete, and win real rewards! 🎮';
 
   //     // Use Facebook's share dialog (no special permissions needed)
   //     final result =

@@ -646,7 +646,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                 SharePlus.instance.share(
                   ShareParams(
                     text: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                     sharePositionOrigin: Rect.fromLTWH(0, 0, 100, 100),
                   ),
                 );
@@ -677,7 +677,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                   ),
                   builder: (context) => ShareWithQrModal(
                     data: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                   ),
                 );
               },
@@ -2311,7 +2311,7 @@ class _SeasonDetailsState extends State<SeasonDetails> {
                         height: 16),
                     const SizedBox(width: 5),
                     Text(
-                      'Point Reward:\n${seasonData['total_reward_points'] ?? 0} Bpts',
+                      'Point Reward:\n${seasonData['total_reward_points'] ?? 0} Sikka',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -2796,8 +2796,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                   final achievement = achievements[index];
                   final String title =
                       achievement['title']?.toString() ?? 'Badge';
-                  final String imageUrl =
-                      achievement['url']?.toString() ?? '';
+                  final String imageUrl = achievement['url']?.toString() ?? '';
                   final List<dynamic> progress = achievement['progress'] ?? [];
                   final double progressValue = progress.isNotEmpty ? 1.0 : 0.0;
                   final bool isEarned = progress.isNotEmpty;

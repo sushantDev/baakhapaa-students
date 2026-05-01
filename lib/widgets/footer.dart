@@ -45,6 +45,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  // ignore: unused_element
   void _toggleDial() {
     final auth = Provider.of<Auth>(context, listen: false);
 
@@ -61,13 +62,16 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     if (!auth.isEmailVerified) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Email not verified yet. Please verify your email first.'),
+          content:
+              Text('Email not verified yet. Please verify your email first.'),
         ),
       );
       return;
     }
 
-    if (auth.role == 'vendor' || auth.role == 'creator' || auth.role == 'student') {
+    if (auth.role == 'vendor' ||
+        auth.role == 'creator' ||
+        auth.role == 'student') {
       showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
@@ -78,7 +82,9 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     }
 
     // Unknown role fallback: keep existing creator request path.
-    if (auth.role != 'creator' && auth.role != 'student' && auth.role != 'vendor') {
+    if (auth.role != 'creator' &&
+        auth.role != 'student' &&
+        auth.role != 'vendor') {
       Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);
       return;
     }
@@ -176,6 +182,36 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     }
   }
 
+  Color _getIconColor(int index) {
+    switch (index) {
+      case 0: // Courses - Blue
+        return Color(0xFF5DBBFF);
+      case 1: // Shorts - Purple/Magenta
+        return Color(0xFFD084FF);
+      case 2: // Store - Pink
+        return Color(0xFFFF6B9D);
+      case 3: // Profile - Golden/Yellow
+        return Color(0xFFFFD700);
+      default:
+        return Colors.amber;
+    }
+  }
+
+  Color _getGlowColor(int index) {
+    switch (index) {
+      case 0: // Courses - Blue
+        return Color(0xFF5DBBFF).withValues(alpha: 0.5);
+      case 1: // Shorts - Purple/Magenta
+        return Color(0xFFD084FF).withValues(alpha: 0.5);
+      case 2: // Store - Pink
+        return Color(0xFFFF6B9D).withValues(alpha: 0.5);
+      case 3: // Profile - Golden/Yellow
+        return Color(0xFFFFD700).withValues(alpha: 0.5);
+      default:
+        return Colors.amber.withValues(alpha: 0.5);
+    }
+  }
+
   Widget _buildNavItem({
     required int index,
     IconData? icon,
@@ -185,7 +221,10 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     required TutorialFlowProvider tutorial,
     required bool tutorialCondition,
   }) {
+    // ignore: unused_local_variable
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = _getIconColor(index);
+    final glowColor = _getGlowColor(index);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -202,27 +241,39 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
               onTap: () => _onItemTapped(index),
               child: AnimatedContainer(
                 duration: Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 10),
                 constraints: BoxConstraints(
                   minHeight: 50,
-                  maxHeight: 60,
+                  maxHeight: 70,
                   minWidth: 50,
                 ),
                 decoration: BoxDecoration(
                   gradient: isSelected
                       ? LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                           colors: [
-                            Colors.amber.shade400.withValues(alpha: 0.2),
-                            Colors.amber.shade600.withValues(alpha: 0.2),
+                            glowColor.withValues(alpha: 0.15),
+                            glowColor.withValues(alpha: 0.08),
                           ],
                         )
                       : null,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   border: isSelected
                       ? Border.all(
-                          color: Colors.amber.withValues(alpha: 0.3),
-                          width: 1,
+                          color: glowColor.withValues(alpha: 0.4),
+                          width: 1.5,
                         )
+                      : null,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: glowColor,
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                            offset: Offset(0, 2),
+                          ),
+                        ]
                       : null,
                 ),
                 child: Column(
@@ -233,82 +284,62 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                       duration: Duration(milliseconds: 200),
                       child: shouldShowLoading
                           ? SizedBox(
-                              width: isSelected ? 24 : 22,
-                              height: isSelected ? 24 : 22,
+                              width: isSelected ? 28 : 24,
+                              height: isSelected ? 28 : 24,
                               child: CircularProgressIndicator(
-                                color: isSelected
-                                    ? Colors.amber.shade600
-                                    : (isDark
-                                        ? Colors.white.withValues(alpha: 0.7)
-                                        : Colors.black87),
+                                color: iconColor,
                                 strokeWidth: 2,
                               ),
                             )
                           : imageUrl != null
                               ? SizedBox(
-                                  width: isSelected ? 24 : 22,
-                                  height: isSelected ? 24 : 22,
+                                  width: isSelected ? 28 : 24,
+                                  height: isSelected ? 28 : 24,
                                   child: CachedNetworkImage(
                                     imageUrl: imageUrl,
-                                    color: isSelected
-                                        ? Colors.amber.shade600
-                                        : (isDark
-                                            ? Colors.white
-                                                .withValues(alpha: 0.7)
-                                            : Colors.black87),
+                                    color: iconColor,
                                     placeholder: (context, url) => SizedBox(
-                                      width: isSelected ? 24 : 22,
-                                      height: isSelected ? 24 : 22,
+                                      width: isSelected ? 28 : 24,
+                                      height: isSelected ? 28 : 24,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.0,
-                                        color: Colors.amber,
+                                        color: iconColor,
                                       ),
                                     ),
                                     errorWidget: (context, url, error) => Icon(
                                       Icons.home_rounded,
-                                      size: isSelected ? 24 : 22,
-                                      color: isSelected
-                                          ? Colors.amber.shade600
-                                          : (isDark
-                                              ? Colors.white
-                                                  .withValues(alpha: 0.7)
-                                              : Colors.black87),
+                                      size: isSelected ? 28 : 24,
+                                      color: iconColor,
                                     ),
                                   ),
                                 )
                               : Icon(
                                   icon,
-                                  size: isSelected ? 24 : 22,
-                                  color: isSelected
-                                      ? Colors.amber.shade600
-                                      : (isDark
-                                          ? Colors.white.withValues(alpha: 0.7)
-                                          : Colors.black87),
+                                  size: isSelected ? 28 : 24,
+                                  color: iconColor,
                                 ),
                     ),
-                    SizedBox(height: 4),
-                    if (!isSelected)
-                      Flexible(
-                        child: AnimatedDefaultTextStyle(
-                          duration: Duration(milliseconds: 200),
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.7)
-                                : Colors.black87,
-                            height: 1.2,
-                            letterSpacing: 0.3,
-                          ),
-                          child: Text(
-                            label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            textScaler: TextScaler.linear(1.0),
-                          ),
+                    SizedBox(height: 6),
+                    Flexible(
+                      child: AnimatedDefaultTextStyle(
+                        duration: Duration(milliseconds: 200),
+                        style: TextStyle(
+                          fontSize: isSelected ? 11 : 9,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w600,
+                          color: iconColor,
+                          height: 1.2,
+                          letterSpacing: 0.3,
+                        ),
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          textScaler: TextScaler.linear(1.0),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -354,11 +385,6 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     double adjustedHeight = (containerHeight + 15).clamp(60.0, 90.0);
 
     // Only add extra padding for Android devices with 3-button software navigation bar
-    // (typically older Samsung devices with back/home/recent buttons)
-    // - Android 3-button nav bar: ~48dp
-    // - Android gesture navigation: ~20-24dp (small gesture pill)
-    // - iOS home indicator: ~34dp
-    // We only want to adjust for the large 3-button nav bar (>= 40dp) on Android
     final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
     final bool hasThreeButtonNav = isAndroid && bottomNavBarPadding >= 40;
     final totalBottomPadding = hasThreeButtonNav ? bottomNavBarPadding : 0.0;
@@ -369,56 +395,53 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       child: Consumer<TutorialFlowProvider>(
         builder: (context, tutorial, _) {
           return SizedBox(
-            height: adjustedHeight + 20,
+            height: adjustedHeight + 16,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                // Modern navigation bar
+                // Modern navigation bar with enhanced neon glow design
                 Container(
-                  height: adjustedHeight + 10,
-                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  height: adjustedHeight + 8,
+                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Color(0xFF1A1A1A)
-                            : Colors.white,
-                        Theme.of(context).brightness == Brightness.dark
-                            ? Color(0xFF2D2D2D)
-                            : Colors.grey.shade50,
+                        Color(0xFF0F0F1F),
+                        Color(0xFF1A1A2E),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.black.withValues(alpha: 0.3)
-                            : Colors.grey.withValues(alpha: 0.3),
+                        color: Colors.black.withValues(alpha: 0.5),
+                        blurRadius: 20,
+                        spreadRadius: 4,
+                        offset: Offset(0, -8),
+                      ),
+                      BoxShadow(
+                        color: Color(0xFF5DBBFF).withValues(alpha: 0.1),
                         blurRadius: 15,
                         spreadRadius: 2,
-                        offset: Offset(0, -5),
                       ),
                     ],
                     border: Border.all(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : Colors.grey.withValues(alpha: 0.2),
+                      color: Colors.white.withValues(alpha: 0.08),
                       width: 1,
                     ),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Story tab
+                        // Story tab (Courses)
                         Expanded(
                           child: _buildNavItem(
                             index: 0,
                             imageUrl:
-                                'https://baakhapaa.com/assets/img/vector/tst-vector1.png',
+                                'assets\images\sikka.png', // Replace with your asset path
                             label: AppLocalizations.of(context)!.courses,
                             isSelected: widget.index == 0,
                             tutorial: tutorial,
@@ -440,14 +463,11 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                           ),
                         ),
 
-                        // Center space for FAB
-                        SizedBox(width: 56),
-
                         // Store tab
                         Expanded(
                           child: _buildNavItem(
                             index: 2,
-                            icon: Icons.store_rounded,
+                            icon: Icons.shopping_cart_rounded,
                             label: AppLocalizations.of(context)!.store,
                             isSelected: widget.index == 2,
                             tutorial: tutorial,
@@ -467,82 +487,6 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                ),
-
-                // Simplified Floating Action Button for Create Shorts
-                Positioned(
-                  top: -6,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.amber.shade400,
-                            Colors.amber.shade600,
-                            Colors.amber.shade700,
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.amber.withValues(alpha: 0.4),
-                            blurRadius: 12,
-                            spreadRadius: 1,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(26),
-                          onTap: () {
-                            HapticFeedback.mediumImpact();
-                            _toggleDial();
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                width: 2,
-                              ),
-                            ),
-                            child: Center(
-                              child: Consumer<Auth>(
-                                builder: (context, auth, child) {
-                                  if (auth.isLoadingUser && auth.user.isEmpty) {
-                                    return SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    );
-                                  }
-
-                                  return Icon(
-                                    auth.isGuest
-                                        ? Icons.login
-                                        : Icons.add_rounded,
-                                    color: Colors.white,
-                                    size: 24,
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ),

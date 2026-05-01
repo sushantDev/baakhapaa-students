@@ -166,7 +166,7 @@ AppBar headerDefault(context,
                                 ),
                               ),
                               Text(
-                                ' Bpts',
+                                ' Sikka',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,

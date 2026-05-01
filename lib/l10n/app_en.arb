@@ -1634,6 +1634,34 @@
   "@submitCreatorRequest": {
     "description": "Button text to submit a creator request."
   },
+  "becomeATeacher": "Become a Teacher",
+  "@becomeATeacher": {
+    "description": "Title for the 'Become a Teacher' page or section."
+  },
+  "joinTeachersCommunity": "Join the community of teachers and share your knowledge with students",
+  "@joinTeachersCommunity": {
+    "description": "A welcome message or call to action for joining the teacher community."
+  },
+  "teaching": "Teaching",
+  "@teaching": {
+    "description": "A benefit item related to teaching."
+  },
+  "growYourStudentsCommunity": "Grow your student community",
+  "@growYourStudentsCommunity": {
+    "description": "Description of building a student audience benefit."
+  },
+  "getRewardsForTeaching": "Get rewards for your teaching contributions",
+  "@getRewardsForTeaching": {
+    "description": "Description of the recognition benefit for teaching."
+  },
+  "teachersBenefits": "Teacher Benefits",
+  "@teachersBenefits": {
+    "description": "Heading for a section outlining the benefits of being a teacher."
+  },
+  "submitTeacherRequest": "Submit Teacher Request",
+  "@submitTeacherRequest": {
+    "description": "Button text to submit a teacher request."
+  },
   "learn": "Learn",
   "@learn": {
     "description": "Heading for a section about earning rewards."

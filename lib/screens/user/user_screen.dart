@@ -770,7 +770,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 SharePlus.instance.share(
                   ShareParams(
                     text: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                     sharePositionOrigin: Rect.fromLTWH(0, 0, 100, 100),
                   ),
                 );
@@ -789,7 +789,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   ),
                   builder: (context) => ShareWithQrModal(
                     data: shareText,
-                    subject: "Join Baakhapaa and earn points!",
+                    subject: "Join Skill Sikka and earn points!",
                   ),
                 );
               },
@@ -1137,7 +1137,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                                   👤 Username:  ${_user['username']}
                                                   🔗 View profile: $profileLink
 
-                                                  Join Baakhapaa use my refer code! 🎁 We’ll both receive 25 bonus points when you create an account.
+                                                  Join Skill Sikka use my refer code! 🎁 We’ll both receive 25 bonus points when you create an account.
                                                   '''
                                                     .trim();
 
@@ -1929,7 +1929,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     bool isProfileEmailVerified() {
       final value = _user['email_verified_at'] ??
           (_user['information'] is Map<String, dynamic>
-              ? (_user['information'] as Map<String, dynamic>)['email_verified_at']
+              ? (_user['information']
+                  as Map<String, dynamic>)['email_verified_at']
               : null);
       if (value == null) return false;
       if (value is bool) return value;
@@ -1953,14 +1954,15 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     void showEmailVerificationWarning() {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Email not verified yet. Please verify your email first.'),
+          content:
+              Text('Email not verified yet. Please verify your email first.'),
         ),
       );
     }
 
     final categories = [
       'Shorts',
-      'Stories',
+      'Courses',
       'Challenges',
       'Achievements',
     ];
@@ -2165,7 +2167,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               ),
               SizedBox(height: 12),
               Text(
-                'Add\nStory',
+                'Add\nCourse',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
@@ -2553,7 +2555,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         ),
                         SizedBox(height: 12),
                         Text(
-                          'No Stories Yet',
+                          'No Courses Yet',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -2565,7 +2567,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Tap "+" to create Stories',
+                          'Tap "+" to create Courses',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.grey[600],
@@ -2672,7 +2674,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
           return _buildChallengesGrid();
         case 'Achievements':
           return _buildAchievementsGrid();
-        case 'Stories':
+        case 'Courses':
           return _buildStoriesSliderGrid();
         default:
           return _buildShortsSliderGrid();
@@ -2749,6 +2751,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     );
   }
 
+  // ignore: unused_element
   Widget _buildAnalytics() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -4417,7 +4420,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             duration: const Duration(milliseconds: 220),
             child: KeyedSubtree(
               key: ValueKey(_activeTab),
-              child: _activeTab == 'stories'
+              child: _activeTab == 'courses'
                   ? _buildPublicStoriesSection()
                   : _buildPublicShortsSection(),
             ),
@@ -4443,8 +4446,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       },
       {
         'assetIcon': "assets/svgs/story-playlist.svg",
-        'key': 'stories',
-        'label': 'Stories',
+        'key': 'courses',
+        'label': 'Courses',
         'count': storiesCount,
         'isVisible': _isStoriesVisible(),
       },
@@ -4547,8 +4550,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     if (_localCreatorSeasons.isEmpty) {
       return _buildPublicEmptyCreationsState(
         icon: Icons.video_library_outlined,
-        title: 'No Stories Yet',
-        description: 'This user hasn\'t posted any stories.',
+        title: 'No Courses Yet',
+        description: 'This user hasn\'t posted any courses.',
       );
     }
 
@@ -4854,8 +4857,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                             currency: 'NRS',
                             imageAsset: 'assets/images/walletCoin.png',
                           ),
-                        if (_user['email_verified_at'] != null)
-                          _buildAnalytics(),
+                        // if (_user['email_verified_at'] != null)
+                        //   _buildAnalytics(),
                         _buildLevelProgress(),
                         const BaakhaBannerAd(),
                         // TaskCardWidget(),

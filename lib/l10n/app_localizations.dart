@@ -2531,6 +2531,48 @@ abstract class AppLocalizations {
   /// **'Submit Creator Request'**
   String get submitCreatorRequest;
 
+  /// Title for the 'Become a Teacher' page or section.
+  ///
+  /// In en, this message translates to:
+  /// **'Become a Teacher'**
+  String get becomeATeacher;
+
+  /// A welcome message or call to action for joining the teacher community.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the community of teachers and share your knowledge with students'**
+  String get joinTeachersCommunity;
+
+  /// A benefit item related to teaching.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaching'**
+  String get teaching;
+
+  /// Description of building a student audience benefit.
+  ///
+  /// In en, this message translates to:
+  /// **'Grow your student community'**
+  String get growYourStudentsCommunity;
+
+  /// Description of the recognition benefit for teaching.
+  ///
+  /// In en, this message translates to:
+  /// **'Get rewards for your teaching contributions'**
+  String get getRewardsForTeaching;
+
+  /// Heading for a section outlining the benefits of being a teacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher Benefits'**
+  String get teachersBenefits;
+
+  /// Button text to submit a teacher request.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Teacher Request'**
+  String get submitTeacherRequest;
+
   /// Heading for a section about earning rewards.
   ///
   /// In en, this message translates to:

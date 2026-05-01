@@ -143,7 +143,7 @@ class _StoryCardState extends State<StoryCard> {
 
           // Show error if required achievement is not claimed
           _showErrorDialog(
-              'You need to claim the required achievement $titles to unlock this season');
+              'You need to claim the required achievement $titles to unlock this course');
           startOrStopLoading();
           return;
         }

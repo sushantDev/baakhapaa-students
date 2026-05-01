@@ -883,7 +883,7 @@ class _FullscreenImageSlideState extends State<_FullscreenImageSlide> {
             right: 24,
             child: _RichAccentText(
               text: slide.bodyText!,
-              accentPhrase: 'Baakhapaa app',
+              accentPhrase: 'Skill Sikka',
               baseStyle:
                   const TextStyle(color: _kMuted, fontSize: 14, height: 1.4),
               accentStyle: const TextStyle(

@@ -3,6 +3,7 @@ import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:baakhapaa/providers/auth.dart';
 import 'package:baakhapaa/screens/story/video_screen.dart';
 import 'package:baakhapaa/widgets/header.dart';
+// ignore: unused_import
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../utils/puppet_screen_mapping.dart';
 import 'package:provider/provider.dart';
@@ -101,9 +102,11 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
   void submitRequest() {
     if (_parseBoolValue(_creatorPreferences['requested'])) {
       return _showErrorDialog(
-          'Your request for the creator role has been received. Please allow some time for Baakhapaa Admin to review and approve your request. You will receive an email notification once a decision has been made.');
+          'Your request for the teacher role has been received. Please allow some time for Baakhapaa Admin to review and approve your request. You will receive an email notification once a decision has been made.');
     }
-    if (!(_userBalance >= _minCreatorPoints)) {
+    final minCreatorPoints =
+        _parseIntValue(_creatorPreferences['min_creator_points']);
+    if (!(_userBalance >= minCreatorPoints)) {
       return _showErrorDialog('You do not have enough points.');
     }
     if (!_completedEpisodes) {
@@ -118,7 +121,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
     Provider.of<Auth>(context, listen: false).creatorRequest().then((_) {
       setState(() {
         _isLoading = false;
-        // Update the creator preferences to reflect the request was submitted
+        // Update the teacher preferences to reflect the request was submitted
         _creatorPreferences['requested'] = true;
       });
 
@@ -127,7 +130,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
         builder: (ctx) => AlertDialog(
           title: Text('Success!!'),
           content: Text(
-              'Your request for the creator role has been received. Please allow some time for Baakhapaa Admin to review and approve your request. You will receive an email notification once a decision has been made.'),
+              'Your request for the teacher role has been received. Please allow some time for Baakhapaa Admin to review and approve your request. You will receive an email notification once a decision has been made.'),
           actions: [
             TextButton(
               onPressed: () {
@@ -144,7 +147,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
       });
 
       _showErrorDialog('Oops!! Some error occurred. Please try again.');
-      DebugLogger.api('Creator request error: $error');
+      DebugLogger.api('Teacher request error: $error');
     });
   }
 
@@ -153,7 +156,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
     return Scaffold(
       appBar: header(
           context: context,
-          titleText: '${context.l10n.creator} ${context.l10n.request}'),
+          titleText: '${context.l10n.teachers} ${context.l10n.request}'),
       body: _isLoading
           ? _buildLoadingState()
           : _hasError
@@ -306,34 +309,18 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
       ),
       child: Column(
         children: [
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade400, Colors.purple.shade400],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: Offset(0, 8),
-                ),
-              ],
-            ),
-            child: CachedNetworkImage(
-              imageUrl: 'https://baakhapaa.com/assets/img/logo/logo3.png',
-              height: 80,
-              errorWidget: (context, url, error) => Icon(
-                Icons.account_circle_rounded,
-                size: 80,
-                color: Colors.white,
-              ),
+          Image.asset(
+            'assets/images/skillsiks.png',
+            height: 100,
+            errorBuilder: (context, error, stackTrace) => Icon(
+              Icons.account_circle_rounded,
+              size: 80,
+              color: Colors.white,
             ),
           ),
           SizedBox(height: 24),
           Text(
-            context.l10n.becomeACreator,
+            context.l10n.becomeATeacher,
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -342,7 +329,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
           ),
           SizedBox(height: 12),
           Text(
-            context.l10n.joinCreatorCommunity,
+            context.l10n.joinTeachersCommunity,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -359,14 +346,14 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
     final benefits = [
       {
         'icon': Icons.video_library_rounded,
-        'title': context.l10n.contentCreation,
+        'title': context.l10n.teaching,
         'description': context.l10n.createAndShareContent,
         'color': Colors.red,
       },
       {
         'icon': Icons.people_rounded,
         'title': context.l10n.buildFollowing,
-        'description': context.l10n.growYourAudience,
+        'description': context.l10n.growYourStudentsCommunity,
         'color': Colors.blue,
       },
       {
@@ -379,7 +366,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
       {
         'icon': Icons.star_rounded,
         'title': context.l10n.recognition,
-        'description': context.l10n.getRewardsForContributions,
+        'description': context.l10n.getRewardsForTeaching,
         'color': Colors.amber,
       },
     ];
@@ -454,7 +441,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            context.l10n.creatorBenefits,
+                            context.l10n.teachersBenefits,
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -685,7 +672,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
               ),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: _userBalance >= _minCreatorPoints
+                color: _userBalance >= minCreatorPoints
                     ? Colors.green.withValues(alpha: 0.3)
                     : Colors.amber.withValues(alpha: 0.3),
                 width: 1,
@@ -696,12 +683,12 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
                 Container(
                   padding: EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _userBalance >= _minCreatorPoints
+                    color: _userBalance >= minCreatorPoints
                         ? Colors.green
                         : Colors.amber,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: _userBalance >= _minCreatorPoints
+                  child: _userBalance >= minCreatorPoints
                       ? Icon(
                           Icons.check_circle_rounded,
                           color: Colors.white,
@@ -779,10 +766,10 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
                   ),
                 ),
                 Icon(
-                  _userBalance >= _minCreatorPoints
+                  _userBalance >= minCreatorPoints
                       ? Icons.check_circle
                       : Icons.cancel,
-                  color: _userBalance >= _minCreatorPoints
+                  color: _userBalance >= minCreatorPoints
                       ? Colors.green
                       : Colors.red,
                   size: 28,
@@ -898,7 +885,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
       children: episodes.map<Widget>((episode) {
         bool isWatched = _parseBoolValue(episode['watched']);
         DebugLogger.api(
-            'Creator Request Episode ${episode['title']}: watched value = ${episode['watched']}, isWatched = $isWatched');
+            'Teacher Request Episode ${episode['title']}: watched value = ${episode['watched']}, isWatched = $isWatched');
         return InkWell(
           onTap: () {
             Navigator.of(context)
@@ -947,7 +934,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        episode['title']?.toString() ?? 'Episode',
+                        episode['title']?.toString() ?? 'Course',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1004,7 +991,9 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
   }
 
   Widget _buildSubmitSection() {
-    bool canSubmit = _userBalance >= _minCreatorPoints &&
+    final minCreatorPoints =
+        _parseIntValue(_creatorPreferences['min_creator_points']);
+    bool canSubmit = _userBalance >= minCreatorPoints &&
         _completedEpisodes &&
         !_parseBoolValue(_creatorPreferences['requested']);
 
@@ -1105,8 +1094,8 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
                   SizedBox(width: 8),
                   Text(
                     _parseBoolValue(_creatorPreferences['requested'])
-                        ? '${context.l10n.requestSubmitted}'
-                        : '${context.l10n.submitCreatorRequest}',
+                        ? context.l10n.requestSubmitted
+                        : context.l10n.submitTeacherRequest,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

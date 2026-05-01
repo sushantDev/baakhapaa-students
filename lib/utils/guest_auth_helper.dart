@@ -75,7 +75,7 @@ class GuestAuthHelper {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Join Baakhapaa to unlock all features!',
+                        'Join Skill Sikka to unlock all features!',
                         style: TextStyle(
                           color: Colors.blue.shade700,
                           fontSize: 14,

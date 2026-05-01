@@ -6,7 +6,9 @@ import '../../providers/auth.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/shorts/shorts_screen.dart';
 import '../../screens/user/user_screen.dart';
-import 'onboarding_screen.dart';
+// import 'onboarding_screen.dart';
+// ignore: duplicate_import
+import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   static const routeName = '/splash';
@@ -48,30 +50,29 @@ class _SplashScreenState extends State<SplashScreen>
     final prefs = await SharedPreferences.getInstance();
 
     // Deep link present — skip onboarding, go to login/register directly
+    // ONBOARDING COMMENTED OUT — all navigation goes to login/auth now
     final immediateNav = prefs.getString('immediate_navigation') ?? '';
     final pendingReferral = prefs.getString('pending_referral_code') ?? '';
     if (immediateNav.isNotEmpty || pendingReferral.isNotEmpty) {
       if (!mounted) return;
       // Mark onboarding as completed so it doesn't show after login
-      await prefs.setBool('onboarding_completed', true);
+      // await prefs.setBool('onboarding_completed', true);
       Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
       return;
     }
 
-    // Returning user — skip onboarding
-    if (prefs.getBool('onboarding_completed') == true) {
-      final auth = Provider.of<Auth>(context, listen: false);
-      final loggedIn = await auth.tryAutoLogin();
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(
-        loggedIn ? UserScreen.routeName : ShortsScreen.routeName,
-      );
-      return;
-    }
-
-    // First launch — show onboarding (slides are built-in, no fetch needed)
+    // Check if user is already logged in
+    final auth = Provider.of<Auth>(context, listen: false);
+    final loggedIn = await auth.tryAutoLogin();
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(OnboardingScreen.routeName);
+
+    // Navigate based on login status
+    if (loggedIn) {
+      Navigator.of(context).pushReplacementNamed(UserScreen.routeName);
+    } else {
+      // First launch / not logged in — show guest/shorts screen (onboarding commented out)
+      Navigator.of(context).pushReplacementNamed(ShortsScreen.routeName);
+    }
   }
 
   @override
@@ -81,15 +82,7 @@ class _SplashScreenState extends State<SplashScreen>
       body: FadeTransition(
         opacity: _fadeAnim,
         child: Center(
-          child: Image.asset(
-            'assets/images/logo-lony.png',
-            width: 260,
-            errorBuilder: (_, __, ___) => const Icon(
-              Icons.play_circle_fill,
-              size: 80,
-              color: Color(0xFFF4B625),
-            ),
-          ),
+          child: SizedBox.expand(),
         ),
       ),
     );

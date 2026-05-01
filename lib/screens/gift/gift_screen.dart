@@ -580,7 +580,7 @@ class _GiftScreenState extends State<GiftScreen> with PuppetInteractionMixin {
                           ),
                           SizedBox(width: 4),
                           Text(
-                            'Bpts',
+                            'Sikka',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,

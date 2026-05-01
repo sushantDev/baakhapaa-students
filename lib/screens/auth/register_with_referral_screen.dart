@@ -326,7 +326,7 @@ class _RegisterWithReferralScreenState
                 SizedBox(height: 24),
 
                 Text(
-                  'Join Baakhapaa and get min 25 bonus points when you complete registration!',
+                  'Join Skill Sikka and get min 25 bonus points when you complete registration!',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey[600],

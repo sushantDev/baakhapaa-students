@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:the_apple_sign_in/the_apple_sign_in.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/services.dart';
 // import 'package:http/http.dart' as http;
 
 import '../../models/url.dart';
@@ -436,6 +437,21 @@ class _LoginScreenState extends State<LoginScreen> {
         UserScreen.routeName,
         (route) => false,
       );
+    } on PlatformException catch (e) {
+      DebugLogger.error('Google Sign In platform error: $e');
+
+      final message = e.message ?? '';
+      final isAndroidConfigIssue =
+          e.code == 'sign_in_failed' && message.contains('10');
+
+      if (isAndroidConfigIssue) {
+        _showErrorDialog(
+          'Google Sign-In is not configured for this app build. '
+          'Please verify package name and SHA fingerprints in Firebase Console.',
+        );
+      } else {
+        _showErrorDialog('Google Sign In failed: ${e.toString()}');
+      }
     } catch (e) {
       DebugLogger.error('Google Sign In error: $e');
       _showErrorDialog('Google Sign In failed: ${e.toString()}');

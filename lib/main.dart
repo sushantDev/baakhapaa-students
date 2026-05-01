@@ -180,8 +180,23 @@ void _triggerAutoLoginOnce() {
   }
 }
 
+Future<void> _initializeFirebaseSafely() async {
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } on FirebaseException catch (e) {
+    // Startup can race between app and background init paths; ignore duplicate.
+    if (e.code != 'duplicate-app') {
+      rethrow;
+    }
+  }
+}
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  await _initializeFirebaseSafely();
 
   debugPrint("Handling a background message: ${message.messageId}");
 }
@@ -308,9 +323,7 @@ void main() async {
     } catch (e) {
       debug.DebugLogger.error('MobileAds init error: $e');
     }
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await _initializeFirebaseSafely();
 
     // Initialize Stripe SDK
     try {

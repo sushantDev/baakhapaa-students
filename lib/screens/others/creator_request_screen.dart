@@ -23,6 +23,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
     with PuppetInteractionMixin {
   var _isInit = true;
   var _isLoading = true;
+  var _hasError = false;
   late Map<String, dynamic> _creatorPreferences = {};
   int _userBalance = 0;
 
@@ -43,6 +44,14 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
           _userBalance = auth.userAvailableCoins;
           _isLoading = false;
         });
+      }).catchError((error) {
+        DebugLogger.api('Error loading creator preferences: $error');
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _hasError = true;
+          });
+        }
       });
       _isInit = false;
     }
@@ -77,9 +86,17 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
 
   bool get _completedEpisodes {
     final episodes = _creatorPreferences['creators_episode'];
-    if (episodes is! List) return false;
-    return episodes.every((episode) =>
-        episode is Map<String, dynamic> && _parseBoolValue(episode['watched']));
+    if (episodes == null || episodes is! List || episodes.isEmpty) {
+      return false;
+    }
+    return episodes.every((episode) => (episode['watched'] == true));
+  }
+
+  int get _minCreatorPoints {
+    final val = _creatorPreferences['min_creator_points'];
+    if (val == null) return 0;
+    if (val is int) return val;
+    return int.tryParse(val.toString()) ?? 0;
   }
 
   void submitRequest() {
@@ -142,45 +159,47 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
           titleText: '${context.l10n.teachers} ${context.l10n.request}'),
       body: _isLoading
           ? _buildLoadingState()
-          : Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Color.fromARGB(255, 9, 9, 9)
-                        : Colors.white,
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Color(0xFF082032)
-                        : Color.fromARGB(255, 248, 248, 248),
-                  ],
+          : _hasError
+              ? _buildErrorState()
+              : Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Color.fromARGB(255, 9, 9, 9)
+                            : Colors.white,
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Color(0xFF082032)
+                            : Color.fromARGB(255, 248, 248, 248),
+                      ],
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
+                    child: Column(
+                      children: [
+                        // Hero Section
+                        _buildHeroSection(),
+
+                        // Benefits Section
+                        _buildBenefitsSection(),
+
+                        // Requirements Section
+                        _buildRequirementsSection(),
+
+                        // Episodes Section
+                        _buildEpisodesSection(),
+
+                        // Submit Button
+                        _buildSubmitSection(),
+
+                        SizedBox(height: 100), // Bottom padding
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              child: SingleChildScrollView(
-                physics: BouncingScrollPhysics(),
-                child: Column(
-                  children: [
-                    // Hero Section
-                    _buildHeroSection(),
-
-                    // Benefits Section
-                    _buildBenefitsSection(),
-
-                    // Requirements Section
-                    _buildRequirementsSection(),
-
-                    // Episodes Section
-                    _buildEpisodesSection(),
-
-                    // Submit Button
-                    _buildSubmitSection(),
-
-                    SizedBox(height: 100), // Bottom padding
-                  ],
-                ),
-              ),
-            ),
     );
   }
 
@@ -203,6 +222,52 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
       child: const Padding(
         padding: EdgeInsets.all(24.0),
         child: ListSkeleton(itemCount: 5),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.wifi_off_rounded,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Unable to load content',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Please check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  _isLoading = true;
+                  _hasError = false;
+                  _isInit = true;
+                });
+                didChangeDependencies();
+              },
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try Again'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -675,7 +740,7 @@ class _CreatorRequestScreenState extends State<CreatorRequestScreen>
                           ),
                           SizedBox(width: 4),
                           Text(
-                            '${_creatorPreferences['min_creator_points']} points (You have ',
+                            '$_minCreatorPoints points (You have ',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],

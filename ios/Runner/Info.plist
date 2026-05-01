@@ -7,7 +7,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Fun Learn</string>
+		<string>Skill Sikka</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>Fun Learn</string>
+		<string>Skill Sikka</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -61,11 +61,7 @@
 		<key>FacebookDisplayName</key>
 		<string>Baakhapaa</string>
 		<key>FlutterDeepLinkingEnabled</key>
-<<<<<<< HEAD
 		<false/>
-=======
-		<false />
->>>>>>> 1d5519750de23768d801cb1bc1862211cefb9482
 		<key>GADApplicationIdentifier</key>
 		<string>ca-app-pub-8105529278923041~2761053767</string>
 		<key>LSApplicationQueriesSchemes</key>

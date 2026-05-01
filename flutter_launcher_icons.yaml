@@ -1,11 +1,11 @@
 # flutter pub run flutter_launcher_icons
 flutter_launcher_icons:
-  image_path: "assets/images/skill-sikka.png"
+  image_path: "assets/images/sikka.jpeg"
 
   android: "launcher_icon"
   min_sdk_android: 21
   adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/images/sikka.png"
+  adaptive_icon_foreground: "assets/images/sikka.jpeg"
 
   ios: true
   remove_alpha_ios: true

@@ -82,6 +82,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "587678856071-kect4tdohu5hkkaulinpnerhg9ch5l9i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.baakhapaa.student",
+            "certificate_hash": "4fd5ce895f22dd8e402cc0f97a8755ece82288e7"
+          }
+        },
+        {
           "client_id": "587678856071-k84q9cv804di80gts1d4ja7eajvrpked.apps.googleusercontent.com",
           "client_type": 3
         }

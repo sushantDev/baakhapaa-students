@@ -47,6 +47,7 @@ class Auth with ChangeNotifier {
 
   late List<dynamic> _followers = [];
   late List<dynamic> _following = [];
+  late List<dynamic> _blockedUsers = [];
 
 // Add these getters
   Map<String, dynamic> get followData {
@@ -59,6 +60,10 @@ class Auth with ChangeNotifier {
 
   List<dynamic> get following {
     return [..._following];
+  }
+
+  List<dynamic> get blockedUsers {
+    return [..._blockedUsers];
   }
 
   int get followersCount {
@@ -950,6 +955,178 @@ class Auth with ChangeNotifier {
     await prefs.remove('userData');
     await prefs.remove('errorMessage');
     await prefs.remove('fcmToken'); // Remove stored FCM token
+    notifyListeners();
+  }
+
+  /// Permanently deletes the current user's account and all associated data.
+  Future<void> deleteAccount() async {
+    final response = await http
+        .delete(
+          Uri.parse(Url.baakhapaaApi('/user/account')),
+          headers: Url.baakhapaaAuthHeaders(_token),
+        )
+        .timeout(const Duration(seconds: 30));
+
+    final responseData = json.decode(utf8.decode(response.bodyBytes));
+    if (response.statusCode != 200 && !(responseData['success'] == true)) {
+      throw Exception(responseData['message'] ?? 'Failed to delete account');
+    }
+
+    // Clear local session after successful deletion
+    await signout();
+  }
+
+  /// Reports a piece of content (story, short, comment, etc.) as objectionable.
+  Future<void> reportContent({
+    required String type,
+    required int targetId,
+    required String reason,
+  }) async {
+    if (!isAuth) {
+      throw Exception('Please login to report content.');
+    }
+    if (targetId <= 0) {
+      throw Exception('Invalid report target.');
+    }
+
+    final Map<String, String> targetTypeMap = {
+      'short': 'shorts',
+      'shorts': 'shorts',
+      'creator': 'user',
+      'user': 'user',
+      'season': 'season',
+      'episode': 'episode',
+    };
+
+    final normalizedTargetType = targetTypeMap[type.toLowerCase()];
+    if (normalizedTargetType == null) {
+      throw Exception('Unsupported report type: $type');
+    }
+
+    final response = await http
+        .post(
+          Uri.parse(Url.baakhapaaApi('/reports')),
+          headers: {
+            ...Url.baakhapaaAuthHeaders(_token),
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'target_type': normalizedTargetType,
+            'target_id': targetId,
+            'reason': reason,
+          }),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    Map<String, dynamic> responseData = {};
+    try {
+      responseData = json.decode(utf8.decode(response.bodyBytes));
+    } catch (_) {}
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(responseData['message'] ?? 'Failed to submit report');
+    }
+  }
+
+  /// Blocks a user by their username.
+  Future<void> blockUser(String username) async {
+    if (!isAuth) {
+      throw Exception('Please login to block users.');
+    }
+    if (username.trim().isEmpty) {
+      throw Exception('Invalid user for blocking.');
+    }
+
+    final response = await http
+        .post(
+          Uri.parse(Url.baakhapaaApi('/users/$username/block')),
+          headers: Url.baakhapaaAuthHeaders(_token),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    Map<String, dynamic> responseData = {};
+    try {
+      responseData = json.decode(utf8.decode(response.bodyBytes));
+    } catch (_) {}
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(responseData['message'] ?? 'Failed to block user');
+    }
+
+    _blockedUsers = _blockedUsers.where((user) {
+      return user['username']?.toString() != username;
+    }).toList();
+    notifyListeners();
+  }
+
+  Future<List<dynamic>> fetchBlockedUsers({bool forceRefresh = false}) async {
+    if (!isAuth) {
+      throw Exception('Please login to view blocked tutors.');
+    }
+
+    if (_blockedUsers.isNotEmpty && !forceRefresh) {
+      return blockedUsers;
+    }
+
+    final response = await http
+        .get(
+          Uri.parse(Url.baakhapaaApi('/users/blocked')),
+          headers: Url.baakhapaaAuthHeaders(_token),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    Map<String, dynamic> responseData = {};
+    try {
+      responseData = json.decode(utf8.decode(response.bodyBytes));
+    } catch (_) {}
+
+    if (response.statusCode != 200) {
+      throw Exception(
+          responseData['message'] ?? 'Failed to load blocked tutors');
+    }
+
+    final dynamic data = responseData['data'];
+    final dynamic blockedPayload = data is Map<String, dynamic>
+        ? data['blocked_users']
+        : responseData['blocked_users'];
+
+    if (blockedPayload is List) {
+      _blockedUsers = List<dynamic>.from(blockedPayload);
+    } else {
+      _blockedUsers = [];
+    }
+
+    notifyListeners();
+    return blockedUsers;
+  }
+
+  Future<void> unblockUser(String username) async {
+    if (!isAuth) {
+      throw Exception('Please login to unblock users.');
+    }
+    if (username.trim().isEmpty) {
+      throw Exception('Invalid user for unblocking.');
+    }
+
+    final response = await http
+        .delete(
+          Uri.parse(Url.baakhapaaApi('/users/$username/block')),
+          headers: Url.baakhapaaAuthHeaders(_token),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    Map<String, dynamic> responseData = {};
+    try {
+      responseData = json.decode(utf8.decode(response.bodyBytes));
+    } catch (_) {}
+
+    if (response.statusCode != 200) {
+      throw Exception(responseData['message'] ?? 'Failed to unblock user');
+    }
+
+    _blockedUsers = _blockedUsers.where((user) {
+      return user['username']?.toString() != username;
+    }).toList();
     notifyListeners();
   }
 

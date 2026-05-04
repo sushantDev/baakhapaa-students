@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../../providers/puppet_interaction_provider.dart';
 import '../../utils/puppet_screen_mapping.dart';
 import '../../utils/debug_logger.dart';
+import 'blocked_creators_screen.dart';
 import '../affiliate/affiliate_dashboard_screen.dart';
 // import 'social_media_screen.dart';
 
@@ -193,6 +194,30 @@ class _SettingScreenState extends State<SettingScreen>
                     ),
                     SizedBox(height: 12),
 
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.red.shade100,
+                          child: Icon(Icons.block, color: Colors.red.shade600),
+                        ),
+                        title: Text(
+                          'Blocked Tutors',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text('Review and unblock tutors you blocked'),
+                        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          Navigator.of(context)
+                              .pushNamed(BlockedCreatorsScreen.routeName);
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
                     // Contact Us
                     Card(
                       elevation: 2,
@@ -329,6 +354,33 @@ class _SettingScreenState extends State<SettingScreen>
                     // ),
                     // SizedBox(height: 12),
 
+                    // Delete Account
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.red.shade100,
+                          child: Icon(Icons.delete_forever, color: Colors.red),
+                        ),
+                        title: Text(
+                          'Delete Account',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.red,
+                          ),
+                        ),
+                        subtitle: Text(
+                            'Permanently delete your account and all data'),
+                        trailing: Icon(Icons.arrow_forward_ios,
+                            size: 16, color: Colors.red),
+                        onTap: () => _showDeleteAccountDialog(context),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+
                     // Logout
                     Card(
                       elevation: 2,
@@ -419,6 +471,131 @@ class _SettingScreenState extends State<SettingScreen>
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    final authProvider = Provider.of<Auth>(context, listen: false);
+    final TextEditingController _confirmController = TextEditingController();
+    bool _isDeleting = false;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (stateContext, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xff222831)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(Icons.delete_forever, color: Colors.red),
+                  SizedBox(width: 8),
+                  Text('Delete Account', style: TextStyle(color: Colors.red)),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'This will permanently delete your account and all associated data including:\n\n'
+                    '• Points, achievements & history\n'
+                    '• All created content\n'
+                    '• Wallet balance & transaction history\n\n'
+                    'This action cannot be undone.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Type DELETE to confirm:',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                  SizedBox(height: 8),
+                  TextField(
+                    controller: _confirmController,
+                    decoration: InputDecoration(
+                      hintText: 'DELETE',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    autocorrect: false,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: _isDeleting
+                      ? null
+                      : () {
+                          Navigator.pop(dialogContext);
+                        },
+                  child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: _isDeleting
+                      ? null
+                      : () async {
+                          if (_confirmController.text.trim() != 'DELETE') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Please type DELETE to confirm'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                            return;
+                          }
+                          setDialogState(() => _isDeleting = true);
+                          try {
+                            await authProvider.deleteAccount();
+                            Navigator.pop(dialogContext);
+                            if (context.mounted) {
+                              Navigator.of(context, rootNavigator: true)
+                                  .pushNamedAndRemoveUntil(
+                                '/',
+                                (route) => false,
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() => _isDeleting = false);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Failed to delete account. Please try again or contact support at baakhapaa@gmail.com'),
+                                  backgroundColor: Colors.red,
+                                  duration: Duration(seconds: 5),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: _isDeleting
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
+                        )
+                      : Text('Delete Account'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

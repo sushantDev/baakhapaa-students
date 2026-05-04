@@ -242,6 +242,41 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
                   'Badges', (data['badges_count'] ?? '0').toString()),
             ],
           ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _showReportUserDialog(context, data),
+                  icon:
+                      Icon(Icons.flag_outlined, size: 16, color: Colors.orange),
+                  label: Text('Report',
+                      style: TextStyle(color: Colors.orange, fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.orange.shade300),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _showBlockUserDialog(context, data),
+                  icon: Icon(Icons.block, size: 16, color: Colors.red),
+                  label: Text('Block',
+                      style: TextStyle(color: Colors.red, fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.red.shade300),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -454,6 +489,148 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
                       ],
                     ),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReportUserDialog(BuildContext context, Map<String, dynamic> data) {
+    final int? userId = data['id'] is int
+        ? data['id'] as int
+        : int.tryParse(data['id']?.toString() ?? '');
+    String _selectedReason = 'Spam';
+    final List<String> reasons = [
+      'Spam',
+      'Harassment or bullying',
+      'Hate speech',
+      'Inappropriate content',
+      'Impersonation',
+      'Other',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(children: [
+            Icon(Icons.flag_outlined, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Report User'),
+          ]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Why are you reporting @${_username}?',
+                  style: TextStyle(fontSize: 13)),
+              SizedBox(height: 12),
+              ...reasons.map((r) => RadioListTile<String>(
+                    dense: true,
+                    title: Text(r, style: TextStyle(fontSize: 13)),
+                    value: r,
+                    groupValue: _selectedReason,
+                    onChanged: (v) =>
+                        setDialogState(() => _selectedReason = v!),
+                    contentPadding: EdgeInsets.zero,
+                  )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  final auth = Provider.of<Auth>(context, listen: false);
+                  await auth.reportContent(
+                    type: 'user',
+                    targetId: userId ?? 0,
+                    reason: _selectedReason,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Report submitted. Thank you.'),
+                      backgroundColor: Colors.green,
+                    ));
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content:
+                          Text(e.toString().replaceFirst('Exception: ', '')),
+                      backgroundColor: Colors.red,
+                    ));
+                  }
+                }
+              },
+              child: Text('Submit Report'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBlockUserDialog(BuildContext context, Map<String, dynamic> data) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          Icon(Icons.block, color: Colors.red),
+          SizedBox(width: 8),
+          Text('Block @$_username'),
+        ]),
+        content: Text(
+          'Blocking @$_username will:\n\n'
+          '• Remove their content from your feed immediately\n'
+          '• Prevent them from seeing your profile\n'
+          '• Notify our team to review this account\n\n'
+          'You can unblock them later from your privacy settings.',
+          style: TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              try {
+                final auth = Provider.of<Auth>(context, listen: false);
+                await auth.blockUser(_username);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('@$_username has been blocked.'),
+                    backgroundColor: Colors.green,
+                  ));
+                  Navigator.of(context).pop();
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(e.toString().replaceFirst('Exception: ', '')),
+                    backgroundColor: Colors.red,
+                  ));
+                }
+              }
+            },
+            child: Text('Block User'),
           ),
         ],
       ),

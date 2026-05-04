@@ -162,6 +162,9 @@ class _StoryScreenState extends State<StoryScreen>
         try {
           if (mounted) {
             await _mainInit();
+            if (mounted) {
+              await _showEulaIfNeeded();
+            }
           }
         } catch (e) {
           DebugLogger.error('Error in initialization: $e');
@@ -274,6 +277,94 @@ class _StoryScreenState extends State<StoryScreen>
     } catch (e) {
       DebugLogger.error('⏯️ Error refreshing continue watching: $e');
     }
+  }
+
+  /// Shows a EULA/Community Guidelines dialog once for existing users who
+  /// registered before the requirement was added (checked via SharedPreferences).
+  Future<void> _showEulaIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    const eulaKey = 'eula_accepted_v1';
+    if (prefs.getBool(eulaKey) == true) return;
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          Icon(Icons.gavel_rounded, color: Colors.blue),
+          SizedBox(width: 8),
+          Expanded(child: Text('Community Guidelines & Terms')),
+        ]),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'By continuing to use Baakhapaa, you agree to our Terms of Service and Community Guidelines:',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: 12),
+              _eulaPoint(Icons.block, 'No objectionable or abusive content'),
+              _eulaPoint(Icons.person_off, 'No harassment or bullying'),
+              _eulaPoint(Icons.flag_outlined,
+                  'Report inappropriate content using the flag button'),
+              _eulaPoint(Icons.no_accounts,
+                  'Block abusive users from their profile page'),
+              _eulaPoint(
+                  Icons.timer, 'Reported content is reviewed within 24 hours'),
+              _eulaPoint(
+                  Icons.delete_sweep, 'Violating accounts will be removed'),
+              SizedBox(height: 12),
+              GestureDetector(
+                onTap: () async {
+                  final uri =
+                      Uri.parse('https://baakhapaa.com/terms-and-conditions');
+                  if (await canLaunchUrl(uri)) launchUrl(uri);
+                },
+                child: Text(
+                  'Read full Terms of Service →',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              await prefs.setBool(eulaKey, true);
+              Navigator.pop(dialogContext);
+            },
+            child: Text('I Agree & Continue'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _eulaPoint(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: Colors.blue),
+          SizedBox(width: 8),
+          Expanded(child: Text(text, style: TextStyle(fontSize: 12))),
+        ],
+      ),
+    );
   }
 
   Future<void> _mainInit() async {

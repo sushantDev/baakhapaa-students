@@ -105,6 +105,7 @@ import './screens/story/creator_story_screen.dart';
 import './screens/user/edit_profile_screen.dart';
 import './screens/user/orders_screen.dart';
 import './screens/user/setting_screen.dart';
+import './screens/user/blocked_creators_screen.dart';
 import './screens/user/profile_privacy_screen.dart';
 import './screens/user/point_logs_screen.dart';
 import './screens/others/referrals_screen.dart';
@@ -966,6 +967,7 @@ class _MyAppState extends State<MyApp> {
               VideoScreen.routeName: (ctx) => VideoScreen(),
               QuestionScreen.routeName: (ctx) => QuestionScreen(),
               SettingScreen.routeName: (ctx) => SettingScreen(),
+              BlockedCreatorsScreen.routeName: (ctx) => BlockedCreatorsScreen(),
               ProfilePrivacyScreen.routeName: (ctx) => ProfilePrivacyScreen(),
               WinScreen.routeName: (ctx) => WinScreen(),
               LooseScreen.routeName: (ctx) => LooseScreen(),

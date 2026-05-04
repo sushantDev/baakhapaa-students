@@ -8,6 +8,7 @@ import '../providers/auth.dart';
 import 'package:baakhapaa/providers/comment.dart';
 import '../screens/user/player_profile_screen.dart';
 import '../utils/debug_logger.dart';
+import '../utils/guest_auth_helper.dart';
 
 class CommentItem extends StatefulWidget {
   final Comment comment;
@@ -147,6 +148,163 @@ class _CommentItemState extends State<CommentItem> {
     }
   }
 
+  Future<void> _reportCommentUser() async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (auth.isGuest) {
+      await GuestAuthHelper.showGuestLoginDialog(context, 'report this user');
+      return;
+    }
+
+    final int targetId = widget.comment.userId ?? 0;
+    if (targetId <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to report this user.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    String selectedReason = 'Harassment or bullying';
+    const reasons = [
+      'Spam',
+      'Harassment or bullying',
+      'Hate speech',
+      'Inappropriate content',
+      'Misinformation',
+      'Other',
+    ];
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Report User'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Why are you reporting @${widget.comment.username}?'),
+              const SizedBox(height: 12),
+              ...reasons.map(
+                (reason) => RadioListTile<String>(
+                  dense: true,
+                  title: Text(reason, style: const TextStyle(fontSize: 13)),
+                  value: reason,
+                  groupValue: selectedReason,
+                  onChanged: (value) =>
+                      setDialogState(() => selectedReason = value!),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  await auth.reportContent(
+                    type: 'user',
+                    targetId: targetId,
+                    reason: selectedReason,
+                  );
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Report submitted. Thank you.'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text(e.toString().replaceFirst('Exception: ', '')),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Submit Report'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _blockCommentUser() async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (auth.isGuest) {
+      await GuestAuthHelper.showGuestLoginDialog(context, 'block this user');
+      return;
+    }
+
+    final username = widget.comment.username.trim();
+    if (username.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to block this user.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final shouldBlock = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Block User'),
+            content: Text('Block @$username and hide their content?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Block'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!shouldBlock) return;
+
+    try {
+      await auth.blockUser(username);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('@$username has been blocked.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      widget.refreshComments();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<Auth>(context, listen: false);
@@ -261,6 +419,45 @@ class _CommentItemState extends State<CommentItem> {
                                     size: 20, color: Colors.red.shade600),
                                 onTap: _deleteComment,
                               ),
+                            ),
+                          ] else ...[
+                            PopupMenuButton<String>(
+                              tooltip: 'Comment actions',
+                              icon: Icon(
+                                Icons.more_vert,
+                                size: 20,
+                                color: Colors.grey.shade500,
+                              ),
+                              onSelected: (value) {
+                                if (value == 'report_user') {
+                                  _reportCommentUser();
+                                } else if (value == 'block_user') {
+                                  _blockCommentUser();
+                                }
+                              },
+                              itemBuilder: (_) => const [
+                                PopupMenuItem<String>(
+                                  value: 'report_user',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.flag_outlined,
+                                          color: Colors.orange),
+                                      SizedBox(width: 10),
+                                      Text('Report User'),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem<String>(
+                                  value: 'block_user',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.block, color: Colors.red),
+                                      SizedBox(width: 10),
+                                      Text('Block User'),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ],

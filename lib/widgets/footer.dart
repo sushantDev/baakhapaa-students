@@ -440,8 +440,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                         Expanded(
                           child: _buildNavItem(
                             index: 0,
-                            imageUrl:
-                                'assets\images\sikka.png', // Replace with your asset path
+                            imageUrl: 'assets/images/sikka.png',
                             label: AppLocalizations.of(context)!.courses,
                             isSelected: widget.index == 0,
                             tutorial: tutorial,

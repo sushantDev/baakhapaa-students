@@ -1620,6 +1620,172 @@ class _LockSectionState extends State<LockSection> {
     }
   }
 
+  Future<void> _showReportSeasonDialog(Map<String, dynamic> seasonData) async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (auth.isGuest) {
+      await GuestAuthHelper.showGuestLoginDialog(context, 'report this story');
+      return;
+    }
+
+    final int? seasonId = seasonData['id'] is int
+        ? seasonData['id'] as int
+        : int.tryParse(seasonData['id']?.toString() ?? '');
+    if (seasonId == null || seasonId <= 0) {
+      _showSeasonActionSnackBar('Invalid story for reporting.', Colors.red);
+      return;
+    }
+
+    String selectedReason = 'Inappropriate content';
+    final reasons = [
+      'Spam',
+      'Harassment or bullying',
+      'Hate speech',
+      'Inappropriate content',
+      'Misinformation',
+      'Other',
+    ];
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: const [
+              Icon(Icons.flag_outlined, color: Colors.orange),
+              SizedBox(width: 8),
+              Text('Report Story'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Why are you reporting ${seasonData['title'] ?? 'this story'}?',
+                style: const TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              ...reasons.map(
+                (reason) => RadioListTile<String>(
+                  dense: true,
+                  title: Text(reason, style: const TextStyle(fontSize: 13)),
+                  value: reason,
+                  groupValue: selectedReason,
+                  onChanged: (value) =>
+                      setDialogState(() => selectedReason = value!),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  await auth.reportContent(
+                    type: 'season',
+                    targetId: seasonId,
+                    reason: selectedReason,
+                  );
+                  if (mounted) {
+                    _showSeasonActionSnackBar(
+                      'Report submitted. Thank you.',
+                      Colors.green,
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    _showSeasonActionSnackBar(
+                      e.toString().replaceFirst('Exception: ', ''),
+                      Colors.red,
+                    );
+                  }
+                }
+              },
+              child: const Text('Submit Report'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showBlockCreatorDialog(String username) async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (auth.isGuest) {
+      await GuestAuthHelper.showGuestLoginDialog(context, 'block this creator');
+      return;
+    }
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.block, color: Colors.red),
+            const SizedBox(width: 8),
+            Text('Block @$username'),
+          ],
+        ),
+        content: Text(
+          'Blocking @$username will remove this creator\'s stories from your feed and prevent access to their profile.',
+          style: const TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              try {
+                await auth.blockUser(username);
+                if (mounted) {
+                  _showSeasonActionSnackBar(
+                    '@$username has been blocked.',
+                    Colors.green,
+                  );
+                  Navigator.of(context).maybePop();
+                }
+              } catch (e) {
+                if (mounted) {
+                  _showSeasonActionSnackBar(
+                    e.toString().replaceFirst('Exception: ', ''),
+                    Colors.red,
+                  );
+                }
+              }
+            },
+            child: const Text('Block Creator'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSeasonActionSnackBar(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: backgroundColor),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // ✅ Use listen: false to prevent auto-refresh - only rebuild when state changes internally
@@ -1657,182 +1823,317 @@ class _LockSectionState extends State<LockSection> {
     final bool isInMyList = seasonData.containsKey('my_list')
         ? seasonData['my_list'] == true
         : storyProvider.isSeasonInMyList(seasonId);
+    final creatorUsername = seasonData['username']?.toString().trim();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
-      child: Row(
-        children: [
-          ElevatedButton.icon(
-            onPressed: _isToggling ? null : _toggleMyList,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isInMyList
-                  ? Colors.green.withValues(alpha: 0.2)
-                  : AppColors.pillBg(context),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-              elevation: 0,
-            ),
-            icon: _isToggling
-                ? SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.textPrimary(context),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool compactActions = constraints.maxWidth < 390;
+        final double actionHeight = compactActions ? 50 : 52;
+        final double actionGroupWidth = compactActions ? 106 : 148;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+          child: SizedBox(
+            height: actionHeight,
+            child: Row(
+              children: [
+                Expanded(
+                  flex: compactActions ? 34 : 30,
+                  child: SizedBox(
+                    height: actionHeight,
+                    child: ElevatedButton.icon(
+                      onPressed: _isToggling ? null : _toggleMyList,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(0, actionHeight),
+                        backgroundColor: isInMyList
+                            ? Colors.green.withValues(alpha: 0.2)
+                            : AppColors.pillBg(context),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: compactActions ? 8 : 10,
+                          vertical: 10,
+                        ),
+                        elevation: 0,
+                      ),
+                      icon: _isToggling
+                          ? SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.textPrimary(context),
+                                ),
+                              ),
+                            )
+                          : Icon(
+                              isInMyList ? Icons.check : Icons.add,
+                              size: 18,
+                              color: isInMyList
+                                  ? Colors.green
+                                  : AppColors.textPrimary(context),
+                            ),
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          isInMyList ? 'In My List' : 'My List',
+                          style: AppTextStyles.interSemiBold(
+                            color: isInMyList
+                                ? Colors.green
+                                : AppColors.textPrimary(context),
+                            fontSize: compactActions ? 13 : 14,
+                          ),
+                        ),
                       ),
                     ),
-                  )
-                : Icon(
-                    isInMyList ? Icons.check : Icons.add,
-                    size: 18,
-                    color: isInMyList
-                        ? Colors.green
-                        : AppColors.textPrimary(context),
                   ),
-            label: Text(
-              isInMyList ? 'In My List' : 'My List',
-              style: AppTextStyles.interSemiBold(
-                  color: isInMyList
-                      ? Colors.green
-                      : AppColors.textPrimary(context),
-                  fontSize: 14),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: compactActions ? 38 : 42,
+                  child: SizedBox(
+                    height: actionHeight,
+                    child: isLocked
+                        ? Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color.fromARGB(255, 105, 1, 10),
+                                  Color.fromARGB(255, 248, 2, 2)
+                                ],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                final episodeState = context.findAncestorStateOfType<
+                                    _EpisodeScreenState>();
+                                if (episodeState != null) {
+                                  episodeState._showUnlockDialog(context);
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size.fromHeight(actionHeight),
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(28),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: compactActions ? 18 : 26,
+                                  vertical: 5,
+                                ),
+                                elevation: 0,
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/svgs/lock.svg',
+                                      colorFilter: const ColorFilter.mode(
+                                        Colors.white,
+                                        BlendMode.srcIn,
+                                      ),
+                                      width: 18,
+                                      height: 18,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      compactActions ? 'Unlock' : 'unlock now',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: compactActions ? 15 : 16,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0,
+                                        color: const Color(0xFFFFFFFF),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                begin: Alignment(1.0, 0.0),
+                                end: Alignment(-1.0, 0.0),
+                                colors: [
+                                  Color(0xFF0DFF00),
+                                  Color(0xFF0D9900),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                            child: ElevatedButton(
+                              onPressed: _playEpisode,
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size.fromHeight(actionHeight),
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(28),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: compactActions ? 18 : 28,
+                                  vertical: 5,
+                                ),
+                                elevation: 0,
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      buttonIcon,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      buttonText,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: compactActions ? 15 : 16,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0,
+                                        color: const Color(0xFFFFFFFF),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: actionGroupWidth,
+                  height: actionHeight,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.pillBg(context),
+                      border: Border.all(color: AppColors.borderColor(context)),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: const BorderRadius.horizontal(
+                                left: Radius.circular(20),
+                              ),
+                              onTap: () async {
+                                final episodeState = context.findAncestorStateOfType<
+                                    _EpisodeScreenState>();
+                                if (episodeState != null) {
+                                  await episodeState._showShareModal(context);
+                                }
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: compactActions ? 0 : 12,
+                                  vertical: 10,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.share,
+                                      size: 18,
+                                      color: AppColors.textPrimary(context),
+                                    ),
+                                    if (!compactActions) ...[
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Share',
+                                        style: AppTextStyles.interSemiBold(
+                                          color: AppColors.textPrimary(context),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 22,
+                          color: AppColors.borderColor(context),
+                        ),
+                        SizedBox(
+                          width: compactActions ? 44 : 46,
+                          child: PopupMenuButton<String>(
+                            tooltip: 'More actions',
+                            padding: EdgeInsets.zero,
+                            offset: const Offset(-10, 40),
+                            icon: Icon(
+                              Icons.more_vert,
+                              size: 18,
+                              color: AppColors.textPrimary(context),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            onSelected: (value) {
+                              if (value == 'report_story') {
+                                _showReportSeasonDialog(seasonData);
+                              } else if (value == 'block_creator' &&
+                                  creatorUsername != null &&
+                                  creatorUsername.isNotEmpty) {
+                                _showBlockCreatorDialog(creatorUsername);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem<String>(
+                                value: 'report_story',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.flag_outlined,
+                                        color: Colors.orange),
+                                    SizedBox(width: 10),
+                                    Text('Report Story'),
+                                  ],
+                                ),
+                              ),
+                              if (creatorUsername != null &&
+                                  creatorUsername.isNotEmpty)
+                                const PopupMenuItem<String>(
+                                  value: 'block_creator',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.block, color: Colors.red),
+                                      SizedBox(width: 10),
+                                      Text('Block Creator'),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const Spacer(),
-          // Show unlock button when locked, play button when unlocked
-          if (isLocked)
-            Container(
-              decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color.fromARGB(255, 105, 1, 10),
-                      Color.fromARGB(255, 248, 2, 2)
-                    ],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                  borderRadius: BorderRadius.circular(28)),
-              child: ElevatedButton(
-                onPressed: () {
-                  final episodeState =
-                      context.findAncestorStateOfType<_EpisodeScreenState>();
-                  if (episodeState != null) {
-                    episodeState._showUnlockDialog(context);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 26, vertical: 5),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/svgs/lock.svg',
-                      colorFilter: ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
-                      width: 18,
-                      height: 18,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'unlock now',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0,
-                        color: const Color(0xFFFFFFFF),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            // Play button when season is unlocked
-            Container(
-              decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment(1.0, 0.0), // 270deg equivalent
-                    end: Alignment(-1.0, 0.0),
-                    colors: [
-                      Color(0xFF0DFF00), // #0DFF00
-                      Color(0xFF0D9900), // #0D9900
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(28)),
-              child: ElevatedButton(
-                onPressed: _playEpisode,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 46, vertical: 5),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(
-                      buttonIcon,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      buttonText,
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0,
-                        color: const Color(0xFFFFFFFF),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-          const Spacer(),
-          OutlinedButton.icon(
-            onPressed: () async {
-              // Get the parent EpisodeScreen widget to access the share modal
-              final episodeState =
-                  context.findAncestorStateOfType<_EpisodeScreenState>();
-              if (episodeState != null) {
-                await episodeState._showShareModal(context);
-              }
-            },
-            style: OutlinedButton.styleFrom(
-              backgroundColor: AppColors.pillBg(context),
-              side: BorderSide(color: AppColors.borderColor(context)),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-            ),
-            icon: Icon(Icons.share,
-                size: 18, color: AppColors.textPrimary(context)),
-            label: Text(
-              'Share',
-              style: AppTextStyles.interSemiBold(
-                  color: AppColors.textPrimary(context), fontSize: 14),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

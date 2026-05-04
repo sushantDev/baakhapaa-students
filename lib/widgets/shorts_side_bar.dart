@@ -1015,6 +1015,19 @@ class _ShortsSideBarState extends State<ShortsSideBar>
                 ),
               ),
             ),
+            // Report button
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14.0),
+              child: GestureDetector(
+                onTap: () => _showReportContentDialog(context),
+                child: Icon(
+                  Icons.flag,
+                  shadows: <Shadow>[shadow],
+                  size: 32,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -1047,6 +1060,89 @@ class _ShortsSideBarState extends State<ShortsSideBar>
           key: _quizIconKey,
           width: 44,
           height: 44,
+        ),
+      ),
+    );
+  }
+
+  void _showReportContentDialog(BuildContext context) {
+    String _selectedReason = 'Spam';
+    final List<String> reasons = [
+      'Spam',
+      'Harassment or bullying',
+      'Hate speech',
+      'Inappropriate content',
+      'Misinformation',
+      'Other',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(children: [
+            Icon(Icons.flag_outlined, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Report Content'),
+          ]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Why are you reporting this video?',
+                  style: TextStyle(fontSize: 13)),
+              SizedBox(height: 12),
+              ...reasons.map((r) => RadioListTile<String>(
+                    dense: true,
+                    title: Text(r, style: TextStyle(fontSize: 13)),
+                    value: r,
+                    groupValue: _selectedReason,
+                    onChanged: (v) =>
+                        setDialogState(() => _selectedReason = v!),
+                    contentPadding: EdgeInsets.zero,
+                  )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  final auth = Provider.of<Auth>(context, listen: false);
+                  await auth.reportContent(
+                    type: 'short',
+                    targetId: widget.shortsId,
+                    reason: _selectedReason,
+                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Report submitted. Thank you.'),
+                      backgroundColor: Colors.green,
+                    ));
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content:
+                          Text(e.toString().replaceFirst('Exception: ', '')),
+                      backgroundColor: Colors.red,
+                    ));
+                  }
+                }
+              },
+              child: Text('Submit Report'),
+            ),
+          ],
         ),
       ),
     );

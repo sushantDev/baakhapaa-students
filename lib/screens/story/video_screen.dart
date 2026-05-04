@@ -37,6 +37,7 @@ import '../../models/subscription.dart';
 import '../../widgets/affilated_product.dart';
 import './episode_screen.dart';
 import '../shorts/single_shorts_screen.dart';
+import '../../utils/guest_auth_helper.dart';
 
 class VideoScreen extends StatefulWidget {
   static const routeName = '/video-screen';
@@ -121,6 +122,117 @@ class _VideoScreenState extends State<VideoScreen>
     } catch (e) {
       DebugLogger.error('❌ Failed to disable screen protection: $e');
     }
+  }
+
+  Future<void> _showReportEpisodeDialog() async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (auth.isGuest) {
+      await GuestAuthHelper.showGuestLoginDialog(
+          context, 'report this episode');
+      return;
+    }
+
+    final int? episodeId = episode['id'] is int
+        ? episode['id'] as int
+        : int.tryParse(episode['id']?.toString() ?? '');
+    if (episodeId == null || episodeId <= 0) {
+      _showEpisodeSnackBar('Invalid episode for reporting.', Colors.red);
+      return;
+    }
+
+    String selectedReason = 'Inappropriate content';
+    final reasons = [
+      'Spam',
+      'Harassment or bullying',
+      'Hate speech',
+      'Inappropriate content',
+      'Misinformation',
+      'Other',
+    ];
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: const [
+              Icon(Icons.flag_outlined, color: Colors.orange),
+              SizedBox(width: 8),
+              Text('Report Episode'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Why are you reporting ${episode['title'] ?? 'this episode'}?',
+                style: const TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              ...reasons.map(
+                (reason) => RadioListTile<String>(
+                  dense: true,
+                  title: Text(reason, style: const TextStyle(fontSize: 13)),
+                  value: reason,
+                  groupValue: selectedReason,
+                  onChanged: (value) =>
+                      setDialogState(() => selectedReason = value!),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  await auth.reportContent(
+                    type: 'episode',
+                    targetId: episodeId,
+                    reason: selectedReason,
+                  );
+                  if (mounted) {
+                    _showEpisodeSnackBar(
+                      'Report submitted. Thank you.',
+                      Colors.green,
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    _showEpisodeSnackBar(
+                      e.toString().replaceFirst('Exception: ', ''),
+                      Colors.red,
+                    );
+                  }
+                }
+              },
+              child: const Text('Submit Report'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEpisodeSnackBar(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+      ),
+    );
   }
 
   @override
@@ -2161,6 +2273,29 @@ class _VideoScreenState extends State<VideoScreen>
                                 ),
                               ],
                             ),
+                            SizedBox(width: 20),
+                            Column(
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.flag,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  onPressed: _showReportEpisodeDialog,
+                                ),
+                                Text(
+                                  'Report',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                         SizedBox(height: 20),
@@ -2810,12 +2945,164 @@ class _VideoScreenState extends State<VideoScreen>
     );
   }
 
+  int _extractCommentUserId(
+      Map<String, dynamic> comment, Map<String, dynamic> user) {
+    final dynamic rawUserId = comment['user_id'] ?? user['id'];
+    if (rawUserId is int) return rawUserId;
+    return int.tryParse(rawUserId?.toString() ?? '') ?? 0;
+  }
+
+  String _extractCommentUsername(Map<String, dynamic> user) {
+    return (user['username'] ?? user['name'] ?? '').toString().trim();
+  }
+
+  Future<void> _showReportCommentUserDialog({
+    required int userId,
+    required String username,
+  }) async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (auth.isGuest) {
+      await GuestAuthHelper.showGuestLoginDialog(context, 'report this user');
+      return;
+    }
+
+    if (userId <= 0) {
+      _showEpisodeSnackBar('Unable to report this user.', Colors.red);
+      return;
+    }
+
+    String selectedReason = 'Harassment or bullying';
+    final reasons = [
+      'Spam',
+      'Harassment or bullying',
+      'Hate speech',
+      'Inappropriate content',
+      'Misinformation',
+      'Other',
+    ];
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Report User'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Why are you reporting @$username?'),
+              const SizedBox(height: 12),
+              ...reasons.map(
+                (reason) => RadioListTile<String>(
+                  dense: true,
+                  title: Text(reason, style: const TextStyle(fontSize: 13)),
+                  value: reason,
+                  groupValue: selectedReason,
+                  onChanged: (value) =>
+                      setDialogState(() => selectedReason = value!),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  await auth.reportContent(
+                    type: 'user',
+                    targetId: userId,
+                    reason: selectedReason,
+                  );
+                  if (mounted) {
+                    _showEpisodeSnackBar(
+                        'Report submitted. Thank you.', Colors.green);
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    _showEpisodeSnackBar(
+                      e.toString().replaceFirst('Exception: ', ''),
+                      Colors.red,
+                    );
+                  }
+                }
+              },
+              child: const Text('Submit Report'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmBlockCommentUser({required String username}) async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (auth.isGuest) {
+      await GuestAuthHelper.showGuestLoginDialog(context, 'block this user');
+      return;
+    }
+
+    if (username.trim().isEmpty) {
+      _showEpisodeSnackBar('Unable to block this user.', Colors.red);
+      return;
+    }
+
+    final shouldBlock = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Block User'),
+            content: Text('Block @$username and hide their content?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Block'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!shouldBlock) return;
+
+    try {
+      await auth.blockUser(username);
+      if (mounted) {
+        _showEpisodeSnackBar('@$username has been blocked.', Colors.green);
+        getEpisodeComments();
+      }
+    } catch (e) {
+      if (mounted) {
+        _showEpisodeSnackBar(
+          e.toString().replaceFirst('Exception: ', ''),
+          Colors.red,
+        );
+      }
+    }
+  }
+
   Widget buildCommentWidget(Map<String, dynamic> commentArr) {
     final Map<String, dynamic> comment = commentArr['comment'];
     final List<Map<String, dynamic>> replies =
         List<Map<String, dynamic>>.from(commentArr['replies'] ?? []);
     final Map<String, dynamic> user = comment['user'];
-    final username = user['name'].toString();
+    final username = _extractCommentUsername(user);
+    final commentUserId = _extractCommentUserId(comment, user);
+    final currentUserId = Provider.of<Auth>(context, listen: false).userId;
+    final bool isOwnComment = currentUserId == commentUserId;
     final commentId = comment['id'] as int;
 
     final bool isExpanded = _expandedReplies[commentId] ?? false;
@@ -2843,14 +3130,65 @@ class _VideoScreenState extends State<VideoScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(username,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black87)),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(username,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black87)),
+                        ),
+                        if (!isOwnComment && username.isNotEmpty)
+                          PopupMenuButton<String>(
+                            tooltip: 'Comment actions',
+                            icon: Icon(
+                              Icons.more_vert,
+                              size: 18,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[700],
+                            ),
+                            onSelected: (value) {
+                              if (value == 'report_user') {
+                                _showReportCommentUserDialog(
+                                  userId: commentUserId,
+                                  username: username,
+                                );
+                              } else if (value == 'block_user') {
+                                _confirmBlockCommentUser(username: username);
+                              }
+                            },
+                            itemBuilder: (_) => const [
+                              PopupMenuItem<String>(
+                                value: 'report_user',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.flag_outlined,
+                                        color: Colors.orange),
+                                    SizedBox(width: 10),
+                                    Text('Report User'),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem<String>(
+                                value: 'block_user',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.block, color: Colors.red),
+                                    SizedBox(width: 10),
+                                    Text('Block User'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
                     SizedBox(height: 4),
                     Text(comment['body'].toString(),
                         style: TextStyle(
@@ -2931,7 +3269,10 @@ class _VideoScreenState extends State<VideoScreen>
     final Map<String, dynamic> reply =
         replyArr['comment'] as Map<String, dynamic>;
     final Map<String, dynamic> user = reply['user'] as Map<String, dynamic>;
-    final username = user['name'].toString();
+    final username = _extractCommentUsername(user);
+    final replyUserId = _extractCommentUserId(reply, user);
+    final currentUserId = Provider.of<Auth>(context, listen: false).userId;
+    final bool isOwnReply = currentUserId == replyUserId;
 
     return Container(
       margin: EdgeInsets.only(bottom: 12),
@@ -2998,6 +3339,49 @@ class _VideoScreenState extends State<VideoScreen>
                             : Colors.grey[600],
                       ),
                     ),
+                    if (!isOwnReply && username.isNotEmpty)
+                      PopupMenuButton<String>(
+                        tooltip: 'Reply actions',
+                        icon: Icon(
+                          Icons.more_vert,
+                          size: 18,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[400]
+                              : Colors.grey[700],
+                        ),
+                        onSelected: (value) {
+                          if (value == 'report_user') {
+                            _showReportCommentUserDialog(
+                              userId: replyUserId,
+                              username: username,
+                            );
+                          } else if (value == 'block_user') {
+                            _confirmBlockCommentUser(username: username);
+                          }
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem<String>(
+                            value: 'report_user',
+                            child: Row(
+                              children: [
+                                Icon(Icons.flag_outlined, color: Colors.orange),
+                                SizedBox(width: 10),
+                                Text('Report User'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'block_user',
+                            child: Row(
+                              children: [
+                                Icon(Icons.block, color: Colors.red),
+                                SizedBox(width: 10),
+                                Text('Block User'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
                 SizedBox(height: 4),

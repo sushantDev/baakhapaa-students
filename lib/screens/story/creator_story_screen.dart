@@ -1539,6 +1539,15 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                                     .pushNamed(ReferralsScreen.routeName),
                               ),
                             ),
+                            const SizedBox(width: 6),
+                            Transform.scale(
+                              scale: 0.85,
+                              child: _circleIconButton(
+                                icon: Icons.flag_outlined,
+                                onTap: () =>
+                                    _showReportCreatorDialog(context, auth),
+                              ),
+                            ),
                           ],
                         ),
                         // Location - No gap, tightly packed
@@ -1667,6 +1676,91 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
           icon,
           size: 18,
           color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  void _showReportCreatorDialog(BuildContext context, Auth auth) {
+    final int? creatorId = auth.creatorsRankings['user'] is Map
+        ? int.tryParse((auth.creatorsRankings['user']['id'] ?? '').toString())
+        : null;
+    String _selectedReason = 'Spam';
+    final List<String> reasons = [
+      'Spam',
+      'Harassment or bullying',
+      'Hate speech',
+      'Inappropriate content',
+      'Impersonation',
+      'Other',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(children: [
+            Icon(Icons.flag_outlined, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Report Creator'),
+          ]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Why are you reporting $creatorName?',
+                  style: TextStyle(fontSize: 13)),
+              SizedBox(height: 12),
+              ...reasons.map((r) => RadioListTile<String>(
+                    dense: true,
+                    title: Text(r, style: TextStyle(fontSize: 13)),
+                    value: r,
+                    groupValue: _selectedReason,
+                    onChanged: (v) =>
+                        setDialogState(() => _selectedReason = v!),
+                    contentPadding: EdgeInsets.zero,
+                  )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  await auth.reportContent(
+                    type: 'creator',
+                    targetId: creatorId ?? 0,
+                    reason: _selectedReason,
+                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Report submitted. Thank you.'),
+                      backgroundColor: Colors.green,
+                    ));
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content:
+                          Text(e.toString().replaceFirst('Exception: ', '')),
+                      backgroundColor: Colors.red,
+                    ));
+                  }
+                }
+              },
+              child: Text('Submit Report'),
+            ),
+          ],
         ),
       ),
     );

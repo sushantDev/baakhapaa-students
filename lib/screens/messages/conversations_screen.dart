@@ -38,10 +38,11 @@ class _ConversationsScreenState extends State<ConversationsScreen>
     try {
       var auth = Provider.of<Auth>(context, listen: false);
       await auth.fetchConversations();
+      await auth.getUnreadMessageCount();
 
       if (mounted) {
         setState(() {
-          _conversations = auth.conversations;
+          _conversations = _sortedConversations(auth.conversations);
           _isLoading = false;
         });
       }
@@ -68,10 +69,11 @@ class _ConversationsScreenState extends State<ConversationsScreen>
     try {
       var auth = Provider.of<Auth>(context, listen: false);
       await auth.fetchConversations();
+      await auth.getUnreadMessageCount();
 
       if (mounted) {
         setState(() {
-          _conversations = auth.conversations;
+          _conversations = _sortedConversations(auth.conversations);
           _isLoading = false;
         });
       }
@@ -97,6 +99,20 @@ class _ConversationsScreenState extends State<ConversationsScreen>
         );
       }
     }
+  }
+
+  List<dynamic> _sortedConversations(List<dynamic> conversations) {
+    final items = List<dynamic>.from(conversations);
+    items.sort((a, b) {
+      final aTime = DateTime.tryParse((a['last_message_at'] ?? '').toString());
+      final bTime = DateTime.tryParse((b['last_message_at'] ?? '').toString());
+
+      if (aTime == null && bTime == null) return 0;
+      if (aTime == null) return 1;
+      if (bTime == null) return -1;
+      return bTime.compareTo(aTime);
+    });
+    return items;
   }
 
   String _formatTime(String? timeString) {
@@ -142,11 +158,7 @@ class _ConversationsScreenState extends State<ConversationsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.chat_bubble_outline,
-              size: 80,
-              color: Colors.grey,
-            ),
+            Icon(Icons.chat_bubble_outline, size: 80, color: Colors.grey),
             SizedBox(height: 24),
             Text(
               'No Conversations Yet',
@@ -390,6 +402,8 @@ class _ConversationsScreenState extends State<ConversationsScreen>
     final time = conversation['time'] ?? '';
     final displayName = name.isNotEmpty ? name : username;
     final conversationId = conversation['conversation_id'] as int;
+    final unreadCount = (conversation['unread_count'] ?? 0) as int;
+    final hasUnread = conversation['has_unread'] == true || unreadCount > 0;
 
     return Dismissible(
       key: ValueKey(conversationId),
@@ -424,9 +438,11 @@ class _ConversationsScreenState extends State<ConversationsScreen>
               builder: (ctx) => AlertDialog(
                 title: Text('Delete Conversation'),
                 content: Text(
-                    'Delete chat with $displayName? This only removes it from your account.'),
+                  'Delete chat with $displayName? This only removes it from your account.',
+                ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
@@ -444,8 +460,9 @@ class _ConversationsScreenState extends State<ConversationsScreen>
       },
       onDismissed: (_) async {
         setState(() {
-          _conversations
-              .removeWhere((c) => c['conversation_id'] == conversationId);
+          _conversations.removeWhere(
+            (c) => c['conversation_id'] == conversationId,
+          );
         });
         try {
           final auth = Provider.of<Auth>(context, listen: false);
@@ -471,7 +488,7 @@ class _ConversationsScreenState extends State<ConversationsScreen>
                   'conversation_id': conversation['conversation_id'],
                   'user_name': displayName,
                 },
-              );
+              ).then((_) => _refreshConversations());
             },
             borderRadius: BorderRadius.circular(16),
             child: Container(
@@ -516,13 +533,15 @@ class _ConversationsScreenState extends State<ConversationsScreen>
                                   ),
                                   errorWidget: (context, url, error) =>
                                       Container(
-                                    color: Colors.amber.withValues(alpha: 0.1),
-                                    child: Icon(
-                                      Icons.person,
-                                      color: Colors.amber,
-                                      size: 30,
-                                    ),
-                                  ),
+                                        color: Colors.amber.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        child: Icon(
+                                          Icons.person,
+                                          color: Colors.amber,
+                                          size: 30,
+                                        ),
+                                      ),
                                 )
                               : Container(
                                   color: Colors.amber.withValues(alpha: 0.1),
@@ -572,22 +591,68 @@ class _ConversationsScreenState extends State<ConversationsScreen>
                             Text(
                               _formatTime(time),
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: hasUnread
+                                    ? const Color(0xFFFFC83E)
+                                    : Colors.grey[600],
                                 fontSize: 12,
+                                fontWeight: hasUnread
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                         SizedBox(height: 6),
-                        Text(
-                          lastMessage,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                            height: 1.3,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                lastMessage,
+                                style: TextStyle(
+                                  color: hasUnread
+                                      ? Colors.white
+                                      : Colors.grey[600],
+                                  fontSize: 14,
+                                  height: 1.3,
+                                  fontWeight: hasUnread
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (hasUnread) ...[
+                              const SizedBox(width: 10),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: unreadCount > 9 ? 6 : 0,
+                                  vertical: 0,
+                                ),
+                                constraints: BoxConstraints(
+                                  minWidth: unreadCount > 1 ? 20 : 10,
+                                  minHeight: unreadCount > 1 ? 20 : 10,
+                                ),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFF5A5F),
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: unreadCount > 1
+                                    ? Text(
+                                        unreadCount > 99
+                                            ? '99+'
+                                            : unreadCount.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),
@@ -631,7 +696,8 @@ class _ConversationsScreenState extends State<ConversationsScreen>
                     )
                   : ListView.builder(
                       physics: const BouncingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics()),
+                        parent: AlwaysScrollableScrollPhysics(),
+                      ),
                       padding: EdgeInsets.symmetric(vertical: 8),
                       itemCount: _conversations.length + 1, // +1 for chatbot
                       itemBuilder: (ctx, index) {
@@ -639,7 +705,8 @@ class _ConversationsScreenState extends State<ConversationsScreen>
                           return _buildChatbotCard();
                         }
                         return _buildConversationCard(
-                            _conversations[index - 1]);
+                          _conversations[index - 1],
+                        );
                       },
                     ),
             ),

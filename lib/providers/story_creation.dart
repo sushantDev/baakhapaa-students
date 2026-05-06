@@ -7,6 +7,24 @@ import 'package:http/http.dart' as http;
 import '../models/url.dart';
 import '../utils/debug_logger.dart';
 
+class AiUsageLimitException implements Exception {
+  final String message;
+
+  AiUsageLimitException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+class AiInsufficientPointsException implements Exception {
+  final String message;
+
+  AiInsufficientPointsException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 class StoryCreation with ChangeNotifier {
   String authToken;
 
@@ -67,20 +85,26 @@ class StoryCreation with ChangeNotifier {
 
       // Debug: Log response structures
       DebugLogger.info(
-          '📋 Headings response: ${headingsData.runtimeType} - Keys: ${headingsData.keys}');
+        '📋 Headings response: ${headingsData.runtimeType} - Keys: ${headingsData.keys}',
+      );
       DebugLogger.info(
-          '📋 Genres response: ${genresData.runtimeType} - Keys: ${genresData.keys}');
+        '📋 Genres response: ${genresData.runtimeType} - Keys: ${genresData.keys}',
+      );
       DebugLogger.info(
-          '📋 Maturities response: ${maturitiesData.runtimeType} - Keys: ${maturitiesData.keys}');
+        '📋 Maturities response: ${maturitiesData.runtimeType} - Keys: ${maturitiesData.keys}',
+      );
       DebugLogger.info(
-          '📋 Achievements response: ${achievementsData.runtimeType} - Keys: ${achievementsData.keys}');
+        '📋 Achievements response: ${achievementsData.runtimeType} - Keys: ${achievementsData.keys}',
+      );
 
       // Extract data from responses - handle multiple possible structures
       _headings = _extractListFromResponse(headingsData, 'headings');
       _genres = _extractListFromResponse(genresData, 'genres');
       _maturities = _extractListFromResponse(maturitiesData, 'maturities');
-      _achievements =
-          _extractListFromResponse(achievementsData, 'achievements');
+      _achievements = _extractListFromResponse(
+        achievementsData,
+        'achievements',
+      );
 
       DebugLogger.success(
         '✅ Season metadata loaded: ${_headings.length} headings, '
@@ -96,7 +120,9 @@ class StoryCreation with ChangeNotifier {
 
   /// Helper method to extract list from various response structures
   List<dynamic> _extractListFromResponse(
-      Map<String, dynamic> response, String key) {
+    Map<String, dynamic> response,
+    String key,
+  ) {
     // Try different possible structures
     dynamic result;
 
@@ -154,7 +180,8 @@ class StoryCreation with ChangeNotifier {
     }
 
     DebugLogger.warning(
-        '⚠️ Could not extract list for $key, returning empty list');
+      '⚠️ Could not extract list for $key, returning empty list',
+    );
     return [];
   }
 
@@ -181,9 +208,11 @@ class StoryCreation with ChangeNotifier {
 
       // Debug: Log response structures
       DebugLogger.info(
-          '📋 Products response: ${productsData.runtimeType} - Keys: ${productsData.keys}');
+        '📋 Products response: ${productsData.runtimeType} - Keys: ${productsData.keys}',
+      );
       DebugLogger.info(
-          '📋 Seasons response: ${seasonsData.runtimeType} - Keys: ${seasonsData.keys}');
+        '📋 Seasons response: ${seasonsData.runtimeType} - Keys: ${seasonsData.keys}',
+      );
 
       // Extract data from responses using helper method
       _products = _extractListFromResponse(productsData, 'products');
@@ -213,7 +242,8 @@ class StoryCreation with ChangeNotifier {
 
       // Debug: Log response structure
       DebugLogger.info(
-          '📋 My Seasons response: ${responseData.runtimeType} - Keys: ${responseData.keys}');
+        '📋 My Seasons response: ${responseData.runtimeType} - Keys: ${responseData.keys}',
+      );
 
       // Log the data structure for debugging
       if (responseData['data'] != null) {
@@ -251,6 +281,69 @@ class StoryCreation with ChangeNotifier {
     } catch (error) {
       DebugLogger.error('❌ Error fetching my seasons: $error');
       throw error;
+    }
+  }
+
+  /// Calls POST /api/ai/generate-content and returns:
+  /// { content: {...}, meta: {...} }
+  Future<Map<String, dynamic>> generateFullContent({
+    required String description,
+    String contentType = 'episode',
+    int questionCount = 6,
+  }) async {
+    try {
+      DebugLogger.info('🤖 Generating full AI content for $contentType...');
+
+      final url = Uri.parse(Url.baakhapaaApi('/ai/generate-content'));
+      final body = {
+        'description': description,
+        'content_type': contentType,
+        'question_count': questionCount,
+      };
+
+      final response = await http.post(
+        url,
+        headers: Url.baakhapaaAuthHeaders(authToken),
+        body: json.encode(body),
+      );
+
+      final responseData = json.decode(utf8.decode(response.bodyBytes));
+      final message = (responseData['message'] ?? 'Content generation failed')
+          .toString();
+      final code = (responseData['code'] ?? '').toString().toUpperCase();
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        final data = responseData['data'] as Map<String, dynamic>? ?? {};
+        final content =
+            data['content'] as Map<String, dynamic>? ??
+            (data.isNotEmpty ? data : <String, dynamic>{});
+        final meta =
+            data['meta'] as Map<String, dynamic>? ??
+            (responseData['meta'] as Map<String, dynamic>? ??
+                <String, dynamic>{});
+
+        DebugLogger.success('✅ AI full content generated successfully');
+        return {'content': content, 'meta': meta};
+      }
+
+      if (response.statusCode == 429 || code.contains('USAGE_LIMIT')) {
+        throw AiUsageLimitException(message);
+      }
+
+      if (response.statusCode == 402 ||
+          code.contains('INSUFFICIENT') ||
+          message.toLowerCase().contains('insufficient')) {
+        throw AiInsufficientPointsException(message);
+      }
+
+      throw Exception(message);
+    } on AiUsageLimitException {
+      rethrow;
+    } on AiInsufficientPointsException {
+      rethrow;
+    } catch (error) {
+      DebugLogger.error('❌ Error generating AI full content: $error');
+      rethrow;
     }
   }
 
@@ -300,7 +393,8 @@ class StoryCreation with ChangeNotifier {
 
       if (hasCollaboration) {
         DebugLogger.info(
-            '🤝 Using collaborative endpoint: $endpoint for collaboration #$collaborationId');
+          '🤝 Using collaborative endpoint: $endpoint for collaboration #$collaborationId',
+        );
       }
 
       var request = http.MultipartRequest('POST', url);
@@ -314,9 +408,11 @@ class StoryCreation with ChangeNotifier {
 
       // Debug logging
       DebugLogger.info(
-          '📝 Creating Season - Title: "$title", Description: "$description"');
+        '📝 Creating Season - Title: "$title", Description: "$description"',
+      );
       DebugLogger.info(
-          '🎯 Challenge Mode: $isChallenge, Challenge ID: $challengeId');
+        '🎯 Challenge Mode: $isChallenge, Challenge ID: $challengeId',
+      );
       request.fields['director'] = director;
       request.fields['is_jump_available'] = isJumpAvailable ? '1' : '0';
       request.fields['is_locked'] = isLocked ? '1' : '0';
@@ -377,7 +473,8 @@ class StoryCreation with ChangeNotifier {
       if (collaborationId != null) {
         request.fields['collaboration_id'] = collaborationId.toString();
         DebugLogger.info(
-            '🤝 Creating collaborative season with collaboration ID: $collaborationId');
+          '🤝 Creating collaborative season with collaboration ID: $collaborationId',
+        );
       }
 
       // Collaborators field - send as invited_collaborators array
@@ -401,7 +498,8 @@ class StoryCreation with ChangeNotifier {
           }
         }
         DebugLogger.info(
-            '🤝 Including ${collaborators.length} collaborators in season creation');
+          '🤝 Including ${collaborators.length} collaborators in season creation',
+        );
       }
 
       // Add trailer video
@@ -429,7 +527,8 @@ class StoryCreation with ChangeNotifier {
       request.fields.forEach((key, value) {
         if (key == 'description' && value.length > 100) {
           DebugLogger.info(
-              '  - $key: ${value.substring(0, 100)}... (${value.length} chars)');
+            '  - $key: ${value.substring(0, 100)}... (${value.length} chars)',
+          );
         } else {
           DebugLogger.info('  - $key: $value');
         }
@@ -437,7 +536,8 @@ class StoryCreation with ChangeNotifier {
       DebugLogger.info('📎 Files:');
       for (var file in request.files) {
         DebugLogger.info(
-            '  - ${file.field}: ${file.filename} (${file.length} bytes)');
+          '  - ${file.field}: ${file.filename} (${file.length} bytes)',
+        );
       }
       DebugLogger.info('📤 =====================================');
 
@@ -458,7 +558,8 @@ class StoryCreation with ChangeNotifier {
         if (seasonData != null && seasonData['id'] != null) {
           _newlyCreatedSeasonId = seasonData['id'];
           DebugLogger.success(
-              '✅ Season created successfully: ID $_newlyCreatedSeasonId');
+            '✅ Season created successfully: ID $_newlyCreatedSeasonId',
+          );
           DebugLogger.success('✅ Full Response: ${jsonEncode(responseData)}');
           notifyListeners();
           return responseData;
@@ -468,13 +569,17 @@ class StoryCreation with ChangeNotifier {
         }
       } else {
         DebugLogger.error(
-            '❌ Failed to create season - Status: ${response.statusCode}');
+          '❌ Failed to create season - Status: ${response.statusCode}',
+        );
         DebugLogger.error('❌ Error Response: $responseBody');
         DebugLogger.error(
-            '❌ Failed to create season: ${responseData['error'] ?? responseData['message']}');
-        throw Exception(responseData['error'] ??
-            responseData['message'] ??
-            'Failed to create season');
+          '❌ Failed to create season: ${responseData['error'] ?? responseData['message']}',
+        );
+        throw Exception(
+          responseData['error'] ??
+              responseData['message'] ??
+              'Failed to create season',
+        );
       }
     } catch (error) {
       DebugLogger.error('❌ Error creating season: $error');
@@ -565,14 +670,16 @@ class StoryCreation with ChangeNotifier {
           request.fields['shorts_ids[$i]'] = shortsIds[i].toString();
         }
         DebugLogger.info(
-            '🔗 Linked ${shortsIds.length} shorts to updated season');
+          '🔗 Linked ${shortsIds.length} shorts to updated season',
+        );
       }
 
       // Collaboration field
       if (collaborationId != null) {
         request.fields['collaboration_id'] = collaborationId.toString();
         DebugLogger.info(
-            '🤝 Updating season with collaboration ID: $collaborationId');
+          '🤝 Updating season with collaboration ID: $collaborationId',
+        );
       }
 
       // Collaborators field - send as invited_collaborators array
@@ -596,7 +703,8 @@ class StoryCreation with ChangeNotifier {
           }
         }
         DebugLogger.info(
-            '🤝 Including ${collaborators.length} collaborators in season update');
+          '🤝 Including ${collaborators.length} collaborators in season update',
+        );
       }
 
       // Add trailer video
@@ -632,10 +740,13 @@ class StoryCreation with ChangeNotifier {
         return responseData;
       } else {
         DebugLogger.error(
-            '❌ Failed to update season - Status: ${response.statusCode}');
-        throw Exception(responseData['error'] ??
-            responseData['message'] ??
-            'Failed to update season');
+          '❌ Failed to update season - Status: ${response.statusCode}',
+        );
+        throw Exception(
+          responseData['error'] ??
+              responseData['message'] ??
+              'Failed to update season',
+        );
       }
     } catch (error) {
       DebugLogger.error('❌ Error updating season: $error');
@@ -656,7 +767,8 @@ class StoryCreation with ChangeNotifier {
       var responseData = json.decode(utf8.decode(response.bodyBytes));
 
       DebugLogger.info(
-          '📦 Season details response: ${json.encode(responseData)}');
+        '📦 Season details response: ${json.encode(responseData)}',
+      );
 
       if (response.statusCode == 200) {
         DebugLogger.success('✅ Season details fetched successfully');
@@ -676,9 +788,11 @@ class StoryCreation with ChangeNotifier {
         throw Exception('Season data not found in response');
       } else {
         DebugLogger.error(
-            '❌ Failed to fetch season details - Status: ${response.statusCode}');
+          '❌ Failed to fetch season details - Status: ${response.statusCode}',
+        );
         throw Exception(
-            responseData['message'] ?? 'Failed to fetch season details');
+          responseData['message'] ?? 'Failed to fetch season details',
+        );
       }
     } catch (error) {
       DebugLogger.error('❌ Error fetching season details: $error');
@@ -703,7 +817,8 @@ class StoryCreation with ChangeNotifier {
         notifyListeners();
       } else {
         DebugLogger.error(
-            '❌ Failed to delete season - Status: ${response.statusCode}');
+          '❌ Failed to delete season - Status: ${response.statusCode}',
+        );
         throw Exception(responseData['message'] ?? 'Failed to delete season');
       }
     } catch (error) {
@@ -763,22 +878,22 @@ class StoryCreation with ChangeNotifier {
 
       if (affiliateProductIds != null && affiliateProductIds.isNotEmpty) {
         for (int i = 0; i < affiliateProductIds.length; i++) {
-          request.fields['affiliate_product_ids[$i]'] =
-              affiliateProductIds[i].toString();
+          request.fields['affiliate_product_ids[$i]'] = affiliateProductIds[i]
+              .toString();
         }
       }
 
       if (relatedShortsIds != null && relatedShortsIds.isNotEmpty) {
         for (int i = 0; i < relatedShortsIds.length; i++) {
-          request.fields['related_shorts_ids[$i]'] =
-              relatedShortsIds[i].toString();
+          request.fields['related_shorts_ids[$i]'] = relatedShortsIds[i]
+              .toString();
         }
       }
 
       if (relatedEpisodeIds != null && relatedEpisodeIds.isNotEmpty) {
         for (int i = 0; i < relatedEpisodeIds.length; i++) {
-          request.fields['related_episode_ids[$i]'] =
-              relatedEpisodeIds[i].toString();
+          request.fields['related_episode_ids[$i]'] = relatedEpisodeIds[i]
+              .toString();
         }
       }
 
@@ -835,7 +950,8 @@ class StoryCreation with ChangeNotifier {
       final responseBody = await response.stream.bytesToString();
 
       DebugLogger.info(
-          '📥 Episode API Response Status: ${response.statusCode}');
+        '📥 Episode API Response Status: ${response.statusCode}',
+      );
       DebugLogger.info('📥 Episode API Response Body: $responseBody');
 
       final responseData = json.decode(responseBody);
@@ -850,19 +966,24 @@ class StoryCreation with ChangeNotifier {
         }
 
         DebugLogger.success(
-            '✅ Episode created successfully: ID $_newlyCreatedEpisodeId');
+          '✅ Episode created successfully: ID $_newlyCreatedEpisodeId',
+        );
         DebugLogger.success('✅ Full Response: ${jsonEncode(responseData)}');
         notifyListeners();
         return responseData;
       } else {
         DebugLogger.error(
-            '❌ Failed to create episode - Status: ${response.statusCode}');
+          '❌ Failed to create episode - Status: ${response.statusCode}',
+        );
         DebugLogger.error('❌ Error Response: $responseBody');
         DebugLogger.error(
-            '❌ Failed to create episode: ${responseData['error'] ?? responseData['message']}');
-        throw Exception(responseData['error'] ??
-            responseData['message'] ??
-            'Failed to create episode');
+          '❌ Failed to create episode: ${responseData['error'] ?? responseData['message']}',
+        );
+        throw Exception(
+          responseData['error'] ??
+              responseData['message'] ??
+              'Failed to create episode',
+        );
       }
     } catch (error) {
       DebugLogger.error('❌ Error creating episode: $error');
@@ -903,9 +1024,11 @@ class StoryCreation with ChangeNotifier {
         notifyListeners();
         return responseData;
       } else {
-        throw Exception(responseData['error'] ??
-            responseData['message'] ??
-            'Failed to create question');
+        throw Exception(
+          responseData['error'] ??
+              responseData['message'] ??
+              'Failed to create question',
+        );
       }
     } catch (error) {
       DebugLogger.error('❌ Error creating question: $error');
@@ -925,7 +1048,8 @@ class StoryCreation with ChangeNotifier {
 
       var responseData = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
-        final questions = responseData['data']?['questions'] ??
+        final questions =
+            responseData['data']?['questions'] ??
             responseData['questions'] ??
             [];
         DebugLogger.success('✅ Loaded ${questions.length} questions');
@@ -1035,7 +1159,8 @@ class StoryCreation with ChangeNotifier {
 
       if (response.statusCode == 200) {
         DebugLogger.success(
-            '✅ Episodes fetched successfully: ${responseData['data']['episodes'].length} episodes');
+          '✅ Episodes fetched successfully: ${responseData['data']['episodes'].length} episodes',
+        );
         return responseData['data'];
       } else {
         DebugLogger.error('❌ Failed to fetch episodes: ${response.statusCode}');
@@ -1121,22 +1246,22 @@ class StoryCreation with ChangeNotifier {
 
       if (affiliateProductIds != null && affiliateProductIds.isNotEmpty) {
         for (int i = 0; i < affiliateProductIds.length; i++) {
-          request.fields['affiliate_product_ids[$i]'] =
-              affiliateProductIds[i].toString();
+          request.fields['affiliate_product_ids[$i]'] = affiliateProductIds[i]
+              .toString();
         }
       }
 
       if (relatedShortsIds != null && relatedShortsIds.isNotEmpty) {
         for (int i = 0; i < relatedShortsIds.length; i++) {
-          request.fields['related_shorts_ids[$i]'] =
-              relatedShortsIds[i].toString();
+          request.fields['related_shorts_ids[$i]'] = relatedShortsIds[i]
+              .toString();
         }
       }
 
       if (relatedEpisodeIds != null && relatedEpisodeIds.isNotEmpty) {
         for (int i = 0; i < relatedEpisodeIds.length; i++) {
-          request.fields['related_episode_ids[$i]'] =
-              relatedEpisodeIds[i].toString();
+          request.fields['related_episode_ids[$i]'] = relatedEpisodeIds[i]
+              .toString();
         }
       }
 
@@ -1173,7 +1298,8 @@ class StoryCreation with ChangeNotifier {
       final responseBody = await response.stream.bytesToString();
 
       DebugLogger.info(
-          '📥 Episode Update Response Status: ${response.statusCode}');
+        '📥 Episode Update Response Status: ${response.statusCode}',
+      );
       DebugLogger.info('📥 Episode Update Response Body: $responseBody');
 
       final responseData = json.decode(responseBody);
@@ -1184,11 +1310,14 @@ class StoryCreation with ChangeNotifier {
         return responseData;
       } else {
         DebugLogger.error(
-            '❌ Failed to update episode - Status: ${response.statusCode}');
+          '❌ Failed to update episode - Status: ${response.statusCode}',
+        );
         DebugLogger.error('❌ Error Response: $responseBody');
-        throw Exception(responseData['error'] ??
-            responseData['message'] ??
-            'Failed to update episode');
+        throw Exception(
+          responseData['error'] ??
+              responseData['message'] ??
+              'Failed to update episode',
+        );
       }
     } catch (error) {
       DebugLogger.error('❌ Error updating episode: $error');
@@ -1225,7 +1354,8 @@ class StoryCreation with ChangeNotifier {
   Future<List<dynamic>> fetchSeasonParticipants(int seasonId) async {
     try {
       DebugLogger.info(
-          '👥 Fetching participants for season challenge: $seasonId');
+        '👥 Fetching participants for season challenge: $seasonId',
+      );
 
       final response = await http.get(
         Uri.parse(Url.baakhapaaApi('/seasons/$seasonId/participants')),
@@ -1249,11 +1379,13 @@ class StoryCreation with ChangeNotifier {
         }
 
         DebugLogger.success(
-            '✅ Fetched ${participants.length} season participants');
+          '✅ Fetched ${participants.length} season participants',
+        );
         return participants;
       } else {
         DebugLogger.error(
-            '❌ Failed to fetch season participants: ${responseData['message']}');
+          '❌ Failed to fetch season participants: ${responseData['message']}',
+        );
         return [];
       }
     } catch (error) {
@@ -1289,11 +1421,13 @@ class StoryCreation with ChangeNotifier {
         }
 
         DebugLogger.success(
-            '✅ Fetched ${leaderboard.length} leaderboard entries');
+          '✅ Fetched ${leaderboard.length} leaderboard entries',
+        );
         return leaderboard;
       } else {
         DebugLogger.error(
-            '❌ Failed to fetch season leaderboard: ${responseData['message']}');
+          '❌ Failed to fetch season leaderboard: ${responseData['message']}',
+        );
         return [];
       }
     } catch (error) {

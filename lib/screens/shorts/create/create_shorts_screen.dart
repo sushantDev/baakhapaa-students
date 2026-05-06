@@ -18,9 +18,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:baakhapaa/providers/affiliate.dart';
+import 'package:baakhapaa/models/ai_generated_content.dart';
 import 'package:baakhapaa/widgets/creator_content_selector.dart';
 import 'package:baakhapaa/widgets/affiliate_product_selector.dart';
 import 'package:baakhapaa/widgets/collaborator_selector.dart';
+import 'package:baakhapaa/screens/create/shared/ai_content_generator_screen.dart';
 import './preview_shorts_screen.dart';
 import '../../../utils/debug_logger.dart';
 
@@ -41,6 +43,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
   final _descriptionController = TextEditingController();
   final _pointsController = TextEditingController(text: '100');
   final _livesController = TextEditingController(text: '1');
+  List<Map<String, dynamic>> _aiPrefilledQuestions = [];
+  List<String> _aiPrefillGenres = [];
   int? _selectedCategoryId;
   List<AffiliateProduct> _selectedAffiliateProducts = [];
   List<dynamic> _selectedRelatedShorts = [];
@@ -72,7 +76,9 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Email not verified yet. Please verify your email first.'),
+            content: Text(
+              'Email not verified yet. Please verify your email first.',
+            ),
           ),
         );
         Navigator.of(context).maybePop();
@@ -96,8 +102,10 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
     // Load shorts topics when screen initializes
     Provider.of<Shorts>(context, listen: false).fetchShortsTopic();
     // Fetch affiliate status
-    Provider.of<AffiliateProvider>(context, listen: false)
-        .fetchAffiliateStatus();
+    Provider.of<AffiliateProvider>(
+      context,
+      listen: false,
+    ).fetchAffiliateStatus();
     _animationController.forward();
     _loadDraftsCount();
   }
@@ -131,6 +139,18 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         _challengeId = rawArgs['challenge_id'] as int?;
         _collaborationId = rawArgs['collaboration_id'] as int?;
 
+        final aiPrefilled = rawArgs['aiPrefilled'] as AiGeneratedContent?;
+        if (aiPrefilled != null) {
+          _titleController.text = aiPrefilled.title;
+          _descriptionController.text = aiPrefilled.description;
+          _pointsController.text = aiPrefilled.pointsUsers.toString();
+          _livesController.text = aiPrefilled.lives.toString();
+          _aiPrefilledQuestions = List<Map<String, dynamic>>.from(
+            aiPrefilled.questions,
+          );
+          _aiPrefillGenres = List<String>.from(aiPrefilled.genres);
+        }
+
         DebugLogger.info('🎯 CreateShortsScreen loaded');
         DebugLogger.info('🎯 isChallenge=$_isChallenge');
         DebugLogger.info('🎯 challengeId=$_challengeId');
@@ -144,16 +164,41 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
 
       // Fetch shorts topics and handle the response
       DebugLogger.api("Fetching shorts topics...");
-      Provider.of<Shorts>(context, listen: false).fetchShortsTopic().then((_) {
-        DebugLogger.api("Shorts topics fetched successfully");
-        if (mounted) {
-          setState(() {
-            // Trigger a rebuild to show the loaded categories
+      Provider.of<Shorts>(context, listen: false)
+          .fetchShortsTopic()
+          .then((_) {
+            DebugLogger.api("Shorts topics fetched successfully");
+            if (mounted) {
+              setState(() {
+                if (_aiPrefillGenres.isNotEmpty &&
+                    _selectedCategoryId == null) {
+                  final topics = Provider.of<Shorts>(
+                    context,
+                    listen: false,
+                  ).shortsTopic;
+                  for (final genre in _aiPrefillGenres) {
+                    final genreLower = genre.toLowerCase();
+                    for (final topic in topics) {
+                      final topicTitle = topic['title']?.toString() ?? '';
+                      final titleLower = topicTitle.toLowerCase();
+                      if (titleLower == genreLower ||
+                          titleLower.contains(genreLower) ||
+                          genreLower.contains(titleLower)) {
+                        _selectedCategoryId = topic['id'] as int?;
+                        break;
+                      }
+                    }
+                    if (_selectedCategoryId != null) {
+                      break;
+                    }
+                  }
+                }
+              });
+            }
+          })
+          .catchError((error) {
+            DebugLogger.api("Error fetching shorts topics: $error");
           });
-        }
-      }).catchError((error) {
-        DebugLogger.api("Error fetching shorts topics: $error");
-      });
       _isInit = true;
     }
     super.didChangeDependencies();
@@ -1248,7 +1293,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
               'Insufficient coins. You have ${auth.userAvailableCoins} but need $points.';
         });
         DebugLogger.error(
-            'Insufficient coins: have ${auth.userAvailableCoins}, need $points');
+          'Insufficient coins: have ${auth.userAvailableCoins}, need $points',
+        );
         return;
       }
 
@@ -1317,7 +1363,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
       DebugLogger.info('Args: $args'); // Debug log
       DebugLogger.info('Is challenge: $_isChallenge'); // Debug log
       DebugLogger.info(
-          '🤝 collaborationId in _submitForm: $_collaborationId'); // Debug log
+        '🤝 collaborationId in _submitForm: $_collaborationId',
+      ); // Debug log
 
       if (_isChallenge != null && _isChallenge!) {
         DebugLogger.info('Processing as challenge'); // Debug log
@@ -1332,12 +1379,15 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
           'lives': args?['lives'],
           'no_of_mcq': args?['no_of_mcq'],
           'content_type': _contentType, // Add content type (shorts/stories)
-          'affiliate_product_ids':
-              _selectedAffiliateProducts.map((p) => p.id).toList(),
-          'related_shorts_ids':
-              _selectedRelatedShorts.map((s) => s['id']).toList(),
-          'related_episode_ids':
-              _selectedRelatedEpisodes.map((e) => e['id']).toList(),
+          'affiliate_product_ids': _selectedAffiliateProducts
+              .map((p) => p.id)
+              .toList(),
+          'related_shorts_ids': _selectedRelatedShorts
+              .map((s) => s['id'])
+              .toList(),
+          'related_episode_ids': _selectedRelatedEpisodes
+              .map((e) => e['id'])
+              .toList(),
           'season_id': _selectedRelatedSeasons.isNotEmpty
               ? _selectedRelatedSeasons.first['id']
               : null,
@@ -1354,7 +1404,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         if (_collaborationId != null) {
           previewArgs['collaboration_id'] = _collaborationId;
           DebugLogger.info(
-              '🤝 Passing collaboration_id to challenge preview: $_collaborationId');
+            '🤝 Passing collaboration_id to challenge preview: $_collaborationId',
+          );
         }
 
         if (_selectedFile != null) {
@@ -1362,11 +1413,13 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         } else if (_youtubeVideoData != null) {
           previewArgs['youtubeVideoData'] = _youtubeVideoData;
         }
+        if (_aiPrefilledQuestions.isNotEmpty) {
+          previewArgs['ai_prefilled_questions'] = _aiPrefilledQuestions;
+        }
 
-        Navigator.of(context).pushNamed(
-          PreviewShortsScreen.routeName,
-          arguments: previewArgs,
-        );
+        Navigator.of(
+          context,
+        ).pushNamed(PreviewShortsScreen.routeName, arguments: previewArgs);
       } else {
         DebugLogger.info('Processing as regular shorts'); // Debug log
         if (_selectedCategoryId == null) {
@@ -1378,7 +1431,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         }
 
         DebugLogger.info(
-            'Navigating to preview with category: $_selectedCategoryId'); // Debug log
+          'Navigating to preview with category: $_selectedCategoryId',
+        ); // Debug log
 
         // Build previewArgs and only include youtubeVideoData if no local file
         final previewArgs = <String, dynamic>{
@@ -1390,12 +1444,15 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
           'coins_users': int.parse(_pointsController.text),
           'lives': int.parse(_livesController.text),
           'content_type': _contentType, // Add content type (shorts/stories)
-          'affiliate_product_ids':
-              _selectedAffiliateProducts.map((p) => p.id).toList(),
-          'related_shorts_ids':
-              _selectedRelatedShorts.map((s) => s['id']).toList(),
-          'related_episode_ids':
-              _selectedRelatedEpisodes.map((e) => e['id']).toList(),
+          'affiliate_product_ids': _selectedAffiliateProducts
+              .map((p) => p.id)
+              .toList(),
+          'related_shorts_ids': _selectedRelatedShorts
+              .map((s) => s['id'])
+              .toList(),
+          'related_episode_ids': _selectedRelatedEpisodes
+              .map((e) => e['id'])
+              .toList(),
           'season_id': _selectedRelatedSeasons.isNotEmpty
               ? _selectedRelatedSeasons.first['id']
               : null,
@@ -1412,7 +1469,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         if (_collaborationId != null) {
           previewArgs['collaboration_id'] = _collaborationId;
           DebugLogger.info(
-              '🤝 Passing collaboration_id to preview: $_collaborationId');
+            '🤝 Passing collaboration_id to preview: $_collaborationId',
+          );
         }
 
         if (_selectedFile != null) {
@@ -1420,11 +1478,13 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         } else if (_youtubeVideoData != null) {
           previewArgs['youtubeVideoData'] = _youtubeVideoData;
         }
+        if (_aiPrefilledQuestions.isNotEmpty) {
+          previewArgs['ai_prefilled_questions'] = _aiPrefilledQuestions;
+        }
 
-        Navigator.of(context).pushNamed(
-          PreviewShortsScreen.routeName,
-          arguments: previewArgs,
-        );
+        Navigator.of(
+          context,
+        ).pushNamed(PreviewShortsScreen.routeName, arguments: previewArgs);
       }
     } catch (e) {
       DebugLogger.error('Error in submit form: $e'); // Debug log
@@ -1443,6 +1503,22 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: header(context: context, titleText: 'Create Shorts'),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).pushReplacementNamed(
+            AiContentGeneratorScreen.routeName,
+            arguments: {
+              'contentType': 'short',
+              if (_isChallenge == true) 'is_challenge': true,
+              if (_challengeId != null) 'challenge_id': _challengeId,
+              if (_collaborationId != null)
+                'collaboration_id': _collaborationId,
+            },
+          );
+        },
+        icon: const Icon(Icons.auto_awesome),
+        label: const Text('Generate with AI'),
+      ),
       body: AnimatedBuilder(
         animation: _fadeAnimation,
         builder: (context, child) {
@@ -1492,8 +1568,11 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
             color: Colors.purple.withOpacity(0.9),
             child: Row(
               children: [
-                const Icon(Icons.people_alt_rounded,
-                    color: Colors.white, size: 18),
+                const Icon(
+                  Icons.people_alt_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1653,7 +1732,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                 left: 24,
                 right: 24,
                 top: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom +
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom +
                     100, // Space for bottom button
               ),
               child: Column(
@@ -1808,45 +1888,52 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                   SizedBox(height: 24),
 
                   // Available coins balance
-                  Builder(builder: (ctx) {
-                    final auth = Provider.of<Auth>(ctx, listen: false);
-                    final availableCoins = auth.userAvailableCoins;
-                    return Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.amber.shade900.withOpacity(0.2)
-                            : Colors.amber.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.amber.shade300.withOpacity(0.5),
+                  Builder(
+                    builder: (ctx) {
+                      final auth = Provider.of<Auth>(ctx, listen: false);
+                      final availableCoins = auth.userAvailableCoins;
+                      return Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.account_balance_wallet_rounded,
-                              color: Colors.amber.shade600, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Available: ',
-                            style: TextStyle(
-                              color: isDark ? Colors.white70 : Colors.black54,
-                              fontSize: 14,
-                            ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.amber.shade900.withOpacity(0.2)
+                              : Colors.amber.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.amber.shade300.withOpacity(0.5),
                           ),
-                          Text(
-                            '$availableCoins points',
-                            style: TextStyle(
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.account_balance_wallet_rounded,
                               color: Colors.amber.shade600,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                              size: 20,
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
+                            SizedBox(width: 8),
+                            Text(
+                              'Available: ',
+                              style: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.black54,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              '$availableCoins points',
+                              style: TextStyle(
+                                color: Colors.amber.shade600,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                   SizedBox(height: 12),
 
                   // Points and Lives
@@ -1867,8 +1954,10 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                             if (points == null || points < 100)
                               return 'Min: 100';
                             // Check against available balance
-                            final auth =
-                                Provider.of<Auth>(context, listen: false);
+                            final auth = Provider.of<Auth>(
+                              context,
+                              listen: false,
+                            );
                             if (points > auth.userAvailableCoins) {
                               return 'You only have ${auth.userAvailableCoins} coins';
                             }
@@ -1916,7 +2005,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                             ? 'Link your previous content and affiliate products to this video.'
                             : 'Link your previous content to this video.',
                         style: TextStyle(
-                            color: isDark ? Colors.white70 : Colors.black54),
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
                       );
                     },
                   ),
@@ -1933,7 +2023,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                           return Chip(
                             label: Text('📹 ${s['title'] ?? 'Untitled'}'),
                             onDeleted: () => setState(
-                                () => _selectedRelatedShorts.remove(s)),
+                              () => _selectedRelatedShorts.remove(s),
+                            ),
                             deleteIcon: const Icon(Icons.close, size: 16),
                             backgroundColor: Colors.blue.withOpacity(0.2),
                           );
@@ -1942,7 +2033,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                           return Chip(
                             label: Text('🎬 ${e['title'] ?? 'Untitled'}'),
                             onDeleted: () => setState(
-                                () => _selectedRelatedEpisodes.remove(e)),
+                              () => _selectedRelatedEpisodes.remove(e),
+                            ),
                             deleteIcon: const Icon(Icons.close, size: 16),
                             backgroundColor: Colors.purple.withOpacity(0.2),
                           );
@@ -1951,7 +2043,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                           return Chip(
                             label: Text('📁 ${s['title'] ?? 'Untitled'}'),
                             onDeleted: () => setState(
-                                () => _selectedRelatedSeasons.remove(s)),
+                              () => _selectedRelatedSeasons.remove(s),
+                            ),
                             deleteIcon: const Icon(Icons.close, size: 16),
                             backgroundColor: Colors.amber.withOpacity(0.2),
                           );
@@ -1960,7 +2053,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                           return Chip(
                             label: Text('🛍️ ${p.title}'),
                             onDeleted: () => setState(
-                                () => _selectedAffiliateProducts.remove(p)),
+                              () => _selectedAffiliateProducts.remove(p),
+                            ),
                             deleteIcon: const Icon(Icons.close, size: 16),
                             backgroundColor: Colors.green.withOpacity(0.2),
                           );
@@ -2016,28 +2110,33 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                                 false, // Disable products tab in unified selector
                             initialSelectedAffiliateProducts:
                                 _selectedAffiliateProducts,
-                            onSelected: (
-                                {required shorts,
-                                required episodes,
-                                required seasons,
-                                required affiliateProducts}) {
-                              setState(() {
-                                _selectedRelatedShorts =
-                                    List<dynamic>.from(shorts);
-                                _selectedRelatedEpisodes =
-                                    List<dynamic>.from(episodes);
-                                _selectedRelatedSeasons =
-                                    List<dynamic>.from(seasons);
-                                _selectedAffiliateProducts =
-                                    List<AffiliateProduct>.from(
-                                        affiliateProducts);
-                              });
-                            },
+                            onSelected:
+                                ({
+                                  required shorts,
+                                  required episodes,
+                                  required seasons,
+                                  required affiliateProducts,
+                                }) {
+                                  setState(() {
+                                    _selectedRelatedShorts = List<dynamic>.from(
+                                      shorts,
+                                    );
+                                    _selectedRelatedEpisodes =
+                                        List<dynamic>.from(episodes);
+                                    _selectedRelatedSeasons =
+                                        List<dynamic>.from(seasons);
+                                    _selectedAffiliateProducts =
+                                        List<AffiliateProduct>.from(
+                                          affiliateProducts,
+                                        );
+                                  });
+                                },
                           ),
                         ),
                       );
                     },
-                    label: (_selectedRelatedShorts.isEmpty &&
+                    label:
+                        (_selectedRelatedShorts.isEmpty &&
                             _selectedRelatedEpisodes.isEmpty &&
                             _selectedRelatedSeasons.isEmpty &&
                             _selectedAffiliateProducts.isEmpty)
@@ -2055,7 +2154,11 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
           // ── Sticky navigation bar ──────────────────────────────────────
           Padding(
             padding: EdgeInsets.fromLTRB(
-                24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+              24,
+              12,
+              24,
+              MediaQuery.of(context).padding.bottom + 16,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -2083,21 +2186,25 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                       final lives = int.tryParse(_livesController.text);
 
                       if (points == null || points < 100) {
-                        setState(() =>
-                            _uploadMessage = 'Points must be at least 100');
+                        setState(
+                          () => _uploadMessage = 'Points must be at least 100',
+                        );
                         return;
                       }
                       if (lives == null || lives < 1) {
                         setState(
-                            () => _uploadMessage = 'Lives must be at least 1');
+                          () => _uploadMessage = 'Lives must be at least 1',
+                        );
                         return;
                       }
 
                       // Check coin balance
                       final auth = Provider.of<Auth>(context, listen: false);
                       if (points > auth.userAvailableCoins) {
-                        setState(() => _uploadMessage =
-                            'Insufficient coins. You have ${auth.userAvailableCoins} but need $points.');
+                        setState(
+                          () => _uploadMessage =
+                              'Insufficient coins. You have ${auth.userAvailableCoins} but need $points.',
+                        );
                         return;
                       }
 
@@ -2158,14 +2265,15 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                     decoration: BoxDecoration(
                       color: Colors.purple.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.purple.withOpacity(0.4),
-                      ),
+                      border: Border.all(color: Colors.purple.withOpacity(0.4)),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.people_alt_rounded,
-                            color: Colors.purple, size: 26),
+                        Icon(
+                          Icons.people_alt_rounded,
+                          color: Colors.purple,
+                          size: 26,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -2184,8 +2292,9 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                                 'This short will be submitted under your accepted collaboration. Collaborators are already set by the collaboration invitation.',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color:
-                                      isDark ? Colors.white70 : Colors.black54,
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black54,
                                   height: 1.4,
                                 ),
                               ),
@@ -2223,12 +2332,15 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                                             ?.toUpperCase() ??
                                         '?',
                                     style: TextStyle(
-                                        color: Colors.white, fontSize: 12),
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
                                   ),
                           ),
                           label: Text('@${collaborator['username']}$offerText'),
-                          onDeleted: () => setState(() =>
-                              _selectedCollaborators.remove(collaborator)),
+                          onDeleted: () => setState(
+                            () => _selectedCollaborators.remove(collaborator),
+                          ),
                           deleteIcon: const Icon(Icons.close, size: 16),
                           backgroundColor: Colors.purple.withOpacity(0.2),
                         );
@@ -2245,7 +2357,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                               setState(() {
                                 _selectedCollaborators =
                                     List<Map<String, dynamic>>.from(
-                                        collaborators);
+                                      collaborators,
+                                    );
                               });
                             },
                           ),
@@ -2268,7 +2381,11 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         // ── Sticky navigation bar ──────────────────────────────────────
         Padding(
           padding: EdgeInsets.fromLTRB(
-              24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+            24,
+            12,
+            24,
+            MediaQuery.of(context).padding.bottom + 16,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -2326,8 +2443,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                 color: isCompleted
                     ? Colors.amber
                     : isActive
-                        ? Colors.amber.withValues(alpha: 0.6)
-                        : Colors.grey.withValues(alpha: 0.3),
+                    ? Colors.amber.withValues(alpha: 0.6)
+                    : Colors.grey.withValues(alpha: 0.3),
               ),
             ),
           );
@@ -2374,9 +2491,7 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
               Positioned.fill(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
-                  child: CustomPaint(
-                    painter: CirclePatternPainter(),
-                  ),
+                  child: CustomPaint(painter: CirclePatternPainter()),
                 ),
               ),
 
@@ -2390,11 +2505,7 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      icon,
-                      size: 48,
-                      color: Colors.white,
-                    ),
+                    Icon(icon, size: 48, color: Colors.white),
                     SizedBox(height: 14),
                     Text(
                       title,
@@ -2504,9 +2615,7 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
               ),
               child: Text(
                 context.l10n.open,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -2517,7 +2626,8 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
 
   Widget _buildDraftsCard(bool isDark) {
     DebugLogger.info(
-        'Building drafts card with count: $_draftsCount'); // Debug log
+      'Building drafts card with count: $_draftsCount',
+    ); // Debug log
     return GestureDetector(
       behavior:
           HitTestBehavior.opaque, // Ensure the gesture detector captures taps
@@ -2526,23 +2636,19 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         HapticFeedback.lightImpact();
         try {
           DebugLogger.info(
-              'Attempting navigation to drafts screen...'); // Debug log
-          await Navigator.of(context).pushNamed(
-            DraftsScreen.routeName,
-          );
+            'Attempting navigation to drafts screen...',
+          ); // Debug log
+          await Navigator.of(context).pushNamed(DraftsScreen.routeName);
           DebugLogger.success(
-              'Navigation successful, refreshing drafts count...'); // Debug log
+            'Navigation successful, refreshing drafts count...',
+          ); // Debug log
           // Refresh drafts count when returning from drafts screen
           _loadDraftsCount();
         } catch (e) {
           DebugLogger.error('Error navigating to drafts: $e');
           // Fallback navigation
           Navigator.of(context)
-              .push(
-                MaterialPageRoute(
-                  builder: (context) => DraftsScreen(),
-                ),
-              )
+              .push(MaterialPageRoute(builder: (context) => DraftsScreen()))
               .then((_) => _loadDraftsCount());
         }
       },
@@ -2575,11 +2681,7 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(
-                Icons.drafts_rounded,
-                color: Colors.white,
-                size: 32,
-              ),
+              child: Icon(Icons.drafts_rounded, color: Colors.white, size: 32),
             ),
             SizedBox(width: 16), // Reduced from 20
             Expanded(
@@ -2602,8 +2704,10 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
                       ),
                       SizedBox(width: 8),
                       Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(12),
@@ -2807,10 +2911,7 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: Colors.amber.shade600,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: Colors.amber.shade600, width: 2),
             ),
             contentPadding: EdgeInsets.all(20),
           ),
@@ -2915,10 +3016,7 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -2947,10 +3045,7 @@ class _CreateShortsScreenState extends State<CreateShortsScreen>
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
       ),
     );
@@ -2966,21 +3061,9 @@ class CirclePatternPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     // Draw decorative circles
-    canvas.drawCircle(
-      Offset(size.width * 0.8, size.height * 0.2),
-      20,
-      paint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.9, size.height * 0.7),
-      15,
-      paint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.7, size.height * 0.9),
-      10,
-      paint,
-    );
+    canvas.drawCircle(Offset(size.width * 0.8, size.height * 0.2), 20, paint);
+    canvas.drawCircle(Offset(size.width * 0.9, size.height * 0.7), 15, paint);
+    canvas.drawCircle(Offset(size.width * 0.7, size.height * 0.9), 10, paint);
   }
 
   @override

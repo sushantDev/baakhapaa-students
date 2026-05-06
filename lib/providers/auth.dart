@@ -37,7 +37,7 @@ class Auth with ChangeNotifier {
   late List<dynamic> _withdrawals = [];
   Function(String)? _onLevelUpCheck;
   bool _isLoadingUser = false; // Add loading state for user fetching
-// Add these properties to your Auth class (near the top with other late declarations)
+  // Add these properties to your Auth class (near the top with other late declarations)
   late Map<String, dynamic> _followData = {
     'followers_count': 0,
     'following_count': 0,
@@ -49,7 +49,7 @@ class Auth with ChangeNotifier {
   late List<dynamic> _following = [];
   late List<dynamic> _blockedUsers = [];
 
-// Add these getters
+  // Add these getters
   Map<String, dynamic> get followData {
     return {..._followData};
   }
@@ -207,10 +207,11 @@ class Auth with ChangeNotifier {
   }
 
   bool get isEmailVerified {
-    final value = _user['email_verified_at'] ??
+    final value =
+        _user['email_verified_at'] ??
         (_user['information'] is Map<String, dynamic>
             ? (_user['information']
-                as Map<String, dynamic>)['email_verified_at']
+                  as Map<String, dynamic>)['email_verified_at']
             : null);
 
     if (value == null) return false;
@@ -445,12 +446,7 @@ class Auth with ChangeNotifier {
   void setPreference(_token, _user) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.remove('userData');
-    final userData = json.encode(
-      {
-        'token': _token,
-        'user': _user,
-      },
-    );
+    final userData = json.encode({'token': _token, 'user': _user});
     prefs.setString('userData', userData);
   }
 
@@ -482,13 +478,15 @@ class Auth with ChangeNotifier {
         String? newToken = await FirebaseMessaging.instance.getToken();
         if (newToken != null) {
           DebugLogger.info(
-              '✅ New FCM token obtained: ${newToken.substring(0, 20)}...');
+            '✅ New FCM token obtained: ${newToken.substring(0, 20)}...',
+          );
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('fcmToken', newToken);
           DebugLogger.info('💾 New FCM token saved for user ${_user['id']}');
           await saveFCMToken(newToken);
           DebugLogger.info(
-              '✅ New FCM token sent to backend for user ${_user['id']}');
+            '✅ New FCM token sent to backend for user ${_user['id']}',
+          );
         }
       } catch (e) {
         DebugLogger.info('⚠️ Error refreshing FCM token on login: $e');
@@ -535,10 +533,7 @@ class Auth with ChangeNotifier {
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/login')),
         headers: Url.baakhapaaHeaders,
-        body: json.encode({
-          'email': email,
-          'password': password,
-        }),
+        body: json.encode({'email': email, 'password': password}),
       );
       if (response.statusCode == 200) {
         authenticate(response);
@@ -633,7 +628,8 @@ class Auth with ChangeNotifier {
 
       if (!responseData['success']) {
         throw Exception(
-            'Apple login failed: ${responseData['message'] ?? 'Unknown error'}');
+          'Apple login failed: ${responseData['message'] ?? 'Unknown error'}',
+        );
       }
 
       if (responseData['data']['access_token'] != null) {
@@ -670,8 +666,9 @@ class Auth with ChangeNotifier {
         notifyListeners();
       } else if (response.statusCode == 422) {
         // Validation errors
-        var responseData = json.decode(utf8.decode(response.bodyBytes));
-        throw responseData; // Throw the entire response data including errors
+        var responseData = json.decode(utf8.decode((response.bodyBytes)));
+        throw responseData['message'] ??
+            'Registration failed. Please check your input.';
       } else {
         // Other errors
         var responseData = json.decode(utf8.decode(response.bodyBytes));
@@ -689,7 +686,8 @@ class Auth with ChangeNotifier {
 
     if (!prefs.containsKey('userData')) {
       DebugLogger.info(
-          "🔐 Auth.tryAutoLogin() - No userData found in preferences");
+        "🔐 Auth.tryAutoLogin() - No userData found in preferences",
+      );
       return false;
     }
 
@@ -699,9 +697,11 @@ class Auth with ChangeNotifier {
     _token = extractedUserData['token'] as String;
     _user = extractedUserData['user'] as Map<String, dynamic>;
     DebugLogger.info(
-        "🔐 Auth.tryAutoLogin() - Token loaded: ${_token.isNotEmpty}");
+      "🔐 Auth.tryAutoLogin() - Token loaded: ${_token.isNotEmpty}",
+    );
     DebugLogger.info(
-        "🔐 Auth.tryAutoLogin() - User loaded: ${_user['username'] ?? 'unknown'}");
+      "🔐 Auth.tryAutoLogin() - User loaded: ${_user['username'] ?? 'unknown'}",
+    );
     notifyListeners();
     DebugLogger.info("🔐 Auth.tryAutoLogin() - Auto login successful");
 
@@ -720,7 +720,8 @@ class Auth with ChangeNotifier {
       if (storedToken != null && storedToken.isNotEmpty) {
         await saveFCMToken(storedToken);
         DebugLogger.info(
-            '✅ FCM token re-registered with backend on auto-login');
+          '✅ FCM token re-registered with backend on auto-login',
+        );
       }
     } catch (e) {
       DebugLogger.info('⚠️ Error re-registering FCM token on auto-login: $e');
@@ -761,11 +762,13 @@ class Auth with ChangeNotifier {
         }
 
         DebugLogger.info(
-            '📊 AUTH: Unread notification count from API: $_unreadNotificationCount');
+          '📊 AUTH: Unread notification count from API: $_unreadNotificationCount',
+        );
         setPreference(_token, _user);
       } else {
         DebugLogger.auth(
-            'Error: User data is null or API response unsuccessful');
+          'Error: User data is null or API response unsuccessful',
+        );
         throw Exception('Failed to fetch user data');
       }
     } catch (error) {
@@ -829,10 +832,7 @@ class Auth with ChangeNotifier {
 
           // Update shared preferences
           final prefs = await SharedPreferences.getInstance();
-          final userDataString = json.encode({
-            'token': _token,
-            'user': _user,
-          });
+          final userDataString = json.encode({'token': _token, 'user': _user});
           await prefs.setString('userData', userDataString);
 
           notifyListeners();
@@ -859,10 +859,7 @@ class Auth with ChangeNotifier {
 
           // Update shared preferences
           final prefs = await SharedPreferences.getInstance();
-          final userDataString = json.encode({
-            'token': _token,
-            'user': _user,
-          });
+          final userDataString = json.encode({'token': _token, 'user': _user});
           await prefs.setString('userData', userDataString);
 
           notifyListeners();
@@ -877,8 +874,9 @@ class Auth with ChangeNotifier {
 
   Future<void> updateUserImage(File image) async {
     try {
-      final url =
-          Uri.parse(Url.baakhapaaApi('/user/${_user['username']}/image'));
+      final url = Uri.parse(
+        Url.baakhapaaApi('/user/${_user['username']}/image'),
+      );
 
       var request = http.MultipartRequest('POST', url);
 
@@ -920,11 +918,7 @@ class Auth with ChangeNotifier {
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/change-password')),
         headers: Url.baakhapaaAuthHeaders(_token),
-        body: json.encode({
-          'email': email,
-          'otp': otp,
-          'password': password,
-        }),
+        body: json.encode({'email': email, 'otp': otp, 'password': password}),
       );
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success']) {
@@ -1082,7 +1076,8 @@ class Auth with ChangeNotifier {
 
     if (response.statusCode != 200) {
       throw Exception(
-          responseData['message'] ?? 'Failed to load blocked tutors');
+        responseData['message'] ?? 'Failed to load blocked tutors',
+      );
     }
 
     final dynamic data = responseData['data'];
@@ -1134,10 +1129,9 @@ class Auth with ChangeNotifier {
     try {
       final response = await http
           .get(
-              Uri.parse(
-                Url.baakhapaaApi('/user/creators'),
-              ),
-              headers: Url.baakhapaaAuthHeaders(_token))
+            Uri.parse(Url.baakhapaaApi('/user/creators')),
+            headers: Url.baakhapaaAuthHeaders(_token),
+          )
           .timeout(const Duration(seconds: 15));
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
@@ -1156,10 +1150,9 @@ class Auth with ChangeNotifier {
     try {
       final response = await http
           .get(
-              Uri.parse(
-                Url.baakhapaaApi('/user/creators/all'),
-              ),
-              headers: Url.baakhapaaAuthHeaders(_token))
+            Uri.parse(Url.baakhapaaApi('/user/creators/all')),
+            headers: Url.baakhapaaAuthHeaders(_token),
+          )
           .timeout(const Duration(seconds: 15));
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
@@ -1178,13 +1171,12 @@ class Auth with ChangeNotifier {
     DebugLogger.info("👤 Auth.checkUsername() - Checking username: $username");
     try {
       final response = await http.get(
-        Uri.parse(
-          Url.baakhapaaApi('/username/$username/check'),
-        ),
+        Uri.parse(Url.baakhapaaApi('/username/$username/check')),
       );
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       DebugLogger.info(
-          "👤 Auth.checkUsername() - API response: ${responseData['success']}");
+        "👤 Auth.checkUsername() - API response: ${responseData['success']}",
+      );
       if (responseData['success']) {
         if (responseData['message'] == "USER_EXISTS") {
           _usernameExists = true;
@@ -1196,7 +1188,8 @@ class Auth with ChangeNotifier {
       } else {
         _usernameExists = true;
         DebugLogger.info(
-            "⚠️ Auth.checkUsername() - API error, assuming user exists");
+          "⚠️ Auth.checkUsername() - API error, assuming user exists",
+        );
       }
       notifyListeners();
     } catch (error) {
@@ -1207,21 +1200,22 @@ class Auth with ChangeNotifier {
 
   Future<void> setReferCode(String username) async {
     DebugLogger.info(
-        "🎯 Auth.setReferCode() - Setting referral code for username: $username");
+      "🎯 Auth.setReferCode() - Setting referral code for username: $username",
+    );
     try {
       final response = await http.get(
-        Uri.parse(
-          Url.baakhapaaApi('/user/refercode/$username'),
-        ),
+        Uri.parse(Url.baakhapaaApi('/user/refercode/$username')),
         headers: Url.baakhapaaAuthHeaders(_token),
       );
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       DebugLogger.info(
-          "🎯 Auth.setReferCode() - API response: ${responseData['success']}");
+        "🎯 Auth.setReferCode() - API response: ${responseData['success']}",
+      );
       if (responseData['success']) {
         DebugLogger.info(
-            "✅ Auth.setReferCode() - Referral code set successfully");
+          "✅ Auth.setReferCode() - Referral code set successfully",
+        );
         notifyListeners();
       } else {
         DebugLogger.info("❌ Auth.setReferCode() - API returned error");
@@ -1272,7 +1266,11 @@ class Auth with ChangeNotifier {
   }
 
   Future<void> donation(
-      int points, int id, String comment, String platform) async {
+    int points,
+    int id,
+    String comment,
+    String platform,
+  ) async {
     try {
       await http.post(
         Uri.parse(Url.baakhapaaApi('/v2/donation')),
@@ -1293,16 +1291,15 @@ class Auth with ChangeNotifier {
     try {
       final response = await http
           .get(
-            Uri.parse(
-              Url.baakhapaaApi('/creator-preferences'),
-            ),
+            Uri.parse(Url.baakhapaaApi('/creator-preferences')),
             headers: Url.baakhapaaAuthHeaders(_token),
           )
           .timeout(const Duration(seconds: 15));
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       final success = responseData['success'];
-      final isSuccess = success == true ||
+      final isSuccess =
+          success == true ||
           success == 1 ||
           success == '1' ||
           success == 'true';
@@ -1311,7 +1308,8 @@ class Auth with ChangeNotifier {
         notifyListeners();
       } else {
         DebugLogger.error(
-            'fetchCreatorPreferences: API returned success=$success, status=${response.statusCode}, body=${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}');
+          'fetchCreatorPreferences: API returned success=$success, status=${response.statusCode}, body=${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}',
+        );
         throw ('Error: API returned success=$success');
       }
     } catch (error) {
@@ -1361,8 +1359,9 @@ class Auth with ChangeNotifier {
       );
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success']) {
-        _mlbbRegistered =
-            responseData['message'] == 'REGISTERED' ? true : false;
+        _mlbbRegistered = responseData['message'] == 'REGISTERED'
+            ? true
+            : false;
         notifyListeners();
       }
     } catch (error) {
@@ -1388,12 +1387,11 @@ class Auth with ChangeNotifier {
   Future<void> coinTransaction(int coins, String status, String remarks) async {
     try {
       DebugLogger.info(
-          '💰 CoinTransaction: Starting - Status: $status, Coins: $coins');
+        '💰 CoinTransaction: Starting - Status: $status, Coins: $coins',
+      );
 
       final transactionResponse = await http.post(
-        Uri.parse(
-          Url.baakhapaaApi('/coin-transaction'),
-        ),
+        Uri.parse(Url.baakhapaaApi('/coin-transaction')),
         headers: Url.baakhapaaAuthHeaders(_token),
         body: json.encode({
           'user_id': userId,
@@ -1409,7 +1407,8 @@ class Auth with ChangeNotifier {
       // Check for HTTP errors
       if (responseData['code'] != null && responseData['code'] >= 400) {
         DebugLogger.error(
-            '❌ CoinTransaction failed with code: ${responseData['code']}');
+          '❌ CoinTransaction failed with code: ${responseData['code']}',
+        );
         throw responseData['message'] ?? 'Transaction failed';
       }
 
@@ -1421,11 +1420,13 @@ class Auth with ChangeNotifier {
         if (status == 'debited') {
           _user['available_coins'] = (_user['available_coins'] ?? 0) - coins;
           DebugLogger.info(
-              '💰 Coins debited: New balance = ${_user['available_coins']}');
+            '💰 Coins debited: New balance = ${_user['available_coins']}',
+          );
         } else if (status == 'credited') {
           _user['available_coins'] = (_user['available_coins'] ?? 0) + coins;
           DebugLogger.info(
-              '💰 Coins credited: New balance = ${_user['available_coins']}');
+            '💰 Coins credited: New balance = ${_user['available_coins']}',
+          );
         }
 
         // Notify listeners to update UI
@@ -1456,7 +1457,8 @@ class Auth with ChangeNotifier {
       if (availableCoins != null) {
         _user['available_coins'] = availableCoins;
         DebugLogger.info(
-            '💰 Balance updated: available_coins = $availableCoins');
+          '💰 Balance updated: available_coins = $availableCoins',
+        );
       }
       if (earnedCoins != null) {
         _user['earned_coins'] = earnedCoins;
@@ -1465,7 +1467,8 @@ class Auth with ChangeNotifier {
       if (totalUsedCoins != null) {
         _user['total_used_coins'] = totalUsedCoins;
         DebugLogger.info(
-            '💰 Balance updated: total_used_coins = $totalUsedCoins');
+          '💰 Balance updated: total_used_coins = $totalUsedCoins',
+        );
       }
 
       // Notify listeners to update UI
@@ -1484,8 +1487,9 @@ class Auth with ChangeNotifier {
       );
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success']) {
-        _mlbbTicketPurchased =
-            responseData['message'] == 'PURCHASED' ? true : false;
+        _mlbbTicketPurchased = responseData['message'] == 'PURCHASED'
+            ? true
+            : false;
         notifyListeners();
       }
     } catch (error) {
@@ -1494,14 +1498,17 @@ class Auth with ChangeNotifier {
   }
 
   Future<void> mlbbRegistration(
-      Map<String, dynamic> data, File teamLogo) async {
+    Map<String, dynamic> data,
+    File teamLogo,
+  ) async {
     try {
       final url = Uri.parse(Url.baakhapaaApi('/mlbb-registration'));
 
       var request = http.MultipartRequest('POST', url);
 
-      request.files
-          .add(await http.MultipartFile.fromPath('team_logo', teamLogo.path));
+      request.files.add(
+        await http.MultipartFile.fromPath('team_logo', teamLogo.path),
+      );
       request.fields['name'] = data['name'];
       request.fields['contact_number'] = data['contact_number'];
       request.fields['ign'] = data['ign'];
@@ -1525,18 +1532,19 @@ class Auth with ChangeNotifier {
     }
   }
 
-  Future<void> cooldownReset(
-      {String? platform, String? dateTime, int? cooldownTime}) async {
+  Future<void> cooldownReset({
+    String? platform,
+    String? dateTime,
+    int? cooldownTime,
+  }) async {
     try {
       await http.post(
-        Uri.parse(
-          Url.baakhapaaApi('/cooldown'),
-        ),
+        Uri.parse(Url.baakhapaaApi('/cooldown')),
         headers: Url.baakhapaaAuthHeaders(_token),
         body: json.encode({
           'platform': platform,
           'dateTime': dateTime,
-          'cooldownTime': cooldownTime
+          'cooldownTime': cooldownTime,
         }),
       );
     } catch (error) {
@@ -1574,17 +1582,20 @@ class Auth with ChangeNotifier {
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success'] == true) {
-        final normalized =
-            _normalizeCreatorAchievementsResponse(responseData['data']);
+        final normalized = _normalizeCreatorAchievementsResponse(
+          responseData['data'],
+        );
         return normalized;
       } else {
-        final msg = responseData['message']?.toString() ??
+        final msg =
+            responseData['message']?.toString() ??
             'Failed to fetch achievements';
         // For rate-limit (429) or server errors, return empty gracefully instead of crashing.
         if (response.statusCode == 429 ||
             msg.toLowerCase().contains('too many')) {
           DebugLogger.info(
-              'fetchCreatorAchievements: rate limited, returning empty');
+            'fetchCreatorAchievements: rate limited, returning empty',
+          );
           return {'items': <dynamic>[], 'completed': 0, 'total': 0};
         }
         throw msg;
@@ -1625,18 +1636,22 @@ class Auth with ChangeNotifier {
         }
       }
 
-      total = _parseToInt(map['total'] ??
-          map['count'] ??
-          map['achievements_count'] ??
-          map['total_achievements'] ??
-          0);
+      total = _parseToInt(
+        map['total'] ??
+            map['count'] ??
+            map['achievements_count'] ??
+            map['total_achievements'] ??
+            0,
+      );
 
-      completed = _parseToInt(map['completed'] ??
-          map['obtained'] ??
-          map['unlocked'] ??
-          map['claimed_count'] ??
-          map['achievements_completed'] ??
-          0);
+      completed = _parseToInt(
+        map['completed'] ??
+            map['obtained'] ??
+            map['unlocked'] ??
+            map['claimed_count'] ??
+            map['achievements_completed'] ??
+            0,
+      );
     }
 
     if (total == 0) {
@@ -1660,11 +1675,7 @@ class Auth with ChangeNotifier {
       }).length;
     }
 
-    return {
-      'items': items,
-      'completed': completed,
-      'total': total,
-    };
+    return {'items': items, 'completed': completed, 'total': total};
   }
 
   List<dynamic> _extractChallengeItems(dynamic payload) {
@@ -1759,8 +1770,9 @@ class Auth with ChangeNotifier {
 
       final responseData = json.decode(utf8.decode(response.bodyBytes));
       if (responseData['success'] == true) {
-        _creatorEnrolledChallenges[creatorId] =
-            _extractChallengeItems(responseData['data']);
+        _creatorEnrolledChallenges[creatorId] = _extractChallengeItems(
+          responseData['data'],
+        );
         notifyListeners();
       } else {
         throw responseData['message'] ??
@@ -1768,7 +1780,8 @@ class Auth with ChangeNotifier {
       }
     } catch (error) {
       DebugLogger.error(
-          'Auth: Error fetching creator enrolled challenges: $error');
+        'Auth: Error fetching creator enrolled challenges: $error',
+      );
     }
   }
 
@@ -1816,13 +1829,9 @@ class Auth with ChangeNotifier {
   Future<void> claimAchievements({List<int>? achievementIds}) async {
     try {
       await http.post(
-        Uri.parse(
-          Url.baakhapaaApi('/claim-achievements'),
-        ),
+        Uri.parse(Url.baakhapaaApi('/claim-achievements')),
         headers: Url.baakhapaaAuthHeaders(_token),
-        body: json.encode({
-          'achievements': achievementIds,
-        }),
+        body: json.encode({'achievements': achievementIds}),
       );
     } catch (error) {
       throw error;
@@ -1867,8 +1876,9 @@ class Auth with ChangeNotifier {
       );
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success']) {
-        _challengeTicketPurchased =
-            responseData['message'] == 'PURCHASED' ? true : false;
+        _challengeTicketPurchased = responseData['message'] == 'PURCHASED'
+            ? true
+            : false;
         notifyListeners();
       }
     } catch (error) {
@@ -1876,10 +1886,7 @@ class Auth with ChangeNotifier {
     }
   }
 
-  Future<void> submitChallengeRequest(
-    String script,
-    File? image,
-  ) async {
+  Future<void> submitChallengeRequest(String script, File? image) async {
     try {
       var url = Uri.parse(Url.baakhapaaApi('/request-for-challenge'));
       var request = http.MultipartRequest('POST', url);
@@ -1899,7 +1906,8 @@ class Auth with ChangeNotifier {
 
       if (response.statusCode != 200) {
         throw Exception(
-            'Failed to submit challenge request: ${response.statusCode}');
+          'Failed to submit challenge request: ${response.statusCode}',
+        );
       }
     } catch (error) {
       throw error;
@@ -1939,10 +1947,9 @@ class Auth with ChangeNotifier {
     try {
       final response = await http
           .get(
-              Uri.parse(
-                Url.baakhapaaApi('/creator/$userId/rankings'),
-              ),
-              headers: Url.baakhapaaAuthHeaders(_token))
+            Uri.parse(Url.baakhapaaApi('/creator/$userId/rankings')),
+            headers: Url.baakhapaaAuthHeaders(_token),
+          )
           .timeout(const Duration(seconds: 15));
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
@@ -1961,17 +1968,50 @@ class Auth with ChangeNotifier {
     try {
       final response = await http
           .get(
-              Uri.parse(
-                Url.baakhapaaApi('/chat-rooms'),
-              ),
-              headers: Url.baakhapaaAuthHeaders(_token))
+            Uri.parse(Url.baakhapaaApi('/chat-rooms')),
+            headers: Url.baakhapaaAuthHeaders(_token),
+          )
           .timeout(const Duration(seconds: 15));
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      if (responseData['success']) {
-        _conversations = responseData['data']['items'];
+      final success =
+          responseData['success'] == true ||
+          responseData['success'] == 1 ||
+          responseData['success']?.toString().toLowerCase() == 'true';
+
+      if (success) {
+        final dynamic data = responseData['data'];
+
+        List<dynamic> items = [];
+        if (data is Map<String, dynamic>) {
+          if (data['items'] is List) {
+            items = List<dynamic>.from(data['items']);
+          } else if (data['value'] is List) {
+            items = List<dynamic>.from(data['value']);
+          }
+        } else if (data is List) {
+          items = List<dynamic>.from(data);
+        }
+
+        items.sort((a, b) {
+          final aTime = DateTime.tryParse(
+            (a['last_message_at'] ?? '').toString(),
+          );
+          final bTime = DateTime.tryParse(
+            (b['last_message_at'] ?? '').toString(),
+          );
+
+          if (aTime == null && bTime == null) return 0;
+          if (aTime == null) return 1;
+          if (bTime == null) return -1;
+          return bTime.compareTo(aTime);
+        });
+
+        _conversations = items;
+        DebugLogger.info('Fetched ${_conversations.length} conversations');
+        notifyListeners();
       } else {
-        throw ('Error');
+        throw ('Error: ${responseData['message'] ?? 'Unknown response'}');
       }
     } catch (error) {
       DebugLogger.error('Error fetching conversations: $error');
@@ -1981,13 +2021,9 @@ class Auth with ChangeNotifier {
   Future<void> startConversations(List<int> userIds) async {
     try {
       final response = await http.post(
-        Uri.parse(
-          Url.baakhapaaApi('/conversations'),
-        ),
+        Uri.parse(Url.baakhapaaApi('/conversations')),
         headers: Url.baakhapaaAuthHeaders(_token),
-        body: json.encode({
-          'user_ids': userIds,
-        }),
+        body: json.encode({'user_ids': userIds}),
       );
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
@@ -2005,10 +2041,9 @@ class Auth with ChangeNotifier {
     try {
       final response = await http
           .get(
-              Uri.parse(
-                Url.baakhapaaApi('/chat-rooms/$conversationId'),
-              ),
-              headers: Url.baakhapaaAuthHeaders(_token))
+            Uri.parse(Url.baakhapaaApi('/chat-rooms/$conversationId')),
+            headers: Url.baakhapaaAuthHeaders(_token),
+          )
           .timeout(const Duration(seconds: 15));
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
@@ -2107,9 +2142,7 @@ class Auth with ChangeNotifier {
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/user/save-fcm-token')),
         headers: Url.baakhapaaAuthHeaders(_token),
-        body: json.encode({
-          'fcm_token': token,
-        }),
+        body: json.encode({'fcm_token': token}),
       );
 
       var responseData = json.decode(utf8.decode(response.bodyBytes));
@@ -2126,13 +2159,21 @@ class Auth with ChangeNotifier {
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/messages/mark-as-read')),
         headers: Url.baakhapaaAuthHeaders(_token),
-        body: json.encode({
-          'conversation_id': conversationId,
-        }),
+        body: json.encode({'conversation_id': conversationId}),
       );
 
       var responseData = json.decode(utf8.decode(response.bodyBytes));
-      if (!responseData['success']) {
+      if (responseData['success'] == true) {
+        for (final conversation in _conversations) {
+          if (conversation['conversation_id'] == conversationId) {
+            conversation['unread_count'] = 0;
+            conversation['has_unread'] = false;
+            break;
+          }
+        }
+
+        notifyListeners();
+      } else {
         throw ('Error marking messages as read: ${responseData['message']}');
       }
     } catch (error) {
@@ -2190,7 +2231,8 @@ class Auth with ChangeNotifier {
   void incrementNotificationCount() {
     _unreadNotificationCount++;
     DebugLogger.info(
-        '➕ AUTH: Notification count incremented to: $_unreadNotificationCount');
+      '➕ AUTH: Notification count incremented to: $_unreadNotificationCount',
+    );
     notifyListeners();
   }
 
@@ -2199,7 +2241,8 @@ class Auth with ChangeNotifier {
     if (_unreadNotificationCount > 0) {
       _unreadNotificationCount--;
       DebugLogger.info(
-          '➖ AUTH: Notification count decremented to: $_unreadNotificationCount');
+        '➖ AUTH: Notification count decremented to: $_unreadNotificationCount',
+      );
       notifyListeners();
     }
   }
@@ -2215,7 +2258,8 @@ class Auth with ChangeNotifier {
   void syncNotificationCount(int count) {
     _unreadNotificationCount = count < 0 ? 0 : count;
     DebugLogger.info(
-        '🔄 AUTH: Notification count synced to: $_unreadNotificationCount');
+      '🔄 AUTH: Notification count synced to: $_unreadNotificationCount',
+    );
     notifyListeners();
   }
 
@@ -2241,12 +2285,14 @@ class Auth with ChangeNotifier {
           }
         } else {
           DebugLogger.api(
-              'Invalid JSON response: ${response.body.substring(0, min(100, response.body.length))}');
+            'Invalid JSON response: ${response.body.substring(0, min(100, response.body.length))}',
+          );
           throw 'Server returned an invalid response format';
         }
       } else {
         DebugLogger.api(
-            'API error: ${response.statusCode} - ${response.body.substring(0, min(100, response.body.length))}');
+          'API error: ${response.statusCode} - ${response.body.substring(0, min(100, response.body.length))}',
+        );
         throw 'API error: ${response.statusCode}';
       }
     } catch (error) {
@@ -2309,12 +2355,14 @@ class Auth with ChangeNotifier {
           }
         } else {
           DebugLogger.api(
-              'Invalid JSON response: ${response.body.substring(0, min(100, response.body.length))}');
+            'Invalid JSON response: ${response.body.substring(0, min(100, response.body.length))}',
+          );
           throw 'Server returned an invalid response format';
         }
       } else {
         DebugLogger.api(
-            'API error: ${response.statusCode} - ${response.body.substring(0, min(100, response.body.length))}');
+          'API error: ${response.statusCode} - ${response.body.substring(0, min(100, response.body.length))}',
+        );
         throw 'API error: ${response.statusCode}';
       }
     } catch (error) {
@@ -2337,7 +2385,8 @@ class Auth with ChangeNotifier {
         notifyListeners();
       } else {
         throw Exception(
-            responseData['message'] ?? 'Failed to load withdrawals');
+          responseData['message'] ?? 'Failed to load withdrawals',
+        );
       }
     } catch (error) {
       _withdrawals = [];
@@ -2347,8 +2396,12 @@ class Auth with ChangeNotifier {
     }
   }
 
-  Future<void> requestWithdrawal(double amount, int points,
-      String paymentMethod, String paymentDetails) async {
+  Future<void> requestWithdrawal(
+    double amount,
+    int points,
+    String paymentMethod,
+    String paymentDetails,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/withdrawals')),
@@ -2370,7 +2423,8 @@ class Auth with ChangeNotifier {
         notifyListeners();
       } else {
         throw Exception(
-            responseData['message'] ?? 'Failed to request withdrawal');
+          responseData['message'] ?? 'Failed to request withdrawal',
+        );
       }
     } catch (error) {
       if (kDebugMode) {
@@ -2389,26 +2443,30 @@ class Auth with ChangeNotifier {
       );
 
       DebugLogger.info(
-          '👤 Player profile response status: ${response.statusCode}');
+        '👤 Player profile response status: ${response.statusCode}',
+      );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final responseData = json.decode(utf8.decode(response.bodyBytes));
         DebugLogger.info(
-            '👤 Player profile response: ${responseData.toString().substring(0, responseData.toString().length > 200 ? 200 : responseData.toString().length)}');
+          '👤 Player profile response: ${responseData.toString().substring(0, responseData.toString().length > 200 ? 200 : responseData.toString().length)}',
+        );
 
         if (responseData['success'] == true && responseData['data'] != null) {
           _playerProfile = responseData['data'] as Map<String, dynamic>;
           DebugLogger.success(
-              '👤 Player profile loaded successfully for $username');
+            '👤 Player profile loaded successfully for $username',
+          );
         } else {
           _playerProfile = {};
           DebugLogger.warning(
-              '👤 Player profile response success=false or data=null');
+            '👤 Player profile response success=false or data=null',
+          );
         }
       } else if (response.statusCode == 429) {
         _playerProfile = {
           'error': 'rate_limit',
-          'message': 'Too many requests. Please wait a moment and try again.'
+          'message': 'Too many requests. Please wait a moment and try again.',
         };
         DebugLogger.warning('👤 Rate limit exceeded for user profile request');
       } else if (response.statusCode == 404) {
@@ -2417,7 +2475,8 @@ class Auth with ChangeNotifier {
       } else {
         _playerProfile = {};
         DebugLogger.api(
-            '👤 fetchPlayerProfile HTTP ${response.statusCode}: ${response.body}');
+          '👤 fetchPlayerProfile HTTP ${response.statusCode}: ${response.body}',
+        );
       }
     } catch (e) {
       _playerProfile = {};
@@ -2516,13 +2575,19 @@ class Auth with ChangeNotifier {
   }
 
   /// Get followers list for a user
-  Future<void> fetchFollowers(String username,
-      {int page = 1, int perPage = 20}) async {
+  Future<void> fetchFollowers(
+    String username, {
+    int page = 1,
+    int perPage = 20,
+  }) async {
     try {
       final response = await http
           .get(
-            Uri.parse(Url.baakhapaaApi(
-                '/users/$username/followers?per_page=$perPage&page=$page')),
+            Uri.parse(
+              Url.baakhapaaApi(
+                '/users/$username/followers?per_page=$perPage&page=$page',
+              ),
+            ),
             headers: Url.baakhapaaAuthHeaders(_token),
           )
           .timeout(const Duration(seconds: 15));
@@ -2542,13 +2607,19 @@ class Auth with ChangeNotifier {
   }
 
   /// Get following list for a user
-  Future<void> fetchFollowing(String username,
-      {int page = 1, int perPage = 20}) async {
+  Future<void> fetchFollowing(
+    String username, {
+    int page = 1,
+    int perPage = 20,
+  }) async {
     try {
       final response = await http
           .get(
-            Uri.parse(Url.baakhapaaApi(
-                '/users/$username/following?per_page=$perPage&page=$page')),
+            Uri.parse(
+              Url.baakhapaaApi(
+                '/users/$username/following?per_page=$perPage&page=$page',
+              ),
+            ),
             headers: Url.baakhapaaAuthHeaders(_token),
           )
           .timeout(const Duration(seconds: 15));
@@ -2591,7 +2662,8 @@ class Auth with ChangeNotifier {
       } else {
         // Log but do not throw — callers should not crash on relationship failure
         DebugLogger.info(
-            'checkUserRelationship: non-success response: ${responseData['message']}');
+          'checkUserRelationship: non-success response: ${responseData['message']}',
+        );
       }
     } catch (error) {
       DebugLogger.error('Error checking relationship: $error');
@@ -2603,7 +2675,8 @@ class Auth with ChangeNotifier {
     try {
       final response = await http.get(
         Uri.parse(
-            Url.baakhapaaApi('/users/$username/followers/search?q=$query')),
+          Url.baakhapaaApi('/users/$username/followers/search?q=$query'),
+        ),
         headers: Url.baakhapaaAuthHeaders(_token),
       );
 
@@ -2625,7 +2698,8 @@ class Auth with ChangeNotifier {
     try {
       final response = await http.get(
         Uri.parse(
-            Url.baakhapaaApi('/users/$username/following/search?q=$query')),
+          Url.baakhapaaApi('/users/$username/following/search?q=$query'),
+        ),
         headers: Url.baakhapaaAuthHeaders(_token),
       );
 
@@ -2670,7 +2744,8 @@ class Auth with ChangeNotifier {
       } else {
         // If general search endpoint doesn't exist, fall back to empty list
         DebugLogger.warning(
-            'User search API returned: ${responseData['message']}');
+          'User search API returned: ${responseData['message']}',
+        );
         return [];
       }
     } catch (error) {
@@ -2699,9 +2774,7 @@ class Auth with ChangeNotifier {
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/wallet/request-otp')),
         headers: Url.baakhapaaAuthHeaders(_token),
-        body: json.encode({
-          'user_id': _user['id'],
-        }),
+        body: json.encode({'user_id': _user['id']}),
       );
 
       var responseData = json.decode(utf8.decode(response.bodyBytes));
@@ -2735,10 +2808,7 @@ class Auth with ChangeNotifier {
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/wallet/verify-otp')),
         headers: Url.baakhapaaAuthHeaders(_token),
-        body: json.encode({
-          'user_id': _user['id'],
-          'otp': otp,
-        }),
+        body: json.encode({'user_id': _user['id'], 'otp': otp}),
       );
 
       var responseData = json.decode(utf8.decode(response.bodyBytes));
@@ -2755,7 +2825,9 @@ class Auth with ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('wallet_session_token', _walletSessionToken!);
         await prefs.setString(
-            'wallet_session_expiry', _walletSessionExpiry!.toIso8601String());
+          'wallet_session_expiry',
+          _walletSessionExpiry!.toIso8601String(),
+        );
 
         notifyListeners();
 

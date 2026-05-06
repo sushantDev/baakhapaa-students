@@ -13,8 +13,7 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:bubble/bubble.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-// import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
-import '../../services/pusher_channels_flutter.dart'; // Use mock implementation for iOS compatibility
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:baakhapaa/widgets/messages_bubble.dart';
 import '../../utils/puppet_screen_mapping.dart';
 import '../../utils/debug_logger.dart';
@@ -61,7 +60,7 @@ class _MessagesScreenState extends State<MessagesScreen>
     'episode',
     'gift',
     'product',
-    'redeem gift'
+    'redeem gift',
   ];
 
   @override
@@ -78,9 +77,9 @@ class _MessagesScreenState extends State<MessagesScreen>
       } else {
         // Show error and pop if args are invalid
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Invalid message data')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Invalid message data')));
           Navigator.of(context).pop();
         });
         return;
@@ -119,9 +118,9 @@ class _MessagesScreenState extends State<MessagesScreen>
     } catch (e) {
       DebugLogger.error('Error initializing chat: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load messages')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load messages')));
         Navigator.of(context).pop();
       }
     }
@@ -136,14 +135,17 @@ class _MessagesScreenState extends State<MessagesScreen>
   }
 
   void _setupDeepLinkHandling() {
-    _linkSubscription = _appLinks.uriLinkStream.listen((Uri? link) {
-      if (link != null && link.toString().isNotEmpty) {
-        DebugLogger.info("Deep Link received: ${link.toString()}");
-        // You can add any specific handling here if needed
-      }
-    }, onError: (err) {
-      DebugLogger.error("Failed to receive deep link: $err");
-    });
+    _linkSubscription = _appLinks.uriLinkStream.listen(
+      (Uri? link) {
+        if (link != null && link.toString().isNotEmpty) {
+          DebugLogger.info("Deep Link received: ${link.toString()}");
+          // You can add any specific handling here if needed
+        }
+      },
+      onError: (err) {
+        DebugLogger.error("Failed to receive deep link: $err");
+      },
+    );
   }
 
   Future<void> _connectPusher() async {
@@ -179,7 +181,7 @@ class _MessagesScreenState extends State<MessagesScreen>
     DebugLogger.info("Connection state changed: $currentState");
   }
 
-  void _onError(String message, String? code, dynamic e) {
+  void _onError(String message, int? code, dynamic e) {
     DebugLogger.error("Error: $message (code: $code); exception: $e");
   }
 
@@ -189,10 +191,12 @@ class _MessagesScreenState extends State<MessagesScreen>
 
   void _onEvent(dynamic event) {
     DebugLogger.info(
-        "Received event on channel ${event.channelName}: ${event.eventName} with data: ${event.data}");
+      "Received event on channel ${event.channelName}: ${event.eventName} with data: ${event.data}",
+    );
     if (event.eventName == 'message.sent') {
-      final Map<String, dynamic> messageData =
-          jsonDecode(event.data); // Decode JSON
+      final Map<String, dynamic> messageData = jsonDecode(
+        event.data,
+      ); // Decode JSON
 
       // Check if this message ID has already been processed
       if (_processedMessageIds.contains(messageData['id'])) {
@@ -213,7 +217,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         "id": messageData['user_id'],
         "username": args['user_name'],
         "name": args['user_name'],
-        "user_image": ""
+        "user_image": "",
       };
 
       final message = createMessage(addUserInfo(userInfo, messageData));
@@ -221,13 +225,14 @@ class _MessagesScreenState extends State<MessagesScreen>
     }
   }
 
-  void _onSubscriptionError(String message, String? code, dynamic e) {
-    DebugLogger.error(
-        "Subscription error: $message (code: $code). Exception: $e");
+  void _onSubscriptionError(String message, dynamic e) {
+    DebugLogger.error("Subscription error: $message. Exception: $e");
   }
 
   Map<String, dynamic> addUserInfo(
-      Map<String, dynamic> userInfo, Map<String, dynamic> incomingMessage) {
+    Map<String, dynamic> userInfo,
+    Map<String, dynamic> incomingMessage,
+  ) {
     incomingMessage['user'] = userInfo;
     return incomingMessage;
   }
@@ -243,8 +248,9 @@ class _MessagesScreenState extends State<MessagesScreen>
     if (incomingMessage['type'] == 'image') {
       return types.ImageMessage(
         author: user,
-        createdAt: DateTime.parse(incomingMessage['created_at'])
-            .millisecondsSinceEpoch,
+        createdAt: DateTime.parse(
+          incomingMessage['created_at'],
+        ).millisecondsSinceEpoch,
         id: incomingMessage['id'].toString(),
         name: incomingMessage['media_url'] != null
             ? incomingMessage['media_url'].split('/').last
@@ -255,8 +261,9 @@ class _MessagesScreenState extends State<MessagesScreen>
     } else {
       return types.TextMessage(
         author: user,
-        createdAt: DateTime.parse(incomingMessage['created_at'])
-            .millisecondsSinceEpoch,
+        createdAt: DateTime.parse(
+          incomingMessage['created_at'],
+        ).millisecondsSinceEpoch,
         id: incomingMessage['id'].toString(),
         text: incomingMessage['content'] ?? '',
       );
@@ -357,13 +364,15 @@ class _MessagesScreenState extends State<MessagesScreen>
               return text.startsWith(pattern);
             });
             // Use isValidBaakhapaaUrl to set metadata
-            final Map<String, dynamic>? metadata =
-                isValidBaakhapaaUrl ? {'clickable': true} : null;
+            final Map<String, dynamic>? metadata = isValidBaakhapaaUrl
+                ? {'clickable': true}
+                : null;
 
             return types.TextMessage(
               author: user,
-              createdAt:
-                  DateTime.parse(message['created_at']).millisecondsSinceEpoch,
+              createdAt: DateTime.parse(
+                message['created_at'],
+              ).millisecondsSinceEpoch,
               id: message['id'].toString(),
               text: text,
               metadata: metadata,
@@ -371,8 +380,9 @@ class _MessagesScreenState extends State<MessagesScreen>
           } else if (message['type'] == 'image') {
             return types.ImageMessage(
               author: user,
-              createdAt:
-                  DateTime.parse(message['created_at']).millisecondsSinceEpoch,
+              createdAt: DateTime.parse(
+                message['created_at'],
+              ).millisecondsSinceEpoch,
               id: message['id'].toString(),
               name: randomString(),
               uri: message['media_url'],
@@ -383,8 +393,9 @@ class _MessagesScreenState extends State<MessagesScreen>
           // Fallback to a generic message if needed
           return types.TextMessage(
             author: user,
-            createdAt:
-                DateTime.parse(message['created_at']).millisecondsSinceEpoch,
+            createdAt: DateTime.parse(
+              message['created_at'],
+            ).millisecondsSinceEpoch,
             id: message['id'].toString(),
             text: "Unsupported message type",
           );
@@ -419,38 +430,46 @@ class _MessagesScreenState extends State<MessagesScreen>
 
     authProvider
         .sendMessages(
-            args['conversation_id'] as int, message.text, 'text', null, null)
+          args['conversation_id'] as int,
+          message.text,
+          'text',
+          null,
+          null,
+        )
         .then((_) {
-      _addMessage(textMessage);
-    }).catchError((error) {
-      // Show user-friendly error message
-      if (mounted) {
-        String errorMessage = 'Failed to send message. Please try again.';
+          _addMessage(textMessage);
+        })
+        .catchError((error) {
+          // Show user-friendly error message
+          if (mounted) {
+            String errorMessage = 'Failed to send message. Please try again.';
 
-        if (error is Exception) {
-          final errorString = error.toString();
-          if (errorString.contains('Exception:')) {
-            errorMessage = errorString.replaceFirst('Exception:', '').trim();
+            if (error is Exception) {
+              final errorString = error.toString();
+              if (errorString.contains('Exception:')) {
+                errorMessage = errorString
+                    .replaceFirst('Exception:', '')
+                    .trim();
+              }
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(errorMessage),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 3),
+                action: SnackBarAction(
+                  label: 'Retry',
+                  textColor: Colors.white,
+                  onPressed: () => _handleSendPressed(message),
+                ),
+              ),
+            );
           }
-        }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-            action: SnackBarAction(
-              label: 'Retry',
-              textColor: Colors.white,
-              onPressed: () => _handleSendPressed(message),
-            ),
-          ),
-        );
-      }
-
-      // Log the error for debugging
-      DebugLogger.info('❌ Error sending message: $error');
-    });
+          // Log the error for debugging
+          DebugLogger.info('❌ Error sending message: $error');
+        });
   }
 
   void _handleImageSelection() async {
@@ -473,7 +492,8 @@ class _MessagesScreenState extends State<MessagesScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  'Image size exceeds 2 MB. Please select a smaller image.'),
+                'Image size exceeds 2 MB. Please select a smaller image.',
+              ),
             ),
           );
           return;
@@ -577,7 +597,8 @@ class _MessagesScreenState extends State<MessagesScreen>
     // Default bubble for other messages
     return Bubble(
       child: child,
-      color: _user.id != message.author.id ||
+      color:
+          _user.id != message.author.id ||
               message.type == types.MessageType.image
           ? const Color(0xfff5f5f7)
           : const Color(0xff6f61e8),
@@ -587,8 +608,8 @@ class _MessagesScreenState extends State<MessagesScreen>
       nip: nextMessageInGroup
           ? BubbleNip.no
           : _user.id != message.author.id
-              ? BubbleNip.leftBottom
-              : BubbleNip.rightBottom,
+          ? BubbleNip.leftBottom
+          : BubbleNip.rightBottom,
     );
   }
 
@@ -691,11 +712,7 @@ class _MessagesScreenState extends State<MessagesScreen>
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: Icon(Icons.person, color: Colors.white, size: 24),
                 ),
                 SizedBox(width: 12),
 
@@ -736,7 +753,8 @@ class _MessagesScreenState extends State<MessagesScreen>
                       // Add video call functionality here if needed
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                            content: Text('Video call feature coming soon!')),
+                          content: Text('Video call feature coming soon!'),
+                        ),
                       );
                     },
                     icon: Icon(Icons.videocam, color: Colors.amber),
@@ -753,7 +771,8 @@ class _MessagesScreenState extends State<MessagesScreen>
                       // Add voice call functionality here if needed
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                            content: Text('Voice call feature coming soon!')),
+                          content: Text('Voice call feature coming soon!'),
+                        ),
                       );
                     },
                     icon: Icon(Icons.call, color: Colors.amber),
@@ -798,11 +817,7 @@ class _MessagesScreenState extends State<MessagesScreen>
             ),
           ],
         ),
-        child: Icon(
-          Icons.send,
-          color: Colors.white,
-          size: 18,
-        ),
+        child: Icon(Icons.send, color: Colors.white, size: 18),
       ),
       primaryColor: Colors.amber,
       secondaryColor: Theme.of(context).brightness == Brightness.dark
@@ -814,10 +829,7 @@ class _MessagesScreenState extends State<MessagesScreen>
       messageInsetsVertical: 8,
       inputTextDecoration: InputDecoration(
         hintText: 'Type a message...',
-        hintStyle: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 16,
-        ),
+        hintStyle: TextStyle(color: Colors.grey[600], fontSize: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(24),
           borderSide: BorderSide(
@@ -834,10 +846,7 @@ class _MessagesScreenState extends State<MessagesScreen>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(24),
-          borderSide: BorderSide(
-            color: Colors.amber,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: Colors.amber, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           vertical: 12,
@@ -857,11 +866,7 @@ class _MessagesScreenState extends State<MessagesScreen>
           color: Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Icon(
-          Icons.attach_file,
-          color: Colors.grey[600],
-          size: 20,
-        ),
+        child: Icon(Icons.attach_file, color: Colors.grey[600], size: 20),
       ),
     );
   }

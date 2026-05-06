@@ -9,6 +9,7 @@ import 'package:video_player/video_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '../../../models/ai_generated_content.dart';
 import '../../../providers/story_creation.dart';
 import 'package:baakhapaa/providers/challenge.dart';
 import '../../../utils/debug_logger.dart';
@@ -102,6 +103,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
   List<dynamic> _headings = [];
   List<dynamic> _genres = [];
   List<dynamic> _maturities = [];
+  List<String> _aiPrefillGenreNames = [];
+  List<String> _aiPrefillMaturities = [];
   // List<dynamic> _achievements = []; // Commented out for now
 
   final Map<String, bool> _expandedSections = {};
@@ -117,10 +120,10 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
     _animationController.forward();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkEditMode();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _checkEditMode();
+      _fetchMetadata();
     });
-    _fetchMetadata();
   }
 
   Future<void> _checkEditMode() async {
@@ -138,6 +141,15 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
       _headingId = args['heading_id'] as int?;
       _collaborationId = args['collaboration_id'] as int?;
 
+      final aiPrefilled = args['aiPrefilled'] as AiGeneratedContent?;
+      if (aiPrefilled != null) {
+        _titleController.text = aiPrefilled.title;
+        _descriptionController.text = aiPrefilled.description;
+        _publishDate = aiPrefilled.publishDate;
+        _aiPrefillGenreNames = List<String>.from(aiPrefilled.genres);
+        _aiPrefillMaturities = List<String>.from(aiPrefilled.maturities);
+      }
+
       // Pre-select heading if provided for challenge
       if (_headingId != null && !_selectedHeadings.contains(_headingId!)) {
         setState(() {
@@ -154,10 +166,13 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
       // Fetch full season details from API
       try {
         setState(() => _isLoading = true);
-        final storyCreation =
-            Provider.of<StoryCreation>(context, listen: false);
-        _existingSeason =
-            await storyCreation.getSeasonDetails(_editingSeasonId!);
+        final storyCreation = Provider.of<StoryCreation>(
+          context,
+          listen: false,
+        );
+        _existingSeason = await storyCreation.getSeasonDetails(
+          _editingSeasonId!,
+        );
         _populateExistingData();
       } catch (e) {
         DebugLogger.error('Error fetching season details: $e');
@@ -212,12 +227,14 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
       }
 
       // Settings
-      _isJumpAvailable = _existingSeason!['is_jump_available'] == 1 ||
+      _isJumpAvailable =
+          _existingSeason!['is_jump_available'] == 1 ||
           _existingSeason!['is_jump_available'] == true;
       _coinToJump = _existingSeason!['coin_to_jump'];
       _coinToJumpController.text = _coinToJump?.toString() ?? '';
 
-      _isLocked = _existingSeason!['is_locked'] == 1 ||
+      _isLocked =
+          _existingSeason!['is_locked'] == 1 ||
           _existingSeason!['is_locked'] == true;
       _coinToUnlock = _existingSeason!['coin_to_unlock'];
       _coinToUnlockController.text = _coinToUnlock?.toString() ?? '';
@@ -264,8 +281,9 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
       if (_existingSeason!['linked_content'] != null &&
           _existingSeason!['linked_content']['related_shorts'] != null) {
         _selectedShorts.clear();
-        _selectedShorts
-            .addAll(_existingSeason!['linked_content']['related_shorts']);
+        _selectedShorts.addAll(
+          _existingSeason!['linked_content']['related_shorts'],
+        );
       }
     });
 
@@ -303,23 +321,23 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
 
       _videoPlayerController = VideoPlayerController.networkUrl(
         Uri.parse(fullUrl),
-        httpHeaders: {
-          'Accept': '*/*',
-        },
+        httpHeaders: {'Accept': '*/*'},
       );
 
       // Add error listener
       _videoPlayerController!.addListener(() {
         if (_videoPlayerController!.value.hasError) {
           DebugLogger.error(
-              '❌ Video player error: ${_videoPlayerController!.value.errorDescription}');
+            '❌ Video player error: ${_videoPlayerController!.value.errorDescription}',
+          );
           if (mounted) {
             setState(() {
               _isVideoInitialized = false;
               _isVideoLoading = false;
             });
             _showErrorSnackBar(
-                'Video playback error: ${_videoPlayerController!.value.errorDescription}');
+              'Video playback error: ${_videoPlayerController!.value.errorDescription}',
+            );
           }
         }
       });
@@ -328,7 +346,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
 
       DebugLogger.success('✅ Video initialized successfully');
       DebugLogger.info(
-          'Video duration: ${_videoPlayerController!.value.duration}');
+        'Video duration: ${_videoPlayerController!.value.duration}',
+      );
       DebugLogger.info('Video size: ${_videoPlayerController!.value.size}');
 
       if (mounted) {
@@ -373,12 +392,65 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
         // _achievements = storyCreation.achievements; // Commented out for now
         _metadataLoaded = true;
       });
+
+      if (_aiPrefillGenreNames.isNotEmpty || _aiPrefillMaturities.isNotEmpty) {
+        _matchAiGenresToMetadata();
+      }
     } catch (e) {
       DebugLogger.error('Error fetching metadata: $e');
       if (mounted) {
         _showErrorSnackBar('Failed to load metadata');
       }
     }
+  }
+
+  void _matchAiGenresToMetadata() {
+    if (!mounted) return;
+
+    bool fuzzyMatch(String a, String b) {
+      final al = a.toLowerCase();
+      final bl = b.toLowerCase();
+      if (al == bl) return true;
+      if (al.contains(bl) || bl.contains(al)) return true;
+      final words = bl.split(RegExp(r'[\s&,]+'));
+      return words.any((w) => w.length > 3 && al.contains(w));
+    }
+
+    setState(() {
+      for (final genreName in _aiPrefillGenreNames) {
+        for (final genre in _genres) {
+          final name = (genre['name'] ?? genre['title'] ?? '').toString();
+          if (fuzzyMatch(name, genreName)) {
+            final id = genre['id'] as int?;
+            if (id != null && !_selectedGenres.contains(id)) {
+              _selectedGenres.add(id);
+            }
+          }
+        }
+
+        for (final heading in _headings) {
+          final name = (heading['name'] ?? heading['title'] ?? '').toString();
+          if (fuzzyMatch(name, genreName)) {
+            final id = heading['id'] as int?;
+            if (id != null && !_selectedHeadings.contains(id)) {
+              _selectedHeadings.add(id);
+            }
+          }
+        }
+      }
+
+      for (final tagName in _aiPrefillMaturities) {
+        for (final maturity in _maturities) {
+          final name = (maturity['name'] ?? maturity['title'] ?? '').toString();
+          if (fuzzyMatch(name, tagName)) {
+            final id = maturity['id'] as int?;
+            if (id != null && !_selectedMaturities.contains(id)) {
+              _selectedMaturities.add(id);
+            }
+          }
+        }
+      }
+    });
   }
 
   Future<void> _pickImage() async {
@@ -508,7 +580,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
   Future<void> _submitSeason() async {
     if (_formKey.currentState != null && !_formKey.currentState!.validate()) {
       _showErrorSnackBar(
-          'Please fill in all required fields (Title, Description, Director)');
+        'Please fill in all required fields (Title, Description, Director)',
+      );
       // Navigate back to the Details step so user can see the validation errors
       setState(() => _currentStep = 1);
       return;
@@ -622,7 +695,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
               //   seasonId: newSeasonId,
               // );
               DebugLogger.success(
-                  '✅ Challenge user created for challenge $_challengeId with season $newSeasonId');
+                '✅ Challenge user created for challenge $_challengeId with season $newSeasonId',
+              );
             } catch (e) {
               DebugLogger.error('⚠️ Error creating challenge user: $e');
               // Don't block the flow if challenge user creation fails
@@ -632,19 +706,25 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
 
           // 🔥 FETCH FULL SEASON DETAILS AND SAVE TO CHALLENGE PROVIDER
           try {
-            final storyCreation =
-                Provider.of<StoryCreation>(context, listen: false);
+            final storyCreation = Provider.of<StoryCreation>(
+              context,
+              listen: false,
+            );
 
-            final seasonDetails =
-                await storyCreation.getSeasonDetails(newSeasonId);
+            final seasonDetails = await storyCreation.getSeasonDetails(
+              newSeasonId,
+            );
 
-            final challengeProvider =
-                Provider.of<Challenge>(context, listen: false);
+            final challengeProvider = Provider.of<Challenge>(
+              context,
+              listen: false,
+            );
 
             challengeProvider.setChallengeSeasonDetails(seasonDetails);
 
             DebugLogger.success(
-                '🟢 Season details stored for challenge progression');
+              '🟢 Season details stored for challenge progression',
+            );
           } catch (e) {
             DebugLogger.error('❌ Failed to fetch/store season details: $e');
           }
@@ -665,10 +745,9 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
             episodeArgs['lives'] = _challengeLives;
           }
 
-          Navigator.of(context).pushReplacementNamed(
-            '/create-episode',
-            arguments: episodeArgs,
-          );
+          Navigator.of(
+            context,
+          ).pushReplacementNamed('/create-episode', arguments: episodeArgs);
         }
       }
     } catch (e) {
@@ -721,11 +800,13 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: AppBar(
-        title: Text(_isChallenge == true
-            ? 'Create Season (Challenge)'
-            : _isEditMode
-                ? 'Edit Season'
-                : 'Create Season'),
+        title: Text(
+          _isChallenge == true
+              ? 'Create Season (Challenge)'
+              : _isEditMode
+              ? 'Edit Season'
+              : 'Create Season',
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -758,8 +839,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                 color: isCompleted
                     ? Colors.amber
                     : isActive
-                        ? Colors.amber.withValues(alpha: 0.6)
-                        : Colors.grey.withValues(alpha: 0.3),
+                    ? Colors.amber.withValues(alpha: 0.6)
+                    : Colors.grey.withValues(alpha: 0.3),
               ),
             ),
           );
@@ -854,7 +935,11 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
         // Bottom navigation
         Padding(
           padding: EdgeInsets.fromLTRB(
-              24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+            24,
+            12,
+            24,
+            MediaQuery.of(context).padding.bottom + 16,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -960,7 +1045,11 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
           // Bottom navigation
           Padding(
             padding: EdgeInsets.fromLTRB(
-                24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+              24,
+              12,
+              24,
+              MediaQuery.of(context).padding.bottom + 16,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -1031,8 +1120,11 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                 const SizedBox(height: 24),
                 _buildMultiSelectSection('Genres *', _genres, _selectedGenres),
                 const SizedBox(height: 24),
-                _buildMultiSelectSection('Maturity Ratings (Optional)',
-                    _maturities, _selectedMaturities),
+                _buildMultiSelectSection(
+                  'Maturity Ratings (Optional)',
+                  _maturities,
+                  _selectedMaturities,
+                ),
                 const SizedBox(height: 32),
 
                 // Locked toggle
@@ -1088,7 +1180,11 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
         // Bottom navigation
         Padding(
           padding: EdgeInsets.fromLTRB(
-              24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+            24,
+            12,
+            24,
+            MediaQuery.of(context).padding.bottom + 16,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -1158,14 +1254,15 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                     decoration: BoxDecoration(
                       color: Colors.purple.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.purple.withOpacity(0.4),
-                      ),
+                      border: Border.all(color: Colors.purple.withOpacity(0.4)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.people_alt_rounded,
-                            color: Colors.purple, size: 26),
+                        const Icon(
+                          Icons.people_alt_rounded,
+                          color: Colors.purple,
+                          size: 26,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -1184,8 +1281,9 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                                 'This season will be submitted under your accepted collaboration. Collaborators are already set by the collaboration invitation.',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color:
-                                      isDark ? Colors.white70 : Colors.black54,
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black54,
                                   height: 1.4,
                                 ),
                               ),
@@ -1207,14 +1305,16 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                         } else if (collaborator['offer_type'] == 'gift') {
                           offerText = ' (Gift)';
                         }
-                        final hasImage = collaborator['image'] != null &&
+                        final hasImage =
+                            collaborator['image'] != null &&
                             (collaborator['image'] as String).isNotEmpty;
                         return Chip(
                           avatar: CircleAvatar(
                             backgroundColor: Colors.amber,
                             backgroundImage: hasImage
                                 ? CachedNetworkImageProvider(
-                                    collaborator['image'])
+                                    collaborator['image'],
+                                  )
                                 : null,
                             child: hasImage
                                 ? null
@@ -1223,12 +1323,15 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                                             ?.toUpperCase() ??
                                         '?',
                                     style: const TextStyle(
-                                        color: Colors.white, fontSize: 12),
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
                                   ),
                           ),
                           label: Text('@${collaborator['username']}$offerText'),
-                          onDeleted: () => setState(() =>
-                              _selectedCollaborators.remove(collaborator)),
+                          onDeleted: () => setState(
+                            () => _selectedCollaborators.remove(collaborator),
+                          ),
                           deleteIcon: const Icon(Icons.close, size: 16),
                           backgroundColor: Colors.purple.withOpacity(0.2),
                         );
@@ -1245,7 +1348,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                               setState(() {
                                 _selectedCollaborators =
                                     List<Map<String, dynamic>>.from(
-                                        collaborators);
+                                      collaborators,
+                                    );
                               });
                             },
                           ),
@@ -1267,7 +1371,11 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
         // Bottom navigation
         Padding(
           padding: EdgeInsets.fromLTRB(
-              24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+            24,
+            12,
+            24,
+            MediaQuery.of(context).padding.bottom + 16,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -1315,8 +1423,12 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
     if (_imageFile != null) {
       return Stack(
         children: [
-          Image.file(_imageFile!,
-              height: 200, width: double.infinity, fit: BoxFit.cover),
+          Image.file(
+            _imageFile!,
+            height: 200,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
           Positioned(
             top: 8,
             right: 8,
@@ -1350,8 +1462,10 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                   children: [
                     Icon(Icons.broken_image, size: 50, color: Colors.grey[600]),
                     SizedBox(height: 8),
-                    Text('Failed to load image',
-                        style: TextStyle(color: Colors.grey[600])),
+                    Text(
+                      'Failed to load image',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
                     SizedBox(height: 8),
                     ElevatedButton.icon(
                       onPressed: _pickImage,
@@ -1441,9 +1555,10 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                     padding: EdgeInsets.all(16.0),
                     child: ShimmerLoading(
                       child: SkeletonBox(
-                          width: double.infinity,
-                          height: 200,
-                          borderRadius: 12),
+                        width: double.infinity,
+                        height: 200,
+                        borderRadius: 12,
+                      ),
                     ),
                   )
                 else
@@ -1528,7 +1643,7 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
     );
   }
 
-// ...existing code...
+  // ...existing code...
 
   Widget _buildWritersSection(bool isDark) {
     return Column(
@@ -1558,14 +1673,17 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                     ),
                     decoration: InputDecoration(
                       hintText: 'Writer ${index + 1}',
-                      prefixIcon: Icon(Icons.edit_rounded,
-                          color: Colors.amber.shade600),
+                      prefixIcon: Icon(
+                        Icons.edit_rounded,
+                        color: Colors.amber.shade600,
+                      ),
                       hintStyle: TextStyle(
                         color: isDark ? Colors.white54 : Colors.grey.shade500,
                       ),
                       filled: true,
-                      fillColor:
-                          isDark ? Colors.grey.shade900 : Colors.grey.shade50,
+                      fillColor: isDark
+                          ? Colors.grey.shade900
+                          : Colors.grey.shade50,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -1581,8 +1699,10 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.remove_circle_outline,
-                      color: Colors.red),
+                  icon: const Icon(
+                    Icons.remove_circle_outline,
+                    color: Colors.red,
+                  ),
                   onPressed: () {
                     setState(() {
                       _writers.removeAt(index);
@@ -1634,14 +1754,17 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                     ),
                     decoration: InputDecoration(
                       hintText: 'Cast ${index + 1}',
-                      prefixIcon: Icon(Icons.person_rounded,
-                          color: Colors.amber.shade600),
+                      prefixIcon: Icon(
+                        Icons.person_rounded,
+                        color: Colors.amber.shade600,
+                      ),
                       hintStyle: TextStyle(
                         color: isDark ? Colors.white54 : Colors.grey.shade500,
                       ),
                       filled: true,
-                      fillColor:
-                          isDark ? Colors.grey.shade900 : Colors.grey.shade50,
+                      fillColor: isDark
+                          ? Colors.grey.shade900
+                          : Colors.grey.shade50,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -1657,8 +1780,10 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.remove_circle_outline,
-                      color: Colors.red),
+                  icon: const Icon(
+                    Icons.remove_circle_outline,
+                    color: Colors.red,
+                  ),
                   onPressed: () {
                     setState(() {
                       _casts.removeAt(index);
@@ -1696,17 +1821,18 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => CreatorContentSelector(
-                  onSelected: ({
-                    required List<AffiliateProduct> affiliateProducts,
-                    required List<dynamic> episodes,
-                    required List<dynamic> seasons,
-                    required List<dynamic> shorts,
-                  }) {
-                    setState(() {
-                      _selectedShorts.clear();
-                      _selectedShorts.addAll(shorts);
-                    });
-                  },
+                  onSelected:
+                      ({
+                        required List<AffiliateProduct> affiliateProducts,
+                        required List<dynamic> episodes,
+                        required List<dynamic> seasons,
+                        required List<dynamic> shorts,
+                      }) {
+                        setState(() {
+                          _selectedShorts.clear();
+                          _selectedShorts.addAll(shorts);
+                        });
+                      },
                   initialSelectedShorts: _selectedShorts,
                   initialSelectedEpisodes: const [],
                   initialSelectedSeasons: const [],
@@ -1728,8 +1854,9 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                   label: Text(short['title'] ?? 'Untitled'),
                   onDeleted: () {
                     setState(() {
-                      _selectedShorts
-                          .removeWhere((s) => s['id'] == short['id']);
+                      _selectedShorts.removeWhere(
+                        (s) => s['id'] == short['id'],
+                      );
                     });
                   },
                 );
@@ -1748,8 +1875,10 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
         borderRadius: BorderRadius.circular(16),
       ),
       child: ListTile(
-        leading:
-            Icon(Icons.calendar_today_rounded, color: Colors.amber.shade600),
+        leading: Icon(
+          Icons.calendar_today_rounded,
+          color: Colors.amber.shade600,
+        ),
         title: Text(
           'Publish Date',
           style: TextStyle(
@@ -1759,15 +1888,13 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
         ),
         subtitle: Text(
           DateFormat('yyyy-MM-dd').format(_publishDate),
-          style: TextStyle(
-            color: isDark ? Colors.white70 : Colors.black54,
-          ),
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
         ),
-        trailing: Icon(Icons.chevron_right_rounded,
-            color: isDark ? Colors.white54 : Colors.black45),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+        trailing: Icon(
+          Icons.chevron_right_rounded,
+          color: isDark ? Colors.white54 : Colors.black45,
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         onTap: () async {
           final date = await showDatePicker(
             context: context,
@@ -1792,12 +1919,14 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
     final List<dynamic> allItems = List<dynamic>.from(items);
 
     DebugLogger.info(
-        '🔎 $title: ${allItems.length} total items'); // 👈 Debug log
+      '🔎 $title: ${allItems.length} total items',
+    ); // 👈 Debug log
 
     final isExpanded = _expandedSections[title] ?? false;
 
-    final visibleItems =
-        isExpanded ? allItems : allItems.take(initialItemCount).toList();
+    final visibleItems = isExpanded
+        ? allItems
+        : allItems.take(initialItemCount).toList();
 
     final canExpand = allItems.length > initialItemCount;
 
@@ -1853,8 +1982,9 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                         }
                       });
                     },
-              backgroundColor:
-                  isDisabled && !isSelected ? Colors.grey.shade200 : null,
+              backgroundColor: isDisabled && !isSelected
+                  ? Colors.grey.shade200
+                  : null,
               disabledColor: isSelected ? Colors.amber.shade100 : null,
             );
           }).toList(),
@@ -1932,10 +2062,7 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: Colors.amber.shade600,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: Colors.amber.shade600, width: 2),
             ),
             contentPadding: const EdgeInsets.all(20),
           ),
@@ -1966,10 +2093,7 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -1998,10 +2122,7 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
       ),
     );

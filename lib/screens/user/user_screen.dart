@@ -92,6 +92,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       // Cache provider references BEFORE any async operations
       final auth = Provider.of<Auth>(context, listen: false);
 
+      await auth.getUnreadMessageCount();
+
       // First load user data
       await auth.getUser();
       final userId = auth.user['id'];
@@ -161,7 +163,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 _localCreatorSeasons = List.from(freshStory.creatorSeasons);
               });
               DebugLogger.info(
-                  '✅ Stories loaded: ${_localCreatorSeasons.length}');
+                '✅ Stories loaded: ${_localCreatorSeasons.length}',
+              );
             }
           } catch (error) {
             DebugLogger.error('❌ Error loading stories: $error');
@@ -218,14 +221,15 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
     try {
       final story = Provider.of<Story>(context, listen: false);
-// ── Frequency guard: show at most 2× per calendar day ──────────
+      // ── Frequency guard: show at most 2× per calendar day ──────────
       final prefs = await SharedPreferences.getInstance();
       final today = DateTime.now().toIso8601String().split('T')[0];
       final countKey = 'streak_recovery_shown_$today';
       final shownToday = prefs.getInt(countKey) ?? 0;
       if (shownToday >= 2) {
         DebugLogger.info(
-            '🔥 [STREAK] Already shown streak recovery dialog $shownToday time(s) today — skipping');
+          '🔥 [STREAK] Already shown streak recovery dialog $shownToday time(s) today — skipping',
+        );
         return;
       }
       // ────────────────────────────────────────────────────────────────
@@ -240,7 +244,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       final readingStreak = story.readingStreak;
 
       DebugLogger.info(
-          '🔥 [STREAK] fetchReadingStreak completed. Data: $readingStreak');
+        '🔥 [STREAK] fetchReadingStreak completed. Data: $readingStreak',
+      );
 
       // Safety check: readingStreak must not be empty
       if (readingStreak.isEmpty) {
@@ -260,18 +265,21 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       final recoveryCost = recoveryInfo['recovery_cost'] ?? 0;
 
       DebugLogger.info(
-          '🔥 [STREAK] recovery_info: can_recover=$canRecover, missed_days=$missedDays, cost=$recoveryCost');
+        '🔥 [STREAK] recovery_info: can_recover=$canRecover, missed_days=$missedDays, cost=$recoveryCost',
+      );
 
       if (!canRecover) {
         DebugLogger.info(
-            '🔥 [STREAK] Backend indicates recovery not available');
+          '🔥 [STREAK] Backend indicates recovery not available',
+        );
         return;
       }
 
       // Show recovery modal with server-calculated values
       if (mounted) {
         DebugLogger.info(
-            '🔥 [STREAK] Showing streak recovery modal (days lost: $missedDays, coins needed: $recoveryCost)');
+          '🔥 [STREAK] Showing streak recovery modal (days lost: $missedDays, coins needed: $recoveryCost)',
+        );
         await _showStreakRecoveryModal(missedDays);
       }
     } catch (e, stackTrace) {
@@ -294,8 +302,11 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.local_fire_department,
-                color: Colors.orange, size: 24),
+            const Icon(
+              Icons.local_fire_department,
+              color: Colors.orange,
+              size: 24,
+            ),
             const SizedBox(width: 8),
             Text(
               'Recover Streak?',
@@ -313,19 +324,26 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child:
-                Text('Cancel', style: GoogleFonts.inter(color: Colors.white38)),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: Colors.white38),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF8F00),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Recover using $recoveryCost points',
-                style: GoogleFonts.poppins(
-                    color: Colors.white, fontWeight: FontWeight.w600)),
+            child: Text(
+              'Recover using $recoveryCost points',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -396,7 +414,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
       DebugLogger.info('🎬 fetchCreatorShorts completed');
       DebugLogger.info(
-          '🎬 Provider shorts count: ${shortsProvider.creatorShortsCount}');
+        '🎬 Provider shorts count: ${shortsProvider.creatorShortsCount}',
+      );
 
       // Copy provider data to local state on next frame to avoid calling
       // setState while tree is locked.
@@ -408,7 +427,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
           _isLoadingCreatorShorts = false;
         });
         DebugLogger.info(
-            '✅ Copied to local state - Shorts: ${_localCreatorShorts.length}');
+          '✅ Copied to local state - Shorts: ${_localCreatorShorts.length}',
+        );
       });
     } catch (e) {
       DebugLogger.error('❌ Error fetching creator shorts: $e');
@@ -441,7 +461,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     if (visibility == null) return true;
     final result = visibility['shorts'] ?? true;
     DebugLogger.info(
-        '🔍 _isShortsVisible: visibility=$visibility, result=$result');
+      '🔍 _isShortsVisible: visibility=$visibility, result=$result',
+    );
     return result;
   }
 
@@ -450,7 +471,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     if (visibility == null) return true;
     final result = visibility['stories'] ?? true;
     DebugLogger.info(
-        '🔍 _isStoriesVisible: visibility=$visibility, result=$result');
+      '🔍 _isStoriesVisible: visibility=$visibility, result=$result',
+    );
     return result;
   }
 
@@ -491,36 +513,42 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     // Load achievements and challenges in parallel
     await Future.wait([
       // Load achievements
-      auth.getAchievements().then((_) {
-        if (mounted) {
-          setState(() {
-            _isLoadingAchievements = false;
-          });
-        }
-      }).catchError((error) {
-        DebugLogger.api('Error fetching achievements: $error');
-        if (mounted) {
-          setState(() {
-            _isLoadingAchievements = false;
-          });
-        }
-      }),
+      auth
+          .getAchievements()
+          .then((_) {
+            if (mounted) {
+              setState(() {
+                _isLoadingAchievements = false;
+              });
+            }
+          })
+          .catchError((error) {
+            DebugLogger.api('Error fetching achievements: $error');
+            if (mounted) {
+              setState(() {
+                _isLoadingAchievements = false;
+              });
+            }
+          }),
 
       // Load challenges
-      auth.getChallenges().then((_) {
-        if (mounted) {
-          setState(() {
-            _isLoadingChallenges = false;
-          });
-        }
-      }).catchError((error) {
-        DebugLogger.api('Error fetching challenges: $error');
-        if (mounted) {
-          setState(() {
-            _isLoadingChallenges = false;
-          });
-        }
-      }),
+      auth
+          .getChallenges()
+          .then((_) {
+            if (mounted) {
+              setState(() {
+                _isLoadingChallenges = false;
+              });
+            }
+          })
+          .catchError((error) {
+            DebugLogger.api('Error fetching challenges: $error');
+            if (mounted) {
+              setState(() {
+                _isLoadingChallenges = false;
+              });
+            }
+          }),
     ]);
   }
 
@@ -547,8 +575,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
   void _showBioEditDialog() {
     final auth = Provider.of<Auth>(context, listen: false);
     final currentValue = _user['bio']?.toString() ?? '';
-    final TextEditingController _bioController =
-        TextEditingController(text: currentValue);
+    final TextEditingController _bioController = TextEditingController(
+      text: currentValue,
+    );
 
     showDialog<void>(
       context: context,
@@ -590,9 +619,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 final newBio = _bioController.text.trim();
 
                 try {
-                  await auth.updateUser({
-                    'bio': newBio,
-                  });
+                  await auth.updateUser({'bio': newBio});
 
                   Navigator.of(context).pop();
 
@@ -661,10 +688,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 SizedBox(width: 16),
                 Text(
                   'Share Profile',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -699,28 +723,35 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
                         return GestureDetector(
                           onTap: () {
-                            final authProvider =
-                                Provider.of<Auth>(context, listen: false);
+                            final authProvider = Provider.of<Auth>(
+                              context,
+                              listen: false,
+                            );
                             authProvider
                                 .sendMessages(
-                              conversation['conversation_id'],
-                              shareText,
-                              'text',
-                              null,
-                              null,
-                            )
+                                  conversation['conversation_id'],
+                                  shareText,
+                                  'text',
+                                  null,
+                                  null,
+                                )
                                 .then((_) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Shared Successfully!')),
-                              );
-                              Navigator.pop(context);
-                            }).catchError((error) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text(
-                                        'Failed to share. Please try again.')),
-                              );
-                            });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Shared Successfully!'),
+                                    ),
+                                  );
+                                  Navigator.pop(context);
+                                })
+                                .catchError((error) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Failed to share. Please try again.',
+                                      ),
+                                    ),
+                                  );
+                                });
                           },
                           child: Column(
                             children: [
@@ -758,11 +789,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.share,
-                  color: Colors.green,
-                  size: 20,
-                ),
+                child: Icon(Icons.share, color: Colors.green, size: 20),
               ),
               title: Text('Share to Other Apps'),
               trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16),
@@ -784,8 +811,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 showModalBottomSheet(
                   context: context,
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
                   ),
                   builder: (context) => ShareWithQrModal(
                     data: shareText,
@@ -811,6 +839,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
     try {
       final auth = Provider.of<Auth>(context, listen: false);
+
+      await auth.getUnreadMessageCount();
 
       // First, refresh the main user data and show the screen
       await auth.getUser();
@@ -878,8 +908,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
   String get coinExpiresAt {
     if (_userInformation['coin_expires_at'] == null) return 'Points expired';
-    return DateFormat.yMMMd('en_US')
-        .format(DateTime.parse(_userInformation['coin_expires_at'].toString()));
+    return DateFormat.yMMMd(
+      'en_US',
+    ).format(DateTime.parse(_userInformation['coin_expires_at'].toString()));
   }
 
   Widget _buildProfileHeader() {
@@ -971,27 +1002,28 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                                     width: 100,
                                                     height: 100,
                                                     fit: BoxFit.cover,
-                                                    placeholder: (context,
-                                                            url) =>
+                                                    placeholder: (context, url) =>
                                                         CircularProgressIndicator(
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                                  Color>(
-                                                              Colors.amber),
-                                                      strokeWidth: 2,
-                                                    ),
+                                                          valueColor:
+                                                              AlwaysStoppedAnimation<
+                                                                Color
+                                                              >(Colors.amber),
+                                                          strokeWidth: 2,
+                                                        ),
                                                     errorWidget:
                                                         (context, url, error) =>
                                                             Container(
-                                                      color: Colors.grey[800],
-                                                      width: 100,
-                                                      height: 100,
-                                                      child: Icon(
-                                                        Icons.person,
-                                                        size: 50,
-                                                        color: Colors.grey[600],
-                                                      ),
-                                                    ),
+                                                              color: Colors
+                                                                  .grey[800],
+                                                              width: 100,
+                                                              height: 100,
+                                                              child: Icon(
+                                                                Icons.person,
+                                                                size: 50,
+                                                                color: Colors
+                                                                    .grey[600],
+                                                              ),
+                                                            ),
                                                   ),
                                                 ),
                                               ),
@@ -1083,10 +1115,12 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                               icon: Icons.history,
                                               label: 'Points\nLog',
                                               onTap: () {
-                                                Navigator.of(context)
-                                                    .pop(); // Close dialog first
+                                                Navigator.of(
+                                                  context,
+                                                ).pop(); // Close dialog first
                                                 Navigator.of(context).pushNamed(
-                                                    PointsScreen.routeName);
+                                                  PointsScreen.routeName,
+                                                );
                                               },
                                             ),
                                             _buildActionButton(
@@ -1094,7 +1128,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                               label: 'Analytics',
                                               onTap: () {
                                                 Navigator.of(context).pushNamed(
-                                                    '/analytics-screen');
+                                                  '/analytics-screen',
+                                                );
                                               },
                                             ),
                                             _buildActionButton(
@@ -1106,16 +1141,15 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
                                                 showModalBottomSheet(
                                                   context: context,
-                                                  shape:
-                                                      const RoundedRectangleBorder(
+                                                  shape: const RoundedRectangleBorder(
                                                     borderRadius:
                                                         BorderRadius.vertical(
-                                                            top:
-                                                                Radius.circular(
-                                                                    24)),
+                                                          top: Radius.circular(
+                                                            24,
+                                                          ),
+                                                        ),
                                                   ),
-                                                  builder: (_) =>
-                                                      ShareWithQrModal(
+                                                  builder: (_) => ShareWithQrModal(
                                                     data: shareText,
                                                     subject:
                                                         'Share ${_user['username']}',
@@ -1131,7 +1165,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                                 final profileLink =
                                                     'https://baakhapaa.com/referral/${_user['username']}';
 
-                                                final shareText = '''
+                                                final shareText =
+                                                    '''
                                                   Check out my Baakhapaa profile!
 
                                                   👤 Username:  ${_user['username']}
@@ -1139,10 +1174,12 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
                                                   Join Skill Sikka use my refer code! 🎁 We’ll both receive 25 bonus points when you create an account.
                                                   '''
-                                                    .trim();
+                                                        .trim();
 
                                                 _showShareProfileModal(
-                                                    context, shareText);
+                                                  context,
+                                                  shareText,
+                                                );
                                               },
                                             ),
                                           ],
@@ -1184,10 +1221,11 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           fit: BoxFit.cover,
                           placeholder: (context, url) =>
                               CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.amber),
-                            strokeWidth: 2,
-                          ),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.amber,
+                                ),
+                                strokeWidth: 2,
+                              ),
                           errorWidget: (context, url, error) => Container(
                             color: Colors.amber.withValues(alpha: 0.1),
                             child: Icon(
@@ -1255,8 +1293,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         Navigator.of(context).pushNamed(PointsScreen.routeName);
                       },
                       child: Container(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 5,
+                          horizontal: 6,
+                        ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
@@ -1284,8 +1324,12 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                         ?.toString() ??
                                     '0',
                                 style: TextStyle(
-                                  color:
-                                      const Color.fromARGB(255, 255, 255, 255),
+                                  color: const Color.fromARGB(
+                                    255,
+                                    255,
+                                    255,
+                                    255,
+                                  ),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
@@ -1355,10 +1399,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           if (_user['address'] != null) _user['address'],
                           if (_user['country'] != null) _user['country'],
                         ].join(','),
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       ),
 
                     // Bio/Description
@@ -1367,8 +1408,11 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         padding: const EdgeInsets.only(bottom: 8.0),
                         child: Row(
                           children: [
-                            Icon(Icons.warning_amber_rounded,
-                                size: 14, color: Colors.redAccent),
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              size: 14,
+                              color: Colors.redAccent,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Email not verified',
@@ -1385,7 +1429,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                       onTap: _showBioEditDialog,
                       child: StatefulBuilder(
                         builder: (BuildContext context, StateSetter setState) {
-                          final bioText = _user['bio'] ??
+                          final bioText =
+                              _user['bio'] ??
                               'Openly being who you want,with the people you want, expressing and creating what you want, whenever you want.';
 
                           return Column(
@@ -1440,9 +1485,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                     ),
 
                     // Bottom section with stats
-                    SizedBox(
-                      height: 10,
-                    ),
+                    SizedBox(height: 10),
                     Wrap(
                       spacing: 4,
                       runSpacing: 4,
@@ -1450,8 +1493,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                       children: [
                         // Joined date
                         Container(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.grey.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
@@ -1462,17 +1507,21 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                               Text(
                                 'Joined: ',
                                 style: TextStyle(
-                                    fontSize: 9, color: Colors.grey[600]),
+                                  fontSize: 9,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                               Text(
                                 _user['created_at'] != null
                                     ? DateFormat('dd.MM.yyyy').format(
-                                        DateTime.parse(_user['created_at']))
+                                        DateTime.parse(_user['created_at']),
+                                      )
                                     : '01/2020',
                                 style: TextStyle(
-                                    fontSize: 9,
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.bold),
+                                  fontSize: 9,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -1480,8 +1529,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
                         // Level
                         Container(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.grey.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
@@ -1492,14 +1543,17 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                               Text(
                                 'Level: ',
                                 style: TextStyle(
-                                    fontSize: 9, color: Colors.grey[600]),
+                                  fontSize: 9,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                               Text(
                                 _user['level']?.toString() ?? '0',
                                 style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600]),
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                             ],
                           ),
@@ -1508,12 +1562,15 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         // Rank
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context)
-                                .pushNamed(LeaderboardScreen.routeName);
+                            Navigator.of(
+                              context,
+                            ).pushNamed(LeaderboardScreen.routeName);
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                                vertical: 4, horizontal: 4),
+                              vertical: 4,
+                              horizontal: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.grey.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(20),
@@ -1524,21 +1581,24 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                 Text(
                                   'Rank: ',
                                   style: TextStyle(
-                                      fontSize: 9, color: Colors.grey[600]),
+                                    fontSize: 9,
+                                    color: Colors.grey[600],
+                                  ),
                                 ),
                                 Text(
                                   _user['rank']?.toString() ?? '12',
                                   style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey[600]),
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600],
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -1549,7 +1609,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     );
   }
 
-// Helper methods for dialog
+  // Helper methods for dialog
   Widget _buildStatColumn(String count, String label) {
     return Column(
       children: [
@@ -1562,13 +1622,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[500],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
       ],
     );
   }
@@ -1589,11 +1643,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 20,
-            ),
+            child: Icon(icon, color: Colors.white, size: 20),
           ),
           const SizedBox(height: 6),
           Text(
@@ -1618,8 +1668,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
         final isVerified = _user['email_verified_at'] != null;
 
         final remainingActions = levelsProvider.remainingActions;
-        final nextAction =
-            remainingActions.isNotEmpty ? remainingActions.first : null;
+        final nextAction = remainingActions.isNotEmpty
+            ? remainingActions.first
+            : null;
         final actionData = nextAction?['action'] as Map<String, dynamic>?;
 
         // Determine content based on verification status
@@ -1628,12 +1679,13 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             : 'Progress Paused';
         final description = isVerified
             ? (actionData?['description'] as String? ??
-                'Nothing left to do here.')
+                  'Nothing left to do here.')
             : 'Verify your email to continue earning experience.';
 
         final progress = levelsProvider.progressPercentage.clamp(0, 100);
-        final progressFactor =
-            isVerified ? (progress / 100).clamp(0.0, 1.0) : 0.0;
+        final progressFactor = isVerified
+            ? (progress / 100).clamp(0.0, 1.0)
+            : 0.0;
 
         return InkWell(
           onTap: () async {
@@ -1648,13 +1700,16 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                     duration: Duration(seconds: 1),
                   ),
                 );
-                await Provider.of<Auth>(context, listen: false)
-                    .verifyUserEmail();
+                await Provider.of<Auth>(
+                  context,
+                  listen: false,
+                ).verifyUserEmail();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                          'Verification email sent successfully! Please check your inbox.'),
+                        'Verification email sent successfully! Please check your inbox.',
+                      ),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -1664,7 +1719,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                          'Failed to send verification email. Please try again later.'),
+                        'Failed to send verification email. Please try again later.',
+                      ),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -1690,10 +1746,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           ? Color(0xFFFDB528)
                           : Colors.grey[400], // Grey out if unverified
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 1,
-                      ),
+                      border: Border.all(color: Colors.white, width: 1),
                     ),
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(16, 50, 160, 20),
@@ -1708,10 +1761,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                             decoration: BoxDecoration(
                               color: Colors.black,
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 1,
-                              ),
+                              border: Border.all(color: Colors.white, width: 1),
                             ),
                           ),
 
@@ -1761,7 +1811,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                           child: Container(
                                             decoration: BoxDecoration(
                                               color: Color(
-                                                  0xFF8B6239), // Brown color
+                                                0xFF8B6239,
+                                              ), // Brown color
                                               borderRadius:
                                                   BorderRadius.circular(16),
                                             ),
@@ -1785,10 +1836,16 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                 else
                                   Container(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: const Color.fromARGB(
-                                          255, 175, 31, 31),
+                                        255,
+                                        175,
+                                        31,
+                                        31,
+                                      ),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(color: Colors.black),
                                     ),
@@ -1927,10 +1984,11 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
   Widget _buildUserContainer() {
     bool isProfileEmailVerified() {
-      final value = _user['email_verified_at'] ??
+      final value =
+          _user['email_verified_at'] ??
           (_user['information'] is Map<String, dynamic>
               ? (_user['information']
-                  as Map<String, dynamic>)['email_verified_at']
+                    as Map<String, dynamic>)['email_verified_at']
               : null);
       if (value == null) return false;
       if (value is bool) return value;
@@ -1954,18 +2012,14 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     void showEmailVerificationWarning() {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text('Email not verified yet. Please verify your email first.'),
+          content: Text(
+            'Email not verified yet. Please verify your email first.',
+          ),
         ),
       );
     }
 
-    final categories = [
-      'Shorts',
-      'Courses',
-      'Challenges',
-      'Achievements',
-    ];
+    final categories = ['Shorts', 'Courses', 'Challenges', 'Achievements'];
 
     Widget buildAddShortCard() {
       return InkWell(
@@ -1979,34 +2033,36 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);
             return;
           }
-          Navigator.of(context).pushNamed(
-            CreateShortsScreen.routeName,
-            arguments: {'is_challenge': false},
-          ).then(
-            (_) {
-              // When returning from create shorts, reset the navigation flag
-              if (mounted) {
-                final videoProvider =
-                    Provider.of<VideoStateProvider>(context, listen: false);
-                if (videoProvider.isNavigatingToCreate) {
-                  videoProvider.setNavigatingToCreate(false);
-                  // If we're still on shorts screen, restore video state
-                  if (videoProvider.currentScreen == 'shorts') {
-                    Future.delayed(Duration(milliseconds: 500), () {
-                      if (mounted) {
-                        videoProvider.forcePlayAfterNavigation();
-                      }
-                    });
+          Navigator.of(context)
+              .pushNamed(
+                CreateShortsScreen.routeName,
+                arguments: {'is_challenge': false},
+              )
+              .then((_) {
+                // When returning from create shorts, reset the navigation flag
+                if (mounted) {
+                  final videoProvider = Provider.of<VideoStateProvider>(
+                    context,
+                    listen: false,
+                  );
+                  if (videoProvider.isNavigatingToCreate) {
+                    videoProvider.setNavigatingToCreate(false);
+                    // If we're still on shorts screen, restore video state
+                    if (videoProvider.currentScreen == 'shorts') {
+                      Future.delayed(Duration(milliseconds: 500), () {
+                        if (mounted) {
+                          videoProvider.forcePlayAfterNavigation();
+                        }
+                      });
+                    }
                   }
                 }
-              }
 
-              // Always refresh creator shorts when returning so new uploads show up
-              if (mounted) {
-                _loadCreatorShorts();
-              }
-            },
-          );
+                // Always refresh creator shorts when returning so new uploads show up
+                if (mounted) {
+                  _loadCreatorShorts();
+                }
+              });
         },
         borderRadius: BorderRadius.circular(24),
         child: Container(
@@ -2017,10 +2073,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             color: Colors.black,
             borderRadius: BorderRadius.circular(24),
             gradient: LinearGradient(
-              colors: [
-                Colors.black,
-                Colors.black.withValues(alpha: 0.9),
-              ],
+              colors: [Colors.black, Colors.black.withValues(alpha: 0.9)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -2082,16 +2135,14 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             Navigator.of(context).pushNamed(CreatorRequestScreen.routeName);
             return;
           }
-          Navigator.of(context)
-              .pushNamed(
-            CreateStoryTypeScreen.routeName,
-          )
-              .then(
+          Navigator.of(context).pushNamed(CreateStoryTypeScreen.routeName).then(
             (_) {
               // Similar validation & reset as with Shorts
               if (mounted) {
-                final videoProvider =
-                    Provider.of<VideoStateProvider>(context, listen: false);
+                final videoProvider = Provider.of<VideoStateProvider>(
+                  context,
+                  listen: false,
+                );
                 if (videoProvider.isNavigatingToCreate) {
                   videoProvider.setNavigatingToCreate(false);
 
@@ -2107,8 +2158,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               // Reload creator stories / seasons so new uploads show up
               if (mounted) {
                 try {
-                  final storyProvider =
-                      Provider.of<Story>(context, listen: false);
+                  final storyProvider = Provider.of<Story>(
+                    context,
+                    listen: false,
+                  );
                   final userId = _user['id'];
                   if (userId != null) {
                     storyProvider.fetchCreatorSeasons(userId);
@@ -2129,10 +2182,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             color: Colors.black,
             borderRadius: BorderRadius.circular(24),
             gradient: LinearGradient(
-              colors: [
-                Colors.black,
-                Colors.black.withValues(alpha: 0.9),
-              ],
+              colors: [Colors.black, Colors.black.withValues(alpha: 0.9)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -2184,7 +2234,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
     Widget _buildShortsSliderGrid() {
       DebugLogger.info(
-          '🔄 Building shorts grid - local count: ${_localCreatorShorts.length}');
+        '🔄 Building shorts grid - local count: ${_localCreatorShorts.length}',
+      );
       DebugLogger.info('⏳ Loading state: $_isLoadingCreatorShorts');
       DebugLogger.info('🎯 Has attempted load: $_hasAttemptedShortsLoad');
 
@@ -2199,10 +2250,16 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               child: Column(
                 children: [
                   SkeletonBox(
-                      width: double.infinity, height: 80, borderRadius: 12),
+                    width: double.infinity,
+                    height: 80,
+                    borderRadius: 12,
+                  ),
                   SizedBox(height: 12),
                   SkeletonBox(
-                      width: double.infinity, height: 80, borderRadius: 12),
+                    width: double.infinity,
+                    height: 80,
+                    borderRadius: 12,
+                  ),
                 ],
               ),
             ),
@@ -2211,7 +2268,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
         if (_localCreatorShorts.isEmpty && _hasAttemptedShortsLoad) {
           DebugLogger.info(
-              '📭 Showing empty state (load completed, no shorts found)');
+            '📭 Showing empty state (load completed, no shorts found)',
+          );
           return Container(
             padding: const EdgeInsets.symmetric(vertical: 24),
             alignment: Alignment.center,
@@ -2234,7 +2292,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: Theme.of(context).brightness ==
+                              color:
+                                  Theme.of(context).brightness ==
                                       Brightness.dark
                                   ? Colors.white
                                   : Colors.black87,
@@ -2257,8 +2316,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 // Show a horizontal FlickShortsPlayer row with 5 random shorts (if available)
                 Builder(
                   builder: (context) {
-                    final shortsProvider =
-                        Provider.of<Shorts>(context, listen: false);
+                    final shortsProvider = Provider.of<Shorts>(
+                      context,
+                      listen: false,
+                    );
                     final allShorts = List<dynamic>.from(shortsProvider.shorts);
 
                     if (allShorts.isEmpty) return const SizedBox.shrink();
@@ -2283,13 +2344,16 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         children: [
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12.0, vertical: 8.0),
+                              horizontal: 12.0,
+                              vertical: 8.0,
+                            ),
                             child: Text(
                               "Discover Other Shorts",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
-                                color: Theme.of(context).brightness ==
+                                color:
+                                    Theme.of(context).brightness ==
                                         Brightness.dark
                                     ? Colors.white
                                     : Colors.black87,
@@ -2303,13 +2367,15 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                               itemCount: sampleShorts.length + 1,
                               separatorBuilder: (_, __) =>
                                   const SizedBox(width: 12),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               itemBuilder: (ctx, idx) {
                                 if (idx == sampleShorts.length) {
                                   return InkWell(
-                                    onTap: () => Navigator.of(context)
-                                        .pushNamed(ShortsScreen.routeName),
+                                    onTap: () => Navigator.of(
+                                      context,
+                                    ).pushNamed(ShortsScreen.routeName),
                                     child: Container(
                                       width: 140,
                                       decoration: BoxDecoration(
@@ -2321,8 +2387,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.1),
+                                            color: Colors.black.withOpacity(
+                                              0.1,
+                                            ),
                                             blurRadius: 8,
                                             offset: const Offset(0, 4),
                                           ),
@@ -2369,15 +2436,18 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
                                     child: FlickShortsPlayer(
-                                      videoUrl: short['video_url'] ??
+                                      videoUrl:
+                                          short['video_url'] ??
                                           short['video'] ??
                                           '',
                                       shortsId: short['id'] ?? 0,
                                       title: short['title']?.toString() ?? '',
-                                      likesCount: short['likes_count'] ??
+                                      likesCount:
+                                          short['likes_count'] ??
                                           short['likes'] ??
                                           0,
-                                      usersCount: short['users_count'] ??
+                                      usersCount:
+                                          short['users_count'] ??
                                           short['views'] ??
                                           0,
                                       userId: short['user_id'] ?? 0,
@@ -2401,7 +2471,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
         // Show shorts grid using LOCAL state
         DebugLogger.info(
-            '✅ Showing ${_localCreatorShorts.length} shorts from local state');
+          '✅ Showing ${_localCreatorShorts.length} shorts from local state',
+        );
 
         return SizedBox(
           width: double.infinity,
@@ -2419,8 +2490,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 spacing: spacing,
                 runSpacing: spacing,
                 alignment: WrapAlignment.start,
-                children:
-                    List.generate(_localCreatorShorts.length + 1, (index) {
+                children: List.generate(_localCreatorShorts.length + 1, (
+                  index,
+                ) {
                   try {
                     if (index == 0) {
                       return SizedBox(
@@ -2471,7 +2543,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                     );
                   } catch (e) {
                     DebugLogger.error(
-                        'Error rendering short at index $index: $e');
+                      'Error rendering short at index $index: $e',
+                    );
                     return const SizedBox.shrink();
                   }
                 }),
@@ -2483,10 +2556,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildShortsContent(),
-          SizedBox(height: 16),
-        ],
+        children: [buildShortsContent(), SizedBox(height: 16)],
       );
     }
 
@@ -2519,7 +2589,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               final first = images.first;
               if (first is Map &&
                   first['url'] is String &&
-                  first['url'].trim().isNotEmpty) return first['url'];
+                  first['url'].trim().isNotEmpty)
+                return first['url'];
               if (first is String && first.trim().isNotEmpty) return first;
             }
             return 'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg';
@@ -2561,8 +2632,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                             fontWeight: FontWeight.w700,
                             color:
                                 Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black87,
+                                ? Colors.white
+                                : Colors.black87,
                           ),
                         ),
                         SizedBox(height: 4),
@@ -2583,54 +2654,60 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
           }
 
           // Compose list of stories widgets
-          final List<Widget> storyCards = creatorSeasons.map<Widget>(
-            (seasonRaw) {
-              final season = (seasonRaw is Map)
-                  ? Map<String, dynamic>.from(seasonRaw)
-                  : <String, dynamic>{};
-              final imageUrl = resolveSeasonImage(season);
-              final subtitle = resolveSeasonSubtitle(season);
+          final List<Widget> storyCards = creatorSeasons.map<Widget>((
+            seasonRaw,
+          ) {
+            final season = (seasonRaw is Map)
+                ? Map<String, dynamic>.from(seasonRaw)
+                : <String, dynamic>{};
+            final imageUrl = resolveSeasonImage(season);
+            final subtitle = resolveSeasonSubtitle(season);
 
-              return CreatorStoryPreviewCard(
-                title: season['title']?.toString() ?? 'Untitled Story',
-                subtitle: subtitle,
-                imageUrl: imageUrl,
-                onTap: () {
-                  try {
-                    final story = Provider.of<Story>(context, listen: false);
-                    // Add creator information if available
-                    Map<String, dynamic> seasonWithContext = Map.from(season);
-                    if (_user['id'] != null) {
-                      seasonWithContext['creatorId'] = _user['id'];
-                      seasonWithContext['isCreatorSeason'] = true;
-                    } else {
-                      seasonWithContext['isCreatorSeason'] = false;
-                    }
-                    story.setSelectedSeason(seasonWithContext).then((_) {
-                      Navigator.of(context).pushNamed(EpisodeScreen.routeName);
-                    }).catchError((error) {
-                      DebugLogger.error(
-                          'Error navigating to episode screen: $error');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Unable to open story'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    });
-                  } catch (e) {
-                    DebugLogger.error('Error navigating to episode screen: $e');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Unable to open story'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
+            return CreatorStoryPreviewCard(
+              title: season['title']?.toString() ?? 'Untitled Story',
+              subtitle: subtitle,
+              imageUrl: imageUrl,
+              onTap: () {
+                try {
+                  final story = Provider.of<Story>(context, listen: false);
+                  // Add creator information if available
+                  Map<String, dynamic> seasonWithContext = Map.from(season);
+                  if (_user['id'] != null) {
+                    seasonWithContext['creatorId'] = _user['id'];
+                    seasonWithContext['isCreatorSeason'] = true;
+                  } else {
+                    seasonWithContext['isCreatorSeason'] = false;
                   }
-                },
-              );
-            },
-          ).toList();
+                  story
+                      .setSelectedSeason(seasonWithContext)
+                      .then((_) {
+                        Navigator.of(
+                          context,
+                        ).pushNamed(EpisodeScreen.routeName);
+                      })
+                      .catchError((error) {
+                        DebugLogger.error(
+                          'Error navigating to episode screen: $error',
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Unable to open story'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      });
+                } catch (e) {
+                  DebugLogger.error('Error navigating to episode screen: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Unable to open story'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+            );
+          }).toList();
 
           return SizedBox(
             width: double.infinity,
@@ -2639,7 +2716,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 const double spacing = 12;
                 final int columns = 2;
                 final double totalSpacing = spacing * (columns - 1);
-                final double availableWidth = constraints.maxWidth -
+                final double availableWidth =
+                    constraints.maxWidth -
                     totalSpacing -
                     32; // 16px padding on each side
                 final double computedWidth = availableWidth > 0
@@ -2651,14 +2729,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   runSpacing: spacing,
                   alignment: WrapAlignment.start,
                   children: [
-                    SizedBox(
-                      width: computedWidth,
-                      child: _buildAddStoryCard(),
+                    SizedBox(width: computedWidth, child: _buildAddStoryCard()),
+                    ...storyCards.map(
+                      (card) => SizedBox(width: computedWidth, child: card),
                     ),
-                    ...storyCards.map((card) => SizedBox(
-                          width: computedWidth,
-                          child: card,
-                        )),
                   ],
                 );
               },
@@ -2716,15 +2790,18 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                       });
                     },
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: isActive
                             ? const Color.fromRGBO(205, 205, 205, 1)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(20),
-                        border:
-                            isActive ? null : null, // No border for inactive
+                        border: isActive
+                            ? null
+                            : null, // No border for inactive
                       ),
                       child: Text(
                         category,
@@ -2732,10 +2809,11 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           color: isActive
                               ? Colors.black
                               : (Theme.of(context).brightness == Brightness.dark
-                                  ? Colors.white
-                                  : Colors.white),
-                          fontWeight:
-                              isActive ? FontWeight.bold : FontWeight.w500,
+                                    ? Colors.white
+                                    : Colors.white),
+                          fontWeight: isActive
+                              ? FontWeight.bold
+                              : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -2868,17 +2946,15 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         _isLoadingAchievements
                             ? '${context.l10n.loading}...'
                             : '$achievementCount ${context.l10n.badges} ${context.l10n.earn}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context)
-                          .pushNamed(AchievementsScreen.routeName);
+                      Navigator.of(
+                        context,
+                      ).pushNamed(AchievementsScreen.routeName);
                     },
                     child: Text(
                       AppLocalizations.of(context)!.viewAll,
@@ -2914,11 +2990,16 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Icon(Icons.emoji_events_outlined,
-                            size: 40, color: Colors.grey),
+                        Icon(
+                          Icons.emoji_events_outlined,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
                         SizedBox(height: 8),
-                        Text('No achievements yet',
-                            style: TextStyle(color: Colors.grey, fontSize: 14)),
+                        Text(
+                          'No achievements yet',
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        ),
                       ],
                     ),
                   ),
@@ -2929,21 +3010,25 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   height: 120,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount:
-                        achievements.length > 12 ? 12 : achievements.length,
+                    itemCount: achievements.length > 12
+                        ? 12
+                        : achievements.length,
                     itemBuilder: (context, index) {
                       final achievement = achievements[index];
                       final url = achievement['url'];
-                      final title =
-                          (achievement['title'] ?? '').toString().trim();
+                      final title = (achievement['title'] ?? '')
+                          .toString()
+                          .trim();
                       final canClaim = _canClaim(achievement);
-                      final progress =
-                          _progressFor(achievement).clamp(0.0, 1.0);
+                      final progress = _progressFor(
+                        achievement,
+                      ).clamp(0.0, 1.0);
 
                       return Padding(
                         padding: EdgeInsets.only(
                           left: index == 0 ? 0 : 10,
-                          right: index ==
+                          right:
+                              index ==
                                   (achievements.length > 12
                                       ? 11
                                       : achievements.length - 1)
@@ -2985,15 +3070,21 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: const Color.fromARGB(
-                                          255, 240, 223, 174),
+                                        255,
+                                        240,
+                                        223,
+                                        174,
+                                      ),
                                       border: Border.all(
                                         color: canClaim
                                             ? Colors.amber
-                                            : Colors.grey
-                                                .withValues(alpha: 0.25),
+                                            : Colors.grey.withValues(
+                                                alpha: 0.25,
+                                              ),
                                       ),
                                     ),
-                                    child: (url != null &&
+                                    child:
+                                        (url != null &&
                                             url.toString().trim().isNotEmpty)
                                         ? CachedNetworkImage(
                                             imageUrl: url,
@@ -3002,22 +3093,24 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                             height: double.infinity,
                                             placeholder: (context, _) =>
                                                 Container(
-                                              alignment: Alignment.center,
-                                              child: Icon(
-                                                Icons.emoji_events,
-                                                color: Colors.amber.shade700,
-                                                size: 24,
-                                              ),
-                                            ),
+                                                  alignment: Alignment.center,
+                                                  child: Icon(
+                                                    Icons.emoji_events,
+                                                    color:
+                                                        Colors.amber.shade700,
+                                                    size: 24,
+                                                  ),
+                                                ),
                                             errorWidget: (context, _, __) =>
                                                 Container(
-                                              alignment: Alignment.center,
-                                              child: Icon(
-                                                Icons.emoji_events,
-                                                color: Colors.amber.shade700,
-                                                size: 24,
-                                              ),
-                                            ),
+                                                  alignment: Alignment.center,
+                                                  child: Icon(
+                                                    Icons.emoji_events,
+                                                    color:
+                                                        Colors.amber.shade700,
+                                                    size: 24,
+                                                  ),
+                                                ),
                                           )
                                         : Icon(
                                             Icons.emoji_events,
@@ -3048,8 +3141,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                   child: LinearProgressIndicator(
                                     value: progress,
                                     minHeight: 4,
-                                    backgroundColor:
-                                        Colors.grey.withValues(alpha: 0.2),
+                                    backgroundColor: Colors.grey.withValues(
+                                      alpha: 0.2,
+                                    ),
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                       canClaim
                                           ? Colors.amber.shade600
@@ -3097,7 +3191,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
             final deadline = DateTime.parse(challenge['deadline']);
             final now = DateTime.now();
             return deadline.isAfter(
-                now); // Challenge is active if deadline is in the future
+              now,
+            ); // Challenge is active if deadline is in the future
           } catch (e) {
             DebugLogger.error('Error parsing challenge deadline: $e');
             return true; // If we can't parse the deadline, assume it's active
@@ -3119,17 +3214,15 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         _isLoadingChallenges
                             ? '${context.l10n.loading}...'
                             : '$challengeCount ${context.l10n.activeChallenges}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context)
-                          .pushNamed(AllChallengesScreen.routeName);
+                      Navigator.of(
+                        context,
+                      ).pushNamed(AllChallengesScreen.routeName);
                     },
                     child: Text(
                       AppLocalizations.of(context)!.viewAll,
@@ -3148,14 +3241,16 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                     child: Column(
                       children: [
                         SkeletonBox(
-                            width: double.infinity,
-                            height: 42,
-                            borderRadius: 12),
+                          width: double.infinity,
+                          height: 42,
+                          borderRadius: 12,
+                        ),
                         SizedBox(height: 8),
                         SkeletonBox(
-                            width: double.infinity,
-                            height: 42,
-                            borderRadius: 12),
+                          width: double.infinity,
+                          height: 42,
+                          borderRadius: 12,
+                        ),
                       ],
                     ),
                   ),
@@ -3223,10 +3318,11 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           color: Colors.orange.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: isExpiringSoon
-                                  ? Colors.red.withValues(alpha: 0.5)
-                                  : Colors.orange.withValues(alpha: 0.3),
-                              width: isExpiringSoon ? 2 : 1),
+                            color: isExpiringSoon
+                                ? Colors.red.withValues(alpha: 0.5)
+                                : Colors.orange.withValues(alpha: 0.3),
+                            width: isExpiringSoon ? 2 : 1,
+                          ),
                         ),
                         child: Stack(
                           children: [
@@ -3247,12 +3343,12 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                         ),
                                         errorWidget: (context, url, error) =>
                                             Center(
-                                          child: Icon(
-                                            Icons.flash_on,
-                                            color: Colors.orange,
-                                            size: 24,
-                                          ),
-                                        ),
+                                              child: Icon(
+                                                Icons.flash_on,
+                                                color: Colors.orange,
+                                                size: 24,
+                                              ),
+                                            ),
                                       )
                                     : Center(
                                         child: Icon(
@@ -3293,10 +3389,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   child: Center(
                     child: Text(
                       '+${activeChallenges.length - 10} more challenges',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     ),
                   ),
                 ),
@@ -3340,11 +3433,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           ),
                         ),
                       )
-                    : Icon(
-                        Icons.flash_on,
-                        color: Colors.orange,
-                        size: 24,
-                      ),
+                    : Icon(Icons.flash_on, color: Colors.orange, size: 24),
               ),
               SizedBox(width: 12),
               Expanded(
@@ -3352,10 +3441,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   challenge['title'] ??
                       challenge['challenge_title'] ??
                       'Challenge',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -3393,21 +3479,28 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                         _buildDetailRow('Platform', challenge['platform']),
                       if (challenge['deadline'] != null)
                         _buildDetailRow(
-                            'Deadline', _formatDeadline(challenge['deadline'])),
+                          'Deadline',
+                          _formatDeadline(challenge['deadline']),
+                        ),
                       if (challenge['lives'] != null)
                         _buildDetailRow('Lives', challenge['lives'].toString()),
                       if (challenge['duration'] != null)
                         _buildDetailRow(
-                            'Duration', '${challenge['duration']} seconds'),
+                          'Duration',
+                          '${challenge['duration']} seconds',
+                        ),
                       if (challenge['no_of_mcq'] != null)
                         _buildDetailRow(
-                            'MCQ Questions', challenge['no_of_mcq'].toString()),
+                          'MCQ Questions',
+                          challenge['no_of_mcq'].toString(),
+                        ),
                       if (challenge['min_number_of_challenge_participation'] !=
                           null)
                         _buildDetailRow(
-                            'Min. Participation',
-                            challenge['min_number_of_challenge_participation']
-                                .toString()),
+                          'Min. Participation',
+                          challenge['min_number_of_challenge_participation']
+                              .toString(),
+                        ),
                     ],
                   ),
                 ),
@@ -3505,14 +3598,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               ),
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 12,
-              ),
-            ),
-          ),
+          Expanded(child: Text(value, style: TextStyle(fontSize: 12))),
         ],
       ),
     );
@@ -3564,11 +3650,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   child: CachedNetworkImage(
                     imageUrl: achievement['url'] ?? '',
                     fit: BoxFit.cover,
-                    errorWidget: (context, url, error) => Icon(
-                      Icons.emoji_events,
-                      color: Colors.amber,
-                      size: 24,
-                    ),
+                    errorWidget: (context, url, error) =>
+                        Icon(Icons.emoji_events, color: Colors.amber, size: 24),
                   ),
                 ),
               ),
@@ -3576,10 +3659,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               Expanded(
                 child: Text(
                   achievement['title'] ?? 'Achievement',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -3639,8 +3719,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                       "My Account",
                       style: TextStyle(
                         color: myAccountActive ? Colors.black : null,
-                        fontWeight:
-                            myAccountActive ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: myAccountActive
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                       ),
                     ),
                   ),
@@ -3676,8 +3757,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                       "Public View",
                       style: TextStyle(
                         color: publicActive ? Colors.black : null,
-                        fontWeight:
-                            publicActive ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: publicActive
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                       ),
                     ),
                   ),
@@ -3732,21 +3814,23 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     );
   }
 
-  Widget _buildActionCard(String title, String subtitle, IconData icon,
-      Color color, VoidCallback onTap) {
+  Widget _buildActionCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       child: Container(
-          padding: EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: Colors.grey.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            icon,
-            color: color,
-            size: 18,
-          )),
+        padding: EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.grey.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: color, size: 18),
+      ),
     );
   }
 
@@ -3790,10 +3874,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   const SizedBox(width: 8),
                   const Text(
                     'Following',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                   ),
                 ],
               ),
@@ -3830,10 +3911,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   const SizedBox(width: 8),
                   const Text(
                     'Message',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                   ),
                 ],
               ),
@@ -3874,9 +3952,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF272727) : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.12),
-        ),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.12)),
       ),
       child: Center(
         child: Column(
@@ -3959,9 +4035,13 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   key: ValueKey(_activeProgressTab),
                   child: _activeProgressTab == 'achievements'
                       ? _buildPublicAchievementsContent(
-                          isDark, userAchievements)
+                          isDark,
+                          userAchievements,
+                        )
                       : _buildPublicChallengesContent(
-                          displayChallenges, isDark),
+                          displayChallenges,
+                          isDark,
+                        ),
                 ),
               ),
             ],
@@ -4026,8 +4106,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           color: !isVisible
                               ? Colors.grey.withValues(alpha: 0.4)
                               : isActive
-                                  ? Colors.white
-                                  : Colors.white.withValues(alpha: 0.65),
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.65),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -4051,8 +4131,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                       color: !isVisible
                           ? Colors.transparent
                           : isActive
-                              ? Colors.grey
-                              : Colors.transparent,
+                          ? Colors.grey
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -4066,7 +4146,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
   }
 
   Widget _buildPublicAchievementsContent(
-      bool isDark, List<dynamic> achievements) {
+    bool isDark,
+    List<dynamic> achievements,
+  ) {
     final userName = _user['username'] ?? _user['display_name'] ?? 'User';
 
     // Check visibility first
@@ -4117,11 +4199,16 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
-                  Icon(Icons.emoji_events_outlined,
-                      size: 32, color: Colors.grey),
+                  Icon(
+                    Icons.emoji_events_outlined,
+                    size: 32,
+                    color: Colors.grey,
+                  ),
                   SizedBox(height: 4),
-                  Text('No achievements yet',
-                      style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(
+                    'No achievements yet',
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
                 ],
               ),
             ),
@@ -4161,7 +4248,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                             ),
                           ],
                         ),
-                        child: (imageUrl != null &&
+                        child:
+                            (imageUrl != null &&
                                 imageUrl.toString().trim().isNotEmpty)
                             ? CachedNetworkImage(
                                 imageUrl: imageUrl.toString(),
@@ -4247,9 +4335,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF272727) : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.12),
-        ),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.12)),
       ),
       child: Center(
         child: Text(
@@ -4264,7 +4350,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
   }
 
   Widget _buildPublicChallengeChip(
-      Map<String, dynamic> challenge, bool isDarkTheme) {
+    Map<String, dynamic> challenge,
+    bool isDarkTheme,
+  ) {
     final String? imageUrl =
         challenge['image_url'] ?? challenge['thumbnail'] ?? challenge['cover'];
 
@@ -4272,10 +4360,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       onTap: () {
         final challengeId = challenge['id'] ?? challenge['challenge_id'];
         if (challengeId == null) return;
-        Navigator.of(context).pushNamed(
-          ChallengeDetailScreen.routeName,
-          arguments: challengeId,
-        );
+        Navigator.of(
+          context,
+        ).pushNamed(ChallengeDetailScreen.routeName, arguments: challengeId);
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -4360,10 +4447,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               Expanded(
                 child: Text(
                   achievement['title'] ?? 'Achievement',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -4486,8 +4570,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           !isVisible
                               ? Colors.grey.withValues(alpha: 0.3)
                               : isActive
-                                  ? Colors.white
-                                  : Colors.grey,
+                              ? Colors.white
+                              : Colors.grey,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -4500,8 +4584,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           color: !isVisible
                               ? Colors.grey.withValues(alpha: 0.4)
                               : isActive
-                                  ? Colors.white
-                                  : Colors.white.withValues(alpha: 0.65),
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.65),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -4525,8 +4609,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                       color: !isVisible
                           ? Colors.transparent
                           : isActive
-                              ? Colors.grey
-                              : Colors.transparent,
+                          ? Colors.grey
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -4560,8 +4644,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       child: LayoutBuilder(
         builder: (context, constraints) {
           const double spacing = 12;
-          final int columns =
-              _resolvePublicCreationsColumns(constraints.maxWidth);
+          final int columns = _resolvePublicCreationsColumns(
+            constraints.maxWidth,
+          );
           final double totalSpacing = spacing * (columns - 1);
           final double availableWidth = constraints.maxWidth - totalSpacing;
           final double computedWidth = availableWidth > 0
@@ -4588,33 +4673,42 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                     onTap: () {
                       // Navigate to episode screen for this specific story
                       try {
-                        final story =
-                            Provider.of<Story>(context, listen: false);
+                        final story = Provider.of<Story>(
+                          context,
+                          listen: false,
+                        );
                         // Add creator information if available
-                        Map<String, dynamic> seasonWithContext =
-                            Map.from(season);
+                        Map<String, dynamic> seasonWithContext = Map.from(
+                          season,
+                        );
                         if (_user['id'] != null) {
                           seasonWithContext['creatorId'] = _user['id'];
                           seasonWithContext['isCreatorSeason'] = true;
                         } else {
                           seasonWithContext['isCreatorSeason'] = false;
                         }
-                        story.setSelectedSeason(seasonWithContext).then((_) {
-                          Navigator.of(context)
-                              .pushNamed(EpisodeScreen.routeName);
-                        }).catchError((error) {
-                          DebugLogger.error(
-                              'Error navigating to episode screen: $error');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Unable to open story'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        });
+                        story
+                            .setSelectedSeason(seasonWithContext)
+                            .then((_) {
+                              Navigator.of(
+                                context,
+                              ).pushNamed(EpisodeScreen.routeName);
+                            })
+                            .catchError((error) {
+                              DebugLogger.error(
+                                'Error navigating to episode screen: $error',
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Unable to open story'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            });
                       } catch (e) {
                         DebugLogger.error(
-                            'Error navigating to episode screen: $e');
+                          'Error navigating to episode screen: $e',
+                        );
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Unable to open story'),
@@ -4644,7 +4738,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     }
 
     DebugLogger.info(
-        '🎬 _buildPublicShortsSection called, _localCreatorShorts.length = ${_localCreatorShorts.length}');
+      '🎬 _buildPublicShortsSection called, _localCreatorShorts.length = ${_localCreatorShorts.length}',
+    );
     DebugLogger.info('🎬 _activeTab = $_activeTab');
 
     if (_localCreatorShorts.isEmpty) {
@@ -4737,9 +4832,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       decoration: BoxDecoration(
         color: isDark ? Color(0xFF252525) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.12),
-        ),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.12)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -4829,7 +4922,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                 onRefresh: _refreshProfile,
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics()),
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
                   child: Column(
                     children: [
                       _buildProfileHeader(),
@@ -4842,17 +4936,21 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                           MonetizationWidget(
                             availableCoins:
                                 _userInformation['available_coins'] is int
-                                    ? _userInformation['available_coins']
-                                    : int.tryParse(
-                                            _userInformation['available_coins']
-                                                    ?.toString() ??
-                                                '0') ??
-                                        0,
-                            nrsPerPoint:
-                                Provider.of<Auth>(context, listen: false)
-                                    .nrsPerBaakhapaaPoints,
+                                ? _userInformation['available_coins']
+                                : int.tryParse(
+                                        _userInformation['available_coins']
+                                                ?.toString() ??
+                                            '0',
+                                      ) ??
+                                      0,
+                            nrsPerPoint: Provider.of<Auth>(
+                              context,
+                              listen: false,
+                            ).nrsPerBaakhapaaPoints,
                             onTap: () => Navigator.pushNamed(
-                                context, PointsScreen.routeName),
+                              context,
+                              PointsScreen.routeName,
+                            ),
                             title: 'Monetize your points',
                             currency: 'NRS',
                             imageAsset: 'assets/images/walletCoin.png',

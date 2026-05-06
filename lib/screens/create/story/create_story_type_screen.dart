@@ -7,8 +7,8 @@ import '../../../providers/story_creation.dart';
 import '../../../providers/challenge.dart';
 import '../../../utils/debug_logger.dart';
 import '../../../widgets/skeleton_loading.dart';
+import '../shared/ai_content_generator_screen.dart';
 import 'create_season_screen.dart';
-import 'create_episode_screen.dart';
 import 'view_episodes_screen.dart';
 
 class CreateStoryTypeScreen extends StatefulWidget {
@@ -41,7 +41,9 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Email not verified yet. Please verify your email first.'),
+            content: Text(
+              'Email not verified yet. Please verify your email first.',
+            ),
           ),
         );
         Navigator.of(context).maybePop();
@@ -62,7 +64,8 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
         _challengeSeasonIds = ids.map((id) => int.parse(id)).toSet();
       });
       DebugLogger.info(
-          '📋 Loaded ${_challengeSeasonIds.length} challenge season IDs: $_challengeSeasonIds');
+        '📋 Loaded ${_challengeSeasonIds.length} challenge season IDs: $_challengeSeasonIds',
+      );
     } catch (e) {
       DebugLogger.error('Error loading challenge season IDs: $e');
     }
@@ -75,16 +78,19 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
       _challenges = challengeProvider.challenges;
 
       // Filter for Seasons platform challenges only
-      final seasonsChallenges =
-          _challenges.where((c) => c['platform'] == 'Seasons').toList();
+      final seasonsChallenges = _challenges
+          .where((c) => c['platform'] == 'Seasons')
+          .toList();
 
       DebugLogger.info(
-          '🏆 Loaded ${_challenges.length} total challenges, ${seasonsChallenges.length} for Seasons platform');
+        '🏆 Loaded ${_challenges.length} total challenges, ${seasonsChallenges.length} for Seasons platform',
+      );
 
       // Log challenge details
       for (var challenge in seasonsChallenges) {
         DebugLogger.info(
-            '   Challenge: ${challenge['title']} (ID: ${challenge['id']}) - heading_id: ${challenge['heading_id']}');
+          '   Challenge: ${challenge['title']} (ID: ${challenge['id']}) - heading_id: ${challenge['heading_id']}',
+        );
       }
     } catch (e) {
       DebugLogger.error('Error loading challenges: $e');
@@ -108,10 +114,12 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
       for (var season in seasons) {
         final challengeData = _seasonToChallengeMap[season['id']];
         DebugLogger.info(
-            '🎬 Season: ${season['title']} (ID: ${season['id']}) - is_challenge: ${season['is_challenge']}');
+          '🎬 Season: ${season['title']} (ID: ${season['id']}) - is_challenge: ${season['is_challenge']}',
+        );
         if (challengeData != null) {
           DebugLogger.info(
-              '   ✅ Mapped to challenge: ${challengeData['title']} (Challenge ID: ${challengeData['id']})');
+            '   ✅ Mapped to challenge: ${challengeData['title']} (Challenge ID: ${challengeData['id']})',
+          );
         }
         DebugLogger.info('   All fields: ${season.keys.toList()}');
         // Check if episodes have challenge data
@@ -119,9 +127,11 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
             (season['episodes'] as List).isNotEmpty) {
           final firstEpisode = (season['episodes'] as List)[0];
           DebugLogger.info(
-              '   First episode fields: ${firstEpisode.keys.toList()}');
+            '   First episode fields: ${firstEpisode.keys.toList()}',
+          );
           DebugLogger.info(
-              '   Episode is_challenge: ${firstEpisode['is_challenge']}');
+            '   Episode is_challenge: ${firstEpisode['is_challenge']}',
+          );
         }
       }
 
@@ -143,8 +153,9 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
     _seasonToChallengeMap.clear();
 
     // Get Seasons platform challenges
-    final seasonsChallenges =
-        _challenges.where((c) => c['platform'] == 'Seasons').toList();
+    final seasonsChallenges = _challenges
+        .where((c) => c['platform'] == 'Seasons')
+        .toList();
 
     for (var season in seasons) {
       // Check if season ID is in local storage (from creation)
@@ -176,7 +187,8 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
             season['challenge_lives'] = challenge['lives'];
             season['no_of_mcq'] = challenge['no_of_mcq'];
             DebugLogger.info(
-                '✅ Mapped season "${season['title']}" to challenge "${challenge['title']}"');
+              '✅ Mapped season "${season['title']}" to challenge "${challenge['title']}"',
+            );
             break;
           }
         }
@@ -205,8 +217,9 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
       } else {
         _filteredSeasons = _mySeasons.where((season) {
           final title = (season['title'] ?? '').toString().toLowerCase();
-          final description =
-              (season['description'] ?? '').toString().toLowerCase();
+          final description = (season['description'] ?? '')
+              .toString()
+              .toLowerCase();
           final searchLower = query.toLowerCase();
           return title.contains(searchLower) ||
               description.contains(searchLower);
@@ -276,7 +289,10 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                 onPressed: () {
                   HapticFeedback.mediumImpact();
                   Navigator.of(context)
-                      .pushNamed(CreateSeasonScreen.routeName)
+                      .pushNamed(
+                        AiContentGeneratorScreen.routeName,
+                        arguments: {'contentType': 'season'},
+                      )
                       .then((_) => _loadSeasons());
                 },
                 icon: Icon(Icons.add_circle_outline),
@@ -412,7 +428,10 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                 onPressed: () {
                   HapticFeedback.mediumImpact();
                   Navigator.of(context)
-                      .pushNamed(CreateSeasonScreen.routeName)
+                      .pushNamed(
+                        AiContentGeneratorScreen.routeName,
+                        arguments: {'contentType': 'season'},
+                      )
                       .then((_) => _loadSeasons());
                 },
                 icon: Icon(Icons.add_circle_outline, size: 24),
@@ -441,8 +460,9 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
     final totalEpisodes = _mySeasons.fold<int>(0, (sum, season) {
       final dynamic rawCount =
           season['episodes_count'] ?? season['episodes']?.length ?? 0;
-      final int count =
-          rawCount is int ? rawCount : int.tryParse(rawCount.toString()) ?? 0;
+      final int count = rawCount is int
+          ? rawCount
+          : int.tryParse(rawCount.toString()) ?? 0;
       return sum + count;
     });
 
@@ -628,13 +648,10 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                   ),
                 )
               : SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final season = _filteredSeasons[index];
-                      return _buildSeasonCard(season, isDark);
-                    },
-                    childCount: _filteredSeasons.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final season = _filteredSeasons[index];
+                    return _buildSeasonCard(season, isDark);
+                  }, childCount: _filteredSeasons.length),
                 ),
         ),
         SliverPadding(padding: EdgeInsets.only(bottom: 80)),
@@ -648,14 +665,16 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
     final episodesCount =
         season['episodes_count'] ?? season['episodes']?.length ?? 0;
     // Handle thumbnail as string or nested object
-    final imageUrl = season['thumbnail'] ??
+    final imageUrl =
+        season['thumbnail'] ??
         season['images']?[0]?['url'] ??
         season['image']?['url'];
     final isLocked = season['is_locked'] == 1 || season['is_locked'] == true;
 
     // Check if challenge: First from mapped challenge data, then API field, then local storage
     final challengeData = _seasonToChallengeMap[season['id']];
-    bool isChallenge = challengeData != null ||
+    bool isChallenge =
+        challengeData != null ||
         season['is_challenge'] == 1 ||
         season['is_challenge'] == true;
 
@@ -668,8 +687,9 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
     if (!isChallenge && season['episodes'] is List) {
       final episodes = season['episodes'] as List;
       if (episodes.isNotEmpty) {
-        isChallenge = episodes
-            .any((ep) => ep['is_challenge'] == 1 || ep['is_challenge'] == true);
+        isChallenge = episodes.any(
+          (ep) => ep['is_challenge'] == 1 || ep['is_challenge'] == true,
+        );
       }
     }
 
@@ -709,14 +729,18 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                   'challenge_id':
                       challengeData?['id'] ?? season['challenge_id'],
                   'challenge': challengeData ?? season['challenge'],
-                }
+                },
               },
             );
           },
           onLongPress: () {
             HapticFeedback.mediumImpact();
-            _showSeasonOptions(season, isDark,
-                challengeData: challengeData, isChallenge: isChallenge);
+            _showSeasonOptions(
+              season,
+              isDark,
+              challengeData: challengeData,
+              isChallenge: isChallenge,
+            );
           },
           child: Container(
             decoration: BoxDecoration(
@@ -732,31 +756,32 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                     Container(
                       height: 200,
                       decoration: BoxDecoration(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(20)),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
                         gradient: LinearGradient(
-                          colors: [
-                            Color(0xFF667eea),
-                            Color(0xFF764ba2),
-                          ],
+                          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                         ),
                       ),
                       child: imageUrl != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(20)),
+                                top: Radius.circular(20),
+                              ),
                               child: Image.network(
                                 imageUrl,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>
                                     Center(
-                                  child: Icon(
-                                    Icons.video_library_rounded,
-                                    size: 64,
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                  ),
-                                ),
+                                      child: Icon(
+                                        Icons.video_library_rounded,
+                                        size: 64,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                      ),
+                                    ),
                               ),
                             )
                           : Center(
@@ -771,8 +796,9 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                     Container(
                       height: 200,
                       decoration: BoxDecoration(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(20)),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -795,10 +821,7 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                           ),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [
-                                Color(0xFFFF6B6B),
-                                Color(0xFFEE5A6F),
-                              ],
+                              colors: [Color(0xFFFF6B6B), Color(0xFFEE5A6F)],
                             ),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
@@ -854,11 +877,7 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                Icons.lock,
-                                size: 16,
-                                color: Colors.white,
-                              ),
+                              Icon(Icons.lock, size: 16, color: Colors.white),
                               SizedBox(width: 4),
                               Text(
                                 'Locked',
@@ -933,8 +952,10 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                       if (isChallenge)
                         Container(
                           margin: EdgeInsets.only(top: 8),
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Color(0xFFFF6B6B).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
@@ -1001,13 +1022,15 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                           InkWell(
                             onTap: () {
                               HapticFeedback.lightImpact();
-                              Navigator.of(context).pushNamed(
-                                CreateSeasonScreen.routeName,
-                                arguments: {
-                                  'mode': 'edit',
-                                  'season': season,
-                                },
-                              ).then((_) => _loadSeasons());
+                              Navigator.of(context)
+                                  .pushNamed(
+                                    CreateSeasonScreen.routeName,
+                                    arguments: {
+                                      'mode': 'edit',
+                                      'season': season,
+                                    },
+                                  )
+                                  .then((_) => _loadSeasons());
                             },
                             borderRadius: BorderRadius.circular(10),
                             child: Container(
@@ -1119,8 +1142,12 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
     );
   }
 
-  void _showSeasonOptions(dynamic season, bool isDark,
-      {dynamic challengeData, bool isChallenge = false}) {
+  void _showSeasonOptions(
+    dynamic season,
+    bool isDark, {
+    dynamic challengeData,
+    bool isChallenge = false,
+  }) {
     final title = season['title'] ?? 'Untitled Season';
     final id = season['id'];
 
@@ -1167,8 +1194,9 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.of(context).pushNamed(
-                  CreateEpisodeScreen.routeName,
+                  AiContentGeneratorScreen.routeName,
                   arguments: {
+                    'contentType': 'episode',
                     'seasonId': id,
                     'seasonTitle': title,
                     if (isChallenge) ...{
@@ -1176,7 +1204,7 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                       'challenge_id':
                           challengeData?['id'] ?? season['challenge_id'],
                       'challenge': challengeData ?? season['challenge'],
-                    }
+                    },
                   },
                 );
               },
@@ -1199,7 +1227,7 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
                       'challenge_id':
                           challengeData?['id'] ?? season['challenge_id'],
                       'challenge': challengeData ?? season['challenge'],
-                    }
+                    },
                   },
                 );
               },
@@ -1212,19 +1240,21 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
               isDark: isDark,
               onTap: () {
                 Navigator.pop(context);
-                Navigator.of(context).pushNamed(
-                  CreateSeasonScreen.routeName,
-                  arguments: {
-                    'mode': 'edit',
-                    'season': season,
-                    if (isChallenge) ...{
-                      'is_challenge': true,
-                      'challenge_id':
-                          challengeData?['id'] ?? season['challenge_id'],
-                      'challenge': challengeData ?? season['challenge'],
-                    }
-                  },
-                ).then((_) => _loadSeasons());
+                Navigator.of(context)
+                    .pushNamed(
+                      CreateSeasonScreen.routeName,
+                      arguments: {
+                        'mode': 'edit',
+                        'season': season,
+                        if (isChallenge) ...{
+                          'is_challenge': true,
+                          'challenge_id':
+                              challengeData?['id'] ?? season['challenge_id'],
+                          'challenge': challengeData ?? season['challenge'],
+                        },
+                      },
+                    )
+                    .then((_) => _loadSeasons());
               },
             ),
             _buildOptionTile(
@@ -1294,9 +1324,7 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => Center(child: CircularProgressIndicator()),
       );
 
       final storyCreation = Provider.of<StoryCreation>(context, listen: false);
@@ -1342,15 +1370,11 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
         backgroundColor: isDark ? Color(0xFF1A1A1A) : Colors.white,
         title: Text(
           'Delete Season?',
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
-          ),
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
         ),
         content: Text(
           'Are you sure you want to delete "$title"? This will also delete all episodes and questions in this season. This action cannot be undone.',
-          style: TextStyle(
-            color: isDark ? Colors.white70 : Colors.black87,
-          ),
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
         ),
         actions: [
           TextButton(
@@ -1362,10 +1386,7 @@ class _CreateStoryTypeScreenState extends State<CreateStoryTypeScreen> {
               Navigator.pop(context);
               await _deleteSeason(season);
             },
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

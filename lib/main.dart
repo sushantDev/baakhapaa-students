@@ -146,6 +146,7 @@ import './screens/shorts/create/preview_shorts_screen.dart';
 import './screens/shorts/create/create_shorts_question_form_screen.dart';
 import './screens/shorts/create/create_shorts_question_screen.dart';
 import './screens/create/story/create_story_type_screen.dart';
+import './screens/create/shared/ai_content_generator_screen.dart';
 import './screens/create/story/create_season_screen.dart';
 import './screens/create/story/create_episode_screen.dart';
 import './screens/create/story/view_episodes_screen.dart';
@@ -203,8 +204,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void _initializeLocalNotifications() {
-  const initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initializationSettingsAndroid = AndroidInitializationSettings(
+    '@mipmap/ic_launcher',
+  );
   final initializationSettingsIOS = DarwinInitializationSettings();
 
   final initializationSettings = InitializationSettings(
@@ -244,7 +246,8 @@ void _showLocalNotification(RemoteMessage message) {
 
 void _handleRewardNotification(Map<String, dynamic> data) {
   debug.DebugLogger.info(
-      '🎁 REWARD NOTIFICATION: Handling reward notification');
+    '🎁 REWARD NOTIFICATION: Handling reward notification',
+  );
   debug.DebugLogger.info('🎁 REWARD DATA: $data');
 
   try {
@@ -255,13 +258,16 @@ void _handleRewardNotification(Map<String, dynamic> data) {
     if (notificationUserId != null) {
       if (notificationUserId != currentUserId) {
         debug.DebugLogger.info(
-            '🚫 REJECTED: Notification for user $notificationUserId (current: $currentUserId) - FCM token mismatch');
+          '🚫 REJECTED: Notification for user $notificationUserId (current: $currentUserId) - FCM token mismatch',
+        );
         debug.DebugLogger.info(
-            '⚠️  This indicates the FCM token on backend is associated with wrong user. Token will be refreshed.');
+          '⚠️  This indicates the FCM token on backend is associated with wrong user. Token will be refreshed.',
+        );
         return; // Ignore notifications for other users
       }
       debug.DebugLogger.info(
-          '✅ VALIDATED: Notification for current user $currentUserId');
+        '✅ VALIDATED: Notification for current user $currentUserId',
+      );
     }
 
     // Broadcast the reward data through the stream
@@ -269,7 +275,8 @@ void _handleRewardNotification(Map<String, dynamic> data) {
     debug.DebugLogger.info('🎁 Broadcasting to stream...');
     rewardNotificationStream.add(data);
     debug.DebugLogger.info(
-        '🎁 Stream broadcast complete. Listener count: ${rewardNotificationStream.hasListener}');
+      '🎁 Stream broadcast complete. Listener count: ${rewardNotificationStream.hasListener}',
+    );
 
     // Note: We don't show a local notification here because this handler is called
     // when the app is in the foreground (from FirebaseMessaging.onMessage).
@@ -303,24 +310,32 @@ void main() async {
       await assistiveTouchProvider.initState();
     } catch (e) {
       debug.DebugLogger.puppet(
-          'Failed to initialize AssistiveTouchProvider: $e');
+        'Failed to initialize AssistiveTouchProvider: $e',
+      );
       // Also capture this error in Sentry
-      await SentryService.captureException(e,
-          tag: 'initialization_error',
-          extra: {'component': 'AssistiveTouchProvider'});
+      await SentryService.captureException(
+        e,
+        tag: 'initialization_error',
+        extra: {'component': 'AssistiveTouchProvider'},
+      );
       // Continue even if assistive touch fails to initialize
     }
 
     // Initialize other services
     try {
-      unawaited(MobileAds.instance.initialize().then((_) {
-        // Preload interstitial ad once MobileAds is ready
-        AdService().preloadInterstitial();
-        // Fetch backend-controlled ad feature flags
-        AdService.fetchAdSettings();
-      }).catchError((e) {
-        debug.DebugLogger.error('AdMob initialization failed: $e');
-      }));
+      unawaited(
+        MobileAds.instance
+            .initialize()
+            .then((_) {
+              // Preload interstitial ad once MobileAds is ready
+              AdService().preloadInterstitial();
+              // Fetch backend-controlled ad feature flags
+              AdService.fetchAdSettings();
+            })
+            .catchError((e) {
+              debug.DebugLogger.error('AdMob initialization failed: $e');
+            }),
+      );
     } catch (e) {
       debug.DebugLogger.error('MobileAds init error: $e');
     }
@@ -343,9 +358,11 @@ void main() async {
       await HomeWidgetService.initialize();
     } catch (e) {
       debug.DebugLogger.error('Failed to initialize HomeWidgetService: $e');
-      await SentryService.captureException(e,
-          tag: 'initialization_error',
-          extra: {'component': 'HomeWidgetService'});
+      await SentryService.captureException(
+        e,
+        tag: 'initialization_error',
+        extra: {'component': 'HomeWidgetService'},
+      );
       // Continue even if home widget fails to initialize
     }
 
@@ -385,14 +402,18 @@ void main() async {
       debug.DebugLogger.auth('FCM Token Setup Error: $e');
       debug.DebugLogger.info('Stack Trace: $stackTrace');
       // Capture FCM setup errors in Sentry
-      await SentryService.captureException(e,
-          stackTrace: stackTrace, tag: 'fcm_setup_error');
+      await SentryService.captureException(
+        e,
+        stackTrace: stackTrace,
+        tag: 'fcm_setup_error',
+      );
     }
 
     _initializeLocalNotifications();
 
     debug.DebugLogger.auth(
-        'User granted permission: ${settings.authorizationStatus}');
+      'User granted permission: ${settings.authorizationStatus}',
+    );
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       debug.DebugLogger.info('Got a message whilst in the foreground!');
@@ -400,7 +421,8 @@ void main() async {
 
       if (message.notification != null) {
         debug.DebugLogger.info(
-            'Message also contained a notification: ${message.notification}');
+          'Message also contained a notification: ${message.notification}',
+        );
 
         // SECURITY: Validate user_id if present in notification data
         final notificationUserId = message.data['user_id']?.toString();
@@ -408,7 +430,8 @@ void main() async {
 
         if (notificationUserId != null && notificationUserId != currentUserId) {
           debug.DebugLogger.info(
-              '🚫 FCM: Ignoring notification for user $notificationUserId (current: $currentUserId)');
+            '🚫 FCM: Ignoring notification for user $notificationUserId (current: $currentUserId)',
+          );
           return; // Don't process notifications for other users
         }
 
@@ -416,7 +439,8 @@ void main() async {
         final priority = message.data['priority'];
         if (priority == 'low') {
           debug.DebugLogger.info(
-              '🔔 FCM: Low-priority notification - showing as system notification');
+            '🔔 FCM: Low-priority notification - showing as system notification',
+          );
           _showLocalNotification(message);
 
           // Update chat count if it's a chat message
@@ -438,7 +462,8 @@ void main() async {
         try {
           globalAuth.incrementNotificationCount();
           debug.DebugLogger.info(
-              '🔔 FCM: Incremented notification count to: ${globalAuth.unreadNotificationCount}');
+            '🔔 FCM: Incremented notification count to: ${globalAuth.unreadNotificationCount}',
+          );
         } catch (e) {
           debug.DebugLogger.error('Error incrementing notification count: $e');
         }
@@ -486,8 +511,9 @@ void main() async {
           type == 'shorts_commented' ||
           type == 'shorts_donation_received') {
         final rawId = message.data['shorts_id'];
-        final shortsId =
-            rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '') ?? 0;
+        final shortsId = rawId is int
+            ? rawId
+            : int.tryParse(rawId?.toString() ?? '') ?? 0;
         if (shortsId > 0) {
           mainNavigatorKey.currentState?.pushNamed(
             SingleShortsScreen.routeName,
@@ -547,34 +573,42 @@ void main() async {
       Uri? initialLink = await _appLinks.getInitialLink();
       if (initialLink != null && initialLink.toString().isNotEmpty) {
         DebugLogger.info(
-            "🔗 MAIN: Received initial link: ${initialLink.toString()}");
+          "🔗 MAIN: Received initial link: ${initialLink.toString()}",
+        );
         DebugLogger.info(
-            "Initial Deep Link detected: ${initialLink.toString()}");
+          "Initial Deep Link detected: ${initialLink.toString()}",
+        );
 
         // For universal links (https://baakhapaa.com or https://www.baakhapaa.com), handle immediately to prevent browser fallback
         if (initialLink.scheme == 'https' &&
             (initialLink.host == 'baakhapaa.com' ||
                 initialLink.host == 'www.baakhapaa.com')) {
           DebugLogger.info(
-              "🌐 MAIN: Universal link detected, processing immediately");
+            "🌐 MAIN: Universal link detected, processing immediately",
+          );
 
           // Handle referral links - store for later processing after login
           if (initialLink.path == '/register' &&
               initialLink.queryParameters.containsKey('referral')) {
             String referralCode = initialLink.queryParameters['referral']!;
             DebugLogger.info(
-                "🎯 MAIN: Immediate referral processing: $referralCode");
+              "🎯 MAIN: Immediate referral processing: $referralCode",
+            );
 
             // Store referral with fresh timestamp and mark for immediate navigation
             await prefs.setString('pending_referral_code', referralCode);
-            await prefs.setInt('pending_referral_timestamp',
-                DateTime.now().millisecondsSinceEpoch);
+            await prefs.setInt(
+              'pending_referral_timestamp',
+              DateTime.now().millisecondsSinceEpoch,
+            );
             await prefs.setString('immediate_navigation', 'register_referral');
             DebugLogger.info(
-                "✅ MAIN: Referral stored for immediate navigation");
+              "✅ MAIN: Referral stored for immediate navigation",
+            );
 
             debug.DebugLogger.success(
-                "Universal link referral handled immediately: $referralCode");
+              "Universal link referral handled immediately: $referralCode",
+            );
           }
           // All other deep links are handled directly by DeepLinkHandler.init()
           // Do NOT store them to SharedPreferences to avoid persistence issues
@@ -604,21 +638,19 @@ void main() async {
     SentryService.testSentryIntegration();
 
     runApp(
-        // Use MultiProvider to provide both AppStateNotifier and TutorialFlowProvider at the top level
-        MultiProvider(
-      providers: [
-        // Use the global auth instance
-        ChangeNotifierProvider<Auth>.value(value: globalAuth),
-        ChangeNotifierProvider.value(value: appStateNotifier),
-        ChangeNotifierProvider.value(value: tutorialFlowProvider),
-        ChangeNotifierProvider.value(value: languageProvider),
-        ChangeNotifierProvider.value(value: currencyProvider),
-      ],
-      child: ClarityWidget(
-        app: MyApp(),
-        clarityConfig: clarityConfig,
+      // Use MultiProvider to provide both AppStateNotifier and TutorialFlowProvider at the top level
+      MultiProvider(
+        providers: [
+          // Use the global auth instance
+          ChangeNotifierProvider<Auth>.value(value: globalAuth),
+          ChangeNotifierProvider.value(value: appStateNotifier),
+          ChangeNotifierProvider.value(value: tutorialFlowProvider),
+          ChangeNotifierProvider.value(value: languageProvider),
+          ChangeNotifierProvider.value(value: currencyProvider),
+        ],
+        child: ClarityWidget(app: MyApp(), clarityConfig: clarityConfig),
       ),
-    ));
+    );
   });
 }
 
@@ -653,26 +685,27 @@ class _MyAppState extends State<MyApp> {
         // Make the payment result available through a custom method
         _handlePaymentResult(paymentResult);
       },
-      onMessage: (
-        khalti, {
-        description,
-        statusCode,
-        event,
-        needsPaymentConfirmation,
-      }) async {
-        log(
-          'Khalti Message - Description: $description, Status Code: $statusCode, Event: $event, NeedsPaymentConfirmation: $needsPaymentConfirmation',
-        );
+      onMessage:
+          (
+            khalti, {
+            description,
+            statusCode,
+            event,
+            needsPaymentConfirmation,
+          }) async {
+            log(
+              'Khalti Message - Description: $description, Status Code: $statusCode, Event: $event, NeedsPaymentConfirmation: $needsPaymentConfirmation',
+            );
 
-        // Verify payment if needed
-        if (needsPaymentConfirmation == true) {
-          try {
-            await khalti.verify();
-          } catch (e) {
-            log('Payment verification failed: $e');
-          }
-        }
-      },
+            // Verify payment if needed
+            if (needsPaymentConfirmation == true) {
+              try {
+                await khalti.verify();
+              } catch (e) {
+                log('Payment verification failed: $e');
+              }
+            }
+          },
       onReturn: () => log('Successfully redirected to return_url.'),
     );
 
@@ -703,189 +736,168 @@ class _MyAppState extends State<MyApp> {
     final GlobalKey<ScaffoldState> scaffoldKeyOrder =
         GlobalKey<ScaffoldState>();
     return MultiProvider(
-        providers: [
-          // Remove the duplicate Auth provider since we're now using globalAuth
-          // ChangeNotifierProvider(
-          //  create: (ctx) => Auth(),
-          // ),
-          ChangeNotifierProvider(
-            create: (ctx) => AssistiveTouchProvider(),
+      providers: [
+        // Remove the duplicate Auth provider since we're now using globalAuth
+        // ChangeNotifierProvider(
+        //  create: (ctx) => Auth(),
+        // ),
+        ChangeNotifierProvider(create: (ctx) => AssistiveTouchProvider()),
+        ChangeNotifierProvider(create: (ctx) => RewardsProvider()),
+        ChangeNotifierProvider(create: (ctx) => VideoStateProvider()),
+        ChangeNotifierProvider(create: (ctx) => PuppetInteractionProvider()),
+        // ChangeNotifierProvider(
+        //   create: (ctx) => OnboardingProvider(),
+        // ),
+        // ignore: missing_required_param
+        ChangeNotifierProxyProvider<Auth, Story>(
+          update: (ctx, auth, previousStory) => Story(
+            auth.token,
+            previousStory == null ? [] : previousStory.seasons,
+            // Preserve critical state from previous provider instance
+            selectedSeason: previousStory?.selectedSeason,
+            episode: previousStory?.episode,
+            featuredSeasons: previousStory?.featuredSeasons,
+            suggestedSeasons: previousStory?.suggestedSeasons,
+            difficultSeasons: previousStory?.difficultSeasons,
+            myListItems: previousStory?.myListItems,
+            continueWatchingItems: previousStory?.continueWatchingItems,
+            premiumCreatorSeasons: previousStory?.premiumCreatorSeasons,
+            creatorSeasons: previousStory?.creatorSeasons,
+            readableSeasons: previousStory?.readableSeasons,
+            readingStreak: previousStory?.readingStreak,
           ),
-          ChangeNotifierProvider(
-            create: (ctx) => RewardsProvider(),
+          create: (BuildContext context) => Story('', []),
+        ),
+        // ignore: missing_required_param
+        ChangeNotifierProxyProvider<Auth, Shop>(
+          update: (ctx, auth, previousShop) =>
+              Shop(auth.token, previousShop == null ? {} : previousShop.shop),
+          create: (BuildContext context) => Shop('', {}),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) {
+            final cart = Cart();
+            cart.loadCartFromStorage(); // Load cart from storage on initialization
+            return cart;
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) {
+            final favorites = Favorites();
+            favorites
+                .loadFavoritesFromStorage(); // Load favorites from storage on initialization
+            return favorites;
+          },
+        ),
+        // ignore: missing_required_param
+        ChangeNotifierProxyProvider<Auth, Orders>(
+          update: (ctx, auth, previousOrders) => Orders(
+            auth.token,
+            previousOrders == null ? [] : previousOrders.orders,
+            auth.username!,
           ),
-          ChangeNotifierProvider(
-            create: (ctx) => VideoStateProvider(),
+          create: (BuildContext context) => Orders('', [], ''),
+        ),
+        // ignore: missing_required_param
+        ChangeNotifierProxyProvider<Auth, Leaderboard>(
+          update: (ctx, auth, previousLeaderboard) => Leaderboard(
+            auth.token,
+            previousLeaderboard == null ? [] : previousLeaderboard.leaderboard,
           ),
-          ChangeNotifierProvider(
-            create: (ctx) => PuppetInteractionProvider(),
+          create: (BuildContext context) => Leaderboard('', []),
+        ),
+        // ignore: missing_required_param
+        ChangeNotifierProxyProvider<Auth, Announcement>(
+          update: (ctx, auth, previousNotification) => Announcement(
+            auth.token,
+            previousNotification == null
+                ? []
+                : previousNotification.notification,
+            onNotificationRead: () => auth.decrementNotificationCount(),
+            onAllNotificationsRead: () => auth.clearNotificationCount(),
           ),
-          // ChangeNotifierProvider(
-          //   create: (ctx) => OnboardingProvider(),
-          // ),
-          // ignore: missing_required_param
-          ChangeNotifierProxyProvider<Auth, Story>(
-            update: (ctx, auth, previousStory) => Story(
-              auth.token,
-              previousStory == null ? [] : previousStory.seasons,
-              // Preserve critical state from previous provider instance
-              selectedSeason: previousStory?.selectedSeason,
-              episode: previousStory?.episode,
-              featuredSeasons: previousStory?.featuredSeasons,
-              suggestedSeasons: previousStory?.suggestedSeasons,
-              difficultSeasons: previousStory?.difficultSeasons,
-              myListItems: previousStory?.myListItems,
-              continueWatchingItems: previousStory?.continueWatchingItems,
-              premiumCreatorSeasons: previousStory?.premiumCreatorSeasons,
-              creatorSeasons: previousStory?.creatorSeasons,
-              readableSeasons: previousStory?.readableSeasons,
-              readingStreak: previousStory?.readingStreak,
-            ),
-            create: (BuildContext context) => Story('', []),
+          create: (BuildContext context) => Announcement('', []),
+        ),
+        // ignore: missing_required_param
+        ChangeNotifierProxyProvider<Auth, Shorts>(
+          update: (ctx, auth, previousShorts) =>
+              Shorts.fromPrevious(auth.token, previousShorts),
+          create: (BuildContext context) => Shorts('', []),
+        ),
+        // ignore: missing_required_param
+        ChangeNotifierProxyProvider<Auth, Challenge>(
+          update: (ctx, auth, previousChallenges) => Challenge(
+            auth.token,
+            previousChallenges == null ? [] : previousChallenges.challenges,
           ),
-          // ignore: missing_required_param
-          ChangeNotifierProxyProvider<Auth, Shop>(
-            update: (ctx, auth, previousShop) => Shop(
-              auth.token,
-              previousShop == null ? {} : previousShop.shop,
-            ),
-            create: (BuildContext context) => Shop('', {}),
-          ),
-          ChangeNotifierProvider(
-            create: (ctx) {
-              final cart = Cart();
-              cart.loadCartFromStorage(); // Load cart from storage on initialization
-              return cart;
-            },
-          ),
-          ChangeNotifierProvider(
-            create: (ctx) {
-              final favorites = Favorites();
-              favorites
-                  .loadFavoritesFromStorage(); // Load favorites from storage on initialization
-              return favorites;
-            },
-          ),
-          // ignore: missing_required_param
-          ChangeNotifierProxyProvider<Auth, Orders>(
-            update: (ctx, auth, previousOrders) => Orders(
-              auth.token,
-              previousOrders == null ? [] : previousOrders.orders,
-              auth.username!,
-            ),
-            create: (BuildContext context) => Orders('', [], ''),
-          ),
-          // ignore: missing_required_param
-          ChangeNotifierProxyProvider<Auth, Leaderboard>(
-            update: (ctx, auth, previousLeaderboard) => Leaderboard(
-              auth.token,
-              previousLeaderboard == null
-                  ? []
-                  : previousLeaderboard.leaderboard,
-            ),
-            create: (BuildContext context) => Leaderboard('', []),
-          ),
-          // ignore: missing_required_param
-          ChangeNotifierProxyProvider<Auth, Announcement>(
-            update: (ctx, auth, previousNotification) => Announcement(
-              auth.token,
-              previousNotification == null
-                  ? []
-                  : previousNotification.notification,
-              onNotificationRead: () => auth.decrementNotificationCount(),
-              onAllNotificationsRead: () => auth.clearNotificationCount(),
-            ),
-            create: (BuildContext context) => Announcement('', []),
-          ),
-          // ignore: missing_required_param
-          ChangeNotifierProxyProvider<Auth, Shorts>(
-            update: (ctx, auth, previousShorts) => Shorts.fromPrevious(
-              auth.token,
-              previousShorts,
-            ),
-            create: (BuildContext context) => Shorts('', []),
-          ),
-          // ignore: missing_required_param
-          ChangeNotifierProxyProvider<Auth, Challenge>(
-            update: (ctx, auth, previousChallenges) => Challenge(
-              auth.token,
-              previousChallenges == null ? [] : previousChallenges.challenges,
-            ),
-            create: (BuildContext context) => Challenge('', []),
-          ),
-          // Story Creation Provider
-          ChangeNotifierProxyProvider<Auth, StoryCreation>(
-            update: (ctx, auth, previousStoryCreation) => StoryCreation(
-              auth.token,
-            ),
-            create: (BuildContext context) => StoryCreation(''),
-          ),
-          ChangeNotifierProvider(
-            create: (_) => ConnectivityService(),
-          ),
-          ChangeNotifierProxyProvider<Auth, Comments>(
-            create: (ctx) => Comments('', []),
-            update: (ctx, auth, previousComments) => Comments(
-              auth.token,
-              previousComments?.comments ?? [],
-            ),
-          ),
-          ChangeNotifierProvider(
-            create: (_) => ChatbotProvider(),
-          ),
-          ChangeNotifierProvider(
-            create: (_) => SocialAuthProvider()..initialize(),
-          ),
-          ChangeNotifierProxyProvider<Auth, Levels>(
-            update: (ctx, auth, previousLevels) {
-              // Preserve state from previous instance if it exists and token hasn't changed
-              final Levels levels;
-              if (previousLevels != null &&
-                  previousLevels.authToken == auth.token) {
-                // Token hasn't changed, reuse the previous instance
-                levels = previousLevels;
-              } else if (previousLevels != null) {
-                // Token changed, but preserve state from previous instance
-                levels = Levels.fromPrevious(previousLevels, auth.token);
-              } else {
-                // First time creation
-                levels = Levels(auth.token);
-              }
+          create: (BuildContext context) => Challenge('', []),
+        ),
+        // Story Creation Provider
+        ChangeNotifierProxyProvider<Auth, StoryCreation>(
+          update: (ctx, auth, previousStoryCreation) =>
+              StoryCreation(auth.token),
+          create: (BuildContext context) => StoryCreation(''),
+        ),
+        ChangeNotifierProvider(create: (_) => ConnectivityService()),
+        ChangeNotifierProxyProvider<Auth, Comments>(
+          create: (ctx) => Comments('', []),
+          update: (ctx, auth, previousComments) =>
+              Comments(auth.token, previousComments?.comments ?? []),
+        ),
+        ChangeNotifierProvider(create: (_) => ChatbotProvider()),
+        ChangeNotifierProvider(
+          create: (_) => SocialAuthProvider()..initialize(),
+        ),
+        ChangeNotifierProxyProvider<Auth, Levels>(
+          update: (ctx, auth, previousLevels) {
+            // Preserve state from previous instance if it exists and token hasn't changed
+            final Levels levels;
+            if (previousLevels != null &&
+                previousLevels.authToken == auth.token) {
+              // Token hasn't changed, reuse the previous instance
+              levels = previousLevels;
+            } else if (previousLevels != null) {
+              // Token changed, but preserve state from previous instance
+              levels = Levels.fromPrevious(previousLevels, auth.token);
+            } else {
+              // First time creation
+              levels = Levels(auth.token);
+            }
 
-              // Initialize the level manager when both providers are ready
-              if (auth.isAuth) {
-                LevelManager.instance.initialize(auth, levels);
-              }
+            // Initialize the level manager when both providers are ready
+            if (auth.isAuth) {
+              LevelManager.instance.initialize(auth, levels);
+            }
 
-              return levels;
-            },
-            create: (BuildContext context) => Levels(''),
-          ),
-          ChangeNotifierProxyProvider<Auth, Vendor>(
-            create: (_) => Vendor(''),
-            update: (ctx, auth, previousVendor) => Vendor(auth.token),
-          ),
-          ChangeNotifierProxyProvider<Auth, CollaborationProvider>(
-            update: (ctx, auth, previous) =>
-                CollaborationProvider.fromPrevious(auth.token, previous),
-            create: (BuildContext context) => CollaborationProvider(''),
-          ),
-          ChangeNotifierProxyProvider<Auth, AffiliateProvider>(
-            create: (_) => AffiliateProvider(null),
-            update: (ctx, auth, previous) {
-              final provider = previous ?? AffiliateProvider(auth.token);
-              provider.authToken = auth.token;
-              provider.updateFromAuth(auth);
-              return provider;
-            },
-          ),
-          ChangeNotifierProxyProvider<Auth, DeliveryProvider>(
-            create: (_) => DeliveryProvider(''),
-            update: (ctx, auth, previous) => DeliveryProvider(auth.token),
-          ),
-        ],
-        child: Consumer<LanguageProvider>(
-            builder: (context, languageProvider, child) {
+            return levels;
+          },
+          create: (BuildContext context) => Levels(''),
+        ),
+        ChangeNotifierProxyProvider<Auth, Vendor>(
+          create: (_) => Vendor(''),
+          update: (ctx, auth, previousVendor) => Vendor(auth.token),
+        ),
+        ChangeNotifierProxyProvider<Auth, CollaborationProvider>(
+          update: (ctx, auth, previous) =>
+              CollaborationProvider.fromPrevious(auth.token, previous),
+          create: (BuildContext context) => CollaborationProvider(''),
+        ),
+        ChangeNotifierProxyProvider<Auth, AffiliateProvider>(
+          create: (_) => AffiliateProvider(null),
+          update: (ctx, auth, previous) {
+            final provider = previous ?? AffiliateProvider(auth.token);
+            provider.authToken = auth.token;
+            provider.updateFromAuth(auth);
+            return provider;
+          },
+        ),
+        ChangeNotifierProxyProvider<Auth, DeliveryProvider>(
+          create: (_) => DeliveryProvider(''),
+          update: (ctx, auth, previous) => DeliveryProvider(auth.token),
+        ),
+      ],
+      child: Consumer<LanguageProvider>(
+        builder: (context, languageProvider, child) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             navigatorKey: mainNavigatorKey,
@@ -1026,6 +1038,8 @@ class _MyAppState extends State<MyApp> {
               DraftsScreen.routeName: (ctx) => DraftsScreen(),
               PreviewShortsScreen.routeName: (ctx) => PreviewShortsScreen(),
               CreateStoryTypeScreen.routeName: (ctx) => CreateStoryTypeScreen(),
+              AiContentGeneratorScreen.routeName: (ctx) =>
+                  const AiContentGeneratorScreen(),
               CreateSeasonScreen.routeName: (ctx) => CreateSeasonScreen(),
               CreateEpisodeScreen.routeName: (ctx) => CreateEpisodeScreen(),
               ViewEpisodesScreen.routeName: (ctx) => ViewEpisodesScreen(),
@@ -1062,7 +1076,9 @@ class _MyAppState extends State<MyApp> {
                   const OrderTrackingScreen(),
             },
           );
-        }));
+        },
+      ),
+    );
   }
 }
 
@@ -1104,7 +1120,7 @@ class _GlobalEventListenerState extends State<_GlobalEventListener> {
     // Listen to FCM notification events
     _fcmSub = rewardNotificationStream.stream.listen(_handleFcmEvent);
 
-// First-launch onboarding: show quest hint pointing to header puppet
+    // First-launch onboarding: show quest hint pointing to header puppet
     _showFirstLaunchQuestIntroIfNeeded();
   }
 
@@ -1123,8 +1139,10 @@ class _GlobalEventListenerState extends State<_GlobalEventListener> {
       await Future.delayed(const Duration(seconds: 3));
       if (!mounted) return;
 
-      final provider =
-          Provider.of<AssistiveTouchProvider>(context, listen: false);
+      final provider = Provider.of<AssistiveTouchProvider>(
+        context,
+        listen: false,
+      );
       provider.showQuestGuidance(
         '👆 Tap the puppet here to see your quests and level up!',
         seconds: 10,
@@ -1362,8 +1380,9 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
             decoration: BoxDecoration(
               color: const Color(0xFF2A2A2A),
               borderRadius: BorderRadius.circular(14),
-              border:
-                  Border.all(color: const Color(0xFFF4B625).withOpacity(0.3)),
+              border: Border.all(
+                color: const Color(0xFFF4B625).withOpacity(0.3),
+              ),
               boxShadow: const [
                 BoxShadow(
                   color: Colors.black45,
@@ -1381,8 +1400,11 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                     color: const Color(0xFFF4B625).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(widget.icon,
-                      color: const Color(0xFFF4B625), size: 20),
+                  child: Icon(
+                    widget.icon,
+                    color: const Color(0xFFF4B625),
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1415,8 +1437,11 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                 ),
                 GestureDetector(
                   onTap: () => _ctrl.reverse().whenComplete(widget.onDismiss),
-                  child: Icon(Icons.close,
-                      color: Colors.white.withOpacity(0.5), size: 18),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.white.withOpacity(0.5),
+                    size: 18,
+                  ),
                 ),
               ],
             ),

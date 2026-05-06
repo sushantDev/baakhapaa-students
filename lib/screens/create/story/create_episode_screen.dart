@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
+import '../../../models/ai_generated_content.dart';
 import '../../../widgets/creator_content_selector.dart';
 import '../../../widgets/affiliate_product_selector.dart';
 import '../../../models/affiliate_product.dart';
@@ -37,11 +38,7 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
 
   // Step flow
   int _currentStep = 0; // 0, 1, 2
-  final List<String> _stepTitles = [
-    'Media',
-    'Details & Game',
-    'Extras',
-  ];
+  final List<String> _stepTitles = ['Media', 'Details & Game', 'Extras'];
 
   // Add this to track expansion state
   final Map<String, bool> _expandedSections = {};
@@ -113,6 +110,17 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
         // _achievementId = args['achievement_id'] as int?;
         _productId = args['product_id'] as int?;
 
+        final aiPrefilled = args['aiPrefilled'] as AiGeneratedContent?;
+        if (aiPrefilled != null) {
+          _titleController.text = aiPrefilled.title;
+          _descriptionController.text = aiPrefilled.description;
+          _coinsController.text = aiPrefilled.coins.toString();
+          _livesController.text = aiPrefilled.lives.toString();
+          _coinsUsersController.text = aiPrefilled.pointsUsers.toString();
+          _durationController.text = aiPrefilled.duration.toString();
+          _publishDate = aiPrefilled.publishDate;
+        }
+
         if (_challengeLives != null) {
           _livesController.text = _challengeLives.toString();
         }
@@ -139,12 +147,15 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
           }
         } else if (_selectedSeasonTitle != null) {
           DebugLogger.info(
-              '📺 Creating episode for season: $_selectedSeasonTitle (ID: $_selectedSeasonId)');
+            '📺 Creating episode for season: $_selectedSeasonTitle (ID: $_selectedSeasonId)',
+          );
         }
       }
       _fetchMetadata();
-      Provider.of<AffiliateProvider>(context, listen: false)
-          .fetchAffiliateStatus();
+      Provider.of<AffiliateProvider>(
+        context,
+        listen: false,
+      ).fetchAffiliateStatus();
     });
   }
 
@@ -358,22 +369,22 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
 
       _videoPlayerController = VideoPlayerController.networkUrl(
         Uri.parse(fullUrl),
-        httpHeaders: {
-          'Accept': '*/*',
-        },
+        httpHeaders: {'Accept': '*/*'},
       );
 
       _videoPlayerController!.addListener(() {
         if (_videoPlayerController!.value.hasError) {
           DebugLogger.error(
-              '❌ Video player error: ${_videoPlayerController!.value.errorDescription}');
+            '❌ Video player error: ${_videoPlayerController!.value.errorDescription}',
+          );
           if (mounted) {
             setState(() {
               _isVideoInitialized = false;
               _isVideoLoading = false;
             });
             _showErrorSnackBar(
-                'Video playback error: ${_videoPlayerController!.value.errorDescription}');
+              'Video playback error: ${_videoPlayerController!.value.errorDescription}',
+            );
           }
         }
       });
@@ -474,12 +485,15 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
           videoFile: _videoFile,
           videoDescription: null,
           products: _selectedProducts,
-          affiliateProductIds:
-              _selectedAffiliateProducts.map((p) => p.id).toList(),
-          relatedShortsIds:
-              _selectedRelatedShorts.map((s) => s['id'] as int).toList(),
-          relatedEpisodeIds:
-              _selectedRelatedEpisodes.map((e) => e['id'] as int).toList(),
+          affiliateProductIds: _selectedAffiliateProducts
+              .map((p) => p.id)
+              .toList(),
+          relatedShortsIds: _selectedRelatedShorts
+              .map((s) => s['id'] as int)
+              .toList(),
+          relatedEpisodeIds: _selectedRelatedEpisodes
+              .map((e) => e['id'] as int)
+              .toList(),
           publishDate: DateFormat('yyyy-MM-dd').format(_publishDate),
           imageFile: _imageFile,
         );
@@ -501,12 +515,15 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
           videoFile: _videoFile!,
           videoDescription: null,
           products: _selectedProducts,
-          affiliateProductIds:
-              _selectedAffiliateProducts.map((p) => p.id).toList(),
-          relatedShortsIds:
-              _selectedRelatedShorts.map((s) => s['id'] as int).toList(),
-          relatedEpisodeIds:
-              _selectedRelatedEpisodes.map((e) => e['id'] as int).toList(),
+          affiliateProductIds: _selectedAffiliateProducts
+              .map((p) => p.id)
+              .toList(),
+          relatedShortsIds: _selectedRelatedShorts
+              .map((s) => s['id'] as int)
+              .toList(),
+          relatedEpisodeIds: _selectedRelatedEpisodes
+              .map((e) => e['id'] as int)
+              .toList(),
           publishDate: DateFormat('yyyy-MM-dd').format(_publishDate),
           imageFile: _imageFile,
           isChallenge: _isChallenge,
@@ -524,10 +541,12 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
       }
     } catch (e) {
       DebugLogger.error(
-          'Error ${_isEditMode ? 'updating' : 'creating'} episode: $e');
+        'Error ${_isEditMode ? 'updating' : 'creating'} episode: $e',
+      );
       if (mounted) {
         _showErrorSnackBar(
-            'Failed to ${_isEditMode ? 'update' : 'create'} episode: ${e.toString()}');
+          'Failed to ${_isEditMode ? 'update' : 'create'} episode: ${e.toString()}',
+        );
       }
     } finally {
       if (mounted) {
@@ -558,11 +577,13 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: AppBar(
-        title: Text(_isChallenge == true
-            ? 'Create Episode (Challenge)'
-            : _isEditMode
-                ? 'Edit Episode'
-                : 'Create Episode'),
+        title: Text(
+          _isChallenge == true
+              ? 'Create Episode (Challenge)'
+              : _isEditMode
+              ? 'Edit Episode'
+              : 'Create Episode',
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -595,8 +616,8 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                 color: isCompleted
                     ? Colors.amber
                     : isActive
-                        ? Colors.amber.withValues(alpha: 0.6)
-                        : Colors.grey.withValues(alpha: 0.3),
+                    ? Colors.amber.withValues(alpha: 0.6)
+                    : Colors.grey.withValues(alpha: 0.3),
               ),
             ),
           );
@@ -663,8 +684,9 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color:
-                          isDark ? Colors.grey.shade900 : Colors.grey.shade50,
+                      color: isDark
+                          ? Colors.grey.shade900
+                          : Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -680,9 +702,11 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                             ),
                           ),
                         ),
-                        Icon(Icons.lock_rounded,
-                            color: isDark ? Colors.white38 : Colors.black26,
-                            size: 18),
+                        Icon(
+                          Icons.lock_rounded,
+                          color: isDark ? Colors.white38 : Colors.black26,
+                          size: 18,
+                        ),
                       ],
                     ),
                   )
@@ -735,7 +759,11 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
         // Bottom navigation
         Padding(
           padding: EdgeInsets.fromLTRB(
-              24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+            24,
+            12,
+            24,
+            MediaQuery.of(context).padding.bottom + 16,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -859,8 +887,9 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                           icon: Icons.favorite_rounded,
                           isDark: isDark,
                           keyboardType: TextInputType.number,
-                          enabled: !(_isChallenge == true &&
-                              _challengeLives != null),
+                          enabled:
+                              !(_isChallenge == true &&
+                                  _challengeLives != null),
                           validator: (v) =>
                               v == null || v.isEmpty ? 'Required' : null,
                         ),
@@ -892,8 +921,9 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                           icon: Icons.timer_rounded,
                           isDark: isDark,
                           keyboardType: TextInputType.number,
-                          enabled: !(_isChallenge == true &&
-                              _challengeDuration != null),
+                          enabled:
+                              !(_isChallenge == true &&
+                                  _challengeDuration != null),
                           validator: (v) =>
                               v == null || v.isEmpty ? 'Required' : null,
                         ),
@@ -908,7 +938,11 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
           // Bottom navigation
           Padding(
             padding: EdgeInsets.fromLTRB(
-                24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+              24,
+              12,
+              24,
+              MediaQuery.of(context).padding.bottom + 16,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -1003,7 +1037,8 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                         return Chip(
                           label: Text(p.title),
                           onDeleted: () => setState(
-                              () => _selectedAffiliateProducts.remove(p)),
+                            () => _selectedAffiliateProducts.remove(p),
+                          ),
                           deleteIcon: const Icon(Icons.close, size: 16),
                           backgroundColor: Colors.amber.withOpacity(0.2),
                         );
@@ -1019,8 +1054,10 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                                 .map<int>((p) => p.id)
                                 .toList(),
                             onSelected: (products) {
-                              setState(() => _selectedAffiliateProducts =
-                                  List<AffiliateProduct>.from(products));
+                              setState(
+                                () => _selectedAffiliateProducts =
+                                    List<AffiliateProduct>.from(products),
+                              );
                             },
                           ),
                         ),
@@ -1071,7 +1108,8 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                         return Chip(
                           label: Text('🎬 ${e['title'] ?? 'Untitled'}'),
                           onDeleted: () => setState(
-                              () => _selectedRelatedEpisodes.remove(e)),
+                            () => _selectedRelatedEpisodes.remove(e),
+                          ),
                           deleteIcon: const Icon(Icons.close, size: 16),
                           backgroundColor: Colors.purple.withOpacity(0.2),
                         );
@@ -1087,24 +1125,29 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                           initialSelectedShorts: _selectedRelatedShorts,
                           initialSelectedEpisodes: _selectedRelatedEpisodes,
                           initialSelectedSeasons: const [],
-                          onSelected: (
-                              {required List<AffiliateProduct>
-                                  affiliateProducts,
-                              required shorts,
-                              required episodes,
-                              required seasons}) {
-                            setState(() {
-                              _selectedRelatedShorts =
-                                  List<dynamic>.from(shorts);
-                              _selectedRelatedEpisodes =
-                                  List<dynamic>.from(episodes);
-                            });
-                          },
+                          onSelected:
+                              ({
+                                required List<AffiliateProduct>
+                                affiliateProducts,
+                                required shorts,
+                                required episodes,
+                                required seasons,
+                              }) {
+                                setState(() {
+                                  _selectedRelatedShorts = List<dynamic>.from(
+                                    shorts,
+                                  );
+                                  _selectedRelatedEpisodes = List<dynamic>.from(
+                                    episodes,
+                                  );
+                                });
+                              },
                         ),
                       ),
                     );
                   },
-                  label: (_selectedRelatedShorts.isEmpty &&
+                  label:
+                      (_selectedRelatedShorts.isEmpty &&
                           _selectedRelatedEpisodes.isEmpty)
                       ? 'Select Featured Content'
                       : 'Change Featured Content',
@@ -1130,8 +1173,10 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline_rounded,
-                          color: Colors.blue.shade400),
+                      Icon(
+                        Icons.info_outline_rounded,
+                        color: Colors.blue.shade400,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -1154,7 +1199,11 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
         // Bottom navigation
         Padding(
           padding: EdgeInsets.fromLTRB(
-              24, 12, 24, MediaQuery.of(context).padding.bottom + 16),
+            24,
+            12,
+            24,
+            MediaQuery.of(context).padding.bottom + 16,
+          ),
           child: Row(
             children: [
               Expanded(
@@ -1187,8 +1236,9 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                       )
                     : _buildPrimaryButton(
                         onPressed: _submitEpisode,
-                        label:
-                            _isEditMode ? 'Update Episode' : 'Create Episode',
+                        label: _isEditMode
+                            ? 'Update Episode'
+                            : 'Create Episode',
                         isDark: isDark,
                       ),
               ),
@@ -1203,8 +1253,9 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
     final List<dynamic> allProducts = List<dynamic>.from(_products);
     final isExpanded = _expandedSections['products'] ?? false;
     final initialItemCount = 6;
-    final visibleProducts =
-        isExpanded ? allProducts : allProducts.take(initialItemCount).toList();
+    final visibleProducts = isExpanded
+        ? allProducts
+        : allProducts.take(initialItemCount).toList();
     final canExpand = allProducts.length > initialItemCount;
 
     return Column(
@@ -1227,15 +1278,16 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
               color: isDark
                   ? Colors.amber.shade900.withOpacity(0.2)
                   : Colors.amber.shade50,
-              border: Border.all(
-                color: Colors.amber.shade300.withOpacity(0.5),
-              ),
+              border: Border.all(color: Colors.amber.shade300.withOpacity(0.5)),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
-                Icon(Icons.lock_rounded,
-                    color: Colors.amber.shade600, size: 20),
+                Icon(
+                  Icons.lock_rounded,
+                  color: Colors.amber.shade600,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1268,7 +1320,8 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
             runSpacing: 8,
             children: visibleProducts.map<Widget>((product) {
               final id = product['id'] as int;
-              final name = product['name'] ??
+              final name =
+                  product['name'] ??
                   product['title'] ??
                   product['product_name'] ??
                   'Product #$id';
@@ -1357,9 +1410,7 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
           validator: validator,
           enabled: enabled,
           onChanged: onChanged,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
-          ),
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
@@ -1380,10 +1431,7 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: Colors.amber.shade600,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: Colors.amber.shade600, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -1449,10 +1497,7 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: Colors.amber.shade600,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: Colors.amber.shade600, width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -1486,10 +1531,7 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -1509,19 +1551,14 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
         },
         style: OutlinedButton.styleFrom(
           foregroundColor: isDark ? Colors.white70 : Colors.black87,
-          side: BorderSide(
-            color: isDark ? Colors.white24 : Colors.black12,
-          ),
+          side: BorderSide(color: isDark ? Colors.white24 : Colors.black12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -1546,8 +1583,11 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today_rounded,
-                color: Colors.amber.shade600, size: 22),
+            Icon(
+              Icons.calendar_today_rounded,
+              color: Colors.amber.shade600,
+              size: 22,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1572,8 +1612,10 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                color: isDark ? Colors.white38 : Colors.black26),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: isDark ? Colors.white38 : Colors.black26,
+            ),
           ],
         ),
       ),
@@ -1588,8 +1630,12 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            Image.file(_imageFile!,
-                height: 200, width: double.infinity, fit: BoxFit.cover),
+            Image.file(
+              _imageFile!,
+              height: 200,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
             Positioned(
               top: 8,
               right: 8,
@@ -1631,9 +1677,11 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.broken_image_rounded,
-                            size: 48,
-                            color: isDark ? Colors.white38 : Colors.black26),
+                        Icon(
+                          Icons.broken_image_rounded,
+                          size: 48,
+                          color: isDark ? Colors.white38 : Colors.black26,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Failed to load thumbnail',
@@ -1653,8 +1701,10 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
               child: GestureDetector(
                 onTap: _pickImage,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(20),
@@ -1664,8 +1714,10 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                     children: [
                       Icon(Icons.edit_rounded, color: Colors.white, size: 14),
                       SizedBox(width: 4),
-                      Text('Change',
-                          style: TextStyle(color: Colors.white, fontSize: 12)),
+                      Text(
+                        'Change',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
                     ],
                   ),
                 ),
@@ -1692,8 +1744,11 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.image_rounded,
-                  size: 40, color: isDark ? Colors.white38 : Colors.black26),
+              Icon(
+                Icons.image_rounded,
+                size: 40,
+                color: isDark ? Colors.white38 : Colors.black26,
+              ),
               const SizedBox(height: 8),
               Text(
                 'Tap to add thumbnail',
@@ -1726,8 +1781,10 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                   color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.video_file_rounded,
-                    color: Colors.green.shade600),
+                child: Icon(
+                  Icons.video_file_rounded,
+                  color: Colors.green.shade600,
+                ),
               ),
               title: Text(
                 _videoFile!.path.split('/').last,
@@ -1752,8 +1809,11 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                     color: Colors.red.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child:
-                      Icon(Icons.close, size: 16, color: Colors.red.shade400),
+                  child: Icon(
+                    Icons.close,
+                    size: 16,
+                    color: Colors.red.shade400,
+                  ),
                 ),
               ),
             ),
@@ -1786,8 +1846,10 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.video_library_rounded,
-                    color: Colors.blue.shade600),
+                child: Icon(
+                  Icons.video_library_rounded,
+                  color: Colors.blue.shade600,
+                ),
               ),
               title: Text(
                 'Current Video',
@@ -1800,8 +1862,10 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
               trailing: GestureDetector(
                 onTap: _pickVideo,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.amber.shade600.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -1830,7 +1894,10 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
                 padding: EdgeInsets.all(16.0),
                 child: ShimmerLoading(
                   child: SkeletonBox(
-                      width: double.infinity, height: 200, borderRadius: 12),
+                    width: double.infinity,
+                    height: 200,
+                    borderRadius: 12,
+                  ),
                 ),
               )
             else
@@ -1864,8 +1931,11 @@ class _CreateEpisodeScreenState extends State<CreateEpisodeScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.videocam_rounded,
-                  size: 40, color: isDark ? Colors.white38 : Colors.black26),
+              Icon(
+                Icons.videocam_rounded,
+                size: 40,
+                color: isDark ? Colors.white38 : Colors.black26,
+              ),
               const SizedBox(height: 8),
               Text(
                 'Tap to add video (Max 1GB)',

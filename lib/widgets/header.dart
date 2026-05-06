@@ -26,21 +26,18 @@ double _getAdaptiveFontSize(String text) {
   }
 }
 
-AppBar header(
-    {required BuildContext context,
-    bool isAppTitle = false,
-    required String titleText,
-    GlobalKey<ScaffoldState>? scaffoldKey}) {
+AppBar header({
+  required BuildContext context,
+  bool isAppTitle = false,
+  required String titleText,
+  GlobalKey<ScaffoldState>? scaffoldKey,
+}) {
   return AppBar(
     toolbarHeight: 57,
     backgroundColor: Colors.black,
     elevation: 0,
     scrolledUnderElevation: 0,
-    flexibleSpace: Container(
-      decoration: BoxDecoration(
-        color: Colors.black,
-      ),
-    ),
+    flexibleSpace: Container(decoration: BoxDecoration(color: Colors.black)),
     leading: scaffoldKey != null
         ? Container(
             margin: EdgeInsets.all(8),
@@ -55,10 +52,7 @@ AppBar header(
                 }
 
                 // Show puppet dashboard half-sheet
-                PuppetDashboard.show(
-                  context,
-                  navigatorKey: mainNavigatorKey,
-                );
+                PuppetDashboard.show(context, navigatorKey: mainNavigatorKey);
               },
               child: Consumer<Auth>(
                 builder: (context, auth, _) {
@@ -76,34 +70,80 @@ AppBar header(
                     }
                   } catch (_) {}
 
-                  return Container(
-                    width: 42,
-                    height: 42,
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFFF4B625),
-                        width: 2,
-                      ),
-                      color: Colors.grey.shade900,
-                    ),
-                    child: ClipOval(
-                      child: CachedNetworkImage(
-                        imageUrl: puppetUrl,
-                        fit: BoxFit.contain,
-                        placeholder: (_, __) => Container(
-                          color: Colors.grey.shade800,
-                          child: const Icon(Icons.smart_toy,
-                              color: Color(0xFFF4B625), size: 20),
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFF4B625),
+                            width: 2,
+                          ),
+                          color: Colors.grey.shade900,
                         ),
-                        errorWidget: (_, __, ___) => Container(
-                          color: Colors.grey.shade800,
-                          child: const Icon(Icons.smart_toy,
-                              color: Color(0xFFF4B625), size: 20),
+                        child: ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: puppetUrl,
+                            fit: BoxFit.contain,
+                            placeholder: (_, __) => Container(
+                              color: Colors.grey.shade800,
+                              child: const Icon(
+                                Icons.smart_toy,
+                                color: Color(0xFFF4B625),
+                                size: 20,
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: Colors.grey.shade800,
+                              child: const Icon(
+                                Icons.smart_toy,
+                                color: Color(0xFFF4B625),
+                                size: 20,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      if (auth.unreadMessageCount > 0)
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 2,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF5A5F),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.black,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Text(
+                              auth.unreadMessageCount > 99
+                                  ? '99+'
+                                  : auth.unreadMessageCount.toString(),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   );
                 },
               ),
@@ -120,9 +160,9 @@ AppBar header(
       overflow: TextOverflow.ellipsis,
       maxLines: 1,
     ),
+
     //   ),
     // ),
-
     actions: [
       Container(
         margin: EdgeInsets.only(right: 12),
@@ -137,12 +177,15 @@ AppBar header(
               builder: (context, currentStreak, _) {
                 final bool isActive = currentStreak > 0;
                 return GestureDetector(
-                  onTap: () => Navigator.of(context)
-                      .pushNamed(ReadingStreakScreen.routeName),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).pushNamed(ReadingStreakScreen.routeName),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 2),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 6,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -191,19 +234,18 @@ AppBar header(
                             minHeight: 44,
                           ),
                           color: Colors.white,
-                          icon: Icon(
-                            Icons.notifications_rounded,
-                            size: 24,
-                          ),
+                          icon: Icon(Icons.notifications_rounded, size: 24),
                           onPressed: () {
                             // Check if NotificationScreen is already in the navigation stack
                             bool isNotificationScreenAlreadyOpen =
                                 ModalRoute.of(context)?.settings.name ==
-                                    NotificationScreen.routeName;
+                                NotificationScreen.routeName;
 
                             if (!isNotificationScreenAlreadyOpen) {
                               Navigator.pushNamed(
-                                  context, NotificationScreen.routeName);
+                                context,
+                                NotificationScreen.routeName,
+                              );
                             }
                           },
                         ),
@@ -218,7 +260,7 @@ AppBar header(
                                 gradient: LinearGradient(
                                   colors: [
                                     Colors.orange.shade400,
-                                    Colors.orange.shade600
+                                    Colors.orange.shade600,
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(10),
@@ -368,9 +410,10 @@ class _HeaderFlameIconState extends State<_HeaderFlameIcon>
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
-    _pulse = Tween<double>(begin: 0.95, end: 1.05).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _pulse = Tween<double>(
+      begin: 0.95,
+      end: 1.05,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override

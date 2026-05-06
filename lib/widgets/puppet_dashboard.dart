@@ -64,8 +64,10 @@ class PuppetDashboard extends StatefulWidget {
         );
       },
       transitionBuilder: (ctx, anim, secondaryAnim, child) {
-        final curved =
-            CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
+        final curved = CurvedAnimation(
+          parent: anim,
+          curve: Curves.easeOutCubic,
+        );
         return SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(0, -1),
@@ -150,8 +152,10 @@ class _PuppetDashboardState extends State<PuppetDashboard>
   void _navigateTo(Widget screen) {
     // Pause any playing shorts video before navigating away
     try {
-      final videoState =
-          Provider.of<VideoStateProvider>(context, listen: false);
+      final videoState = Provider.of<VideoStateProvider>(
+        context,
+        listen: false,
+      );
       videoState.pauseVideo();
       videoState.clearAllActiveVideos();
     } catch (_) {}
@@ -163,14 +167,18 @@ class _PuppetDashboardState extends State<PuppetDashboard>
 
   void _pushNamed(String routeName, {Object? arguments}) {
     try {
-      final videoState =
-          Provider.of<VideoStateProvider>(context, listen: false);
+      final videoState = Provider.of<VideoStateProvider>(
+        context,
+        listen: false,
+      );
       videoState.pauseVideo();
       videoState.clearAllActiveVideos();
     } catch (_) {}
     widget.onClose();
-    widget.navigatorKey.currentState
-        ?.pushNamed(routeName, arguments: arguments);
+    widget.navigatorKey.currentState?.pushNamed(
+      routeName,
+      arguments: arguments,
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -193,11 +201,7 @@ class _PuppetDashboardState extends State<PuppetDashboard>
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black54,
-                    Colors.black38,
-                    Colors.black26,
-                  ],
+                  colors: [Colors.black54, Colors.black38, Colors.black26],
                   stops: const [0.0, 0.5, 1.0],
                 ),
               ),
@@ -211,8 +215,10 @@ class _PuppetDashboardState extends State<PuppetDashboard>
             onTap: () {}, // absorb tap
             onVerticalDragUpdate: (details) {
               setState(() {
-                _dragOffset =
-                    (_dragOffset + details.delta.dy).clamp(-double.infinity, 0);
+                _dragOffset = (_dragOffset + details.delta.dy).clamp(
+                  -double.infinity,
+                  0,
+                );
               });
             },
             onVerticalDragEnd: (details) {
@@ -260,8 +266,9 @@ class _PuppetDashboardState extends State<PuppetDashboard>
                             children: [
                               _buildPuppetPanel(context),
                               Container(
-                                  width: 1,
-                                  color: _kBorderColor.withOpacity(0.4)),
+                                width: 1,
+                                color: _kBorderColor.withOpacity(0.4),
+                              ),
                               Expanded(child: _buildContentPanel(context)),
                             ],
                           ),
@@ -324,7 +331,8 @@ class _PuppetDashboardState extends State<PuppetDashboard>
                 imageUrl: puppetUrl,
                 fit: BoxFit.contain,
                 placeholder: (_, __) => const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
                 errorWidget: (_, __, ___) =>
                     const Icon(Icons.smart_toy, size: 50, color: _kAccent),
               ),
@@ -410,7 +418,7 @@ class _PuppetDashboardState extends State<PuppetDashboard>
                 gradient: LinearGradient(
                   colors: [
                     _kAccent.withOpacity(0.15),
-                    _kAccent.withOpacity(0.05)
+                    _kAccent.withOpacity(0.05),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -418,8 +426,11 @@ class _PuppetDashboardState extends State<PuppetDashboard>
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.play_circle_fill_rounded,
-                      size: 22, color: _kAccent),
+                  const Icon(
+                    Icons.play_circle_fill_rounded,
+                    size: 22,
+                    color: _kAccent,
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     'Watch Ad',
@@ -454,7 +465,8 @@ class _PuppetDashboardState extends State<PuppetDashboard>
   Widget _buildContentPanel(BuildContext context) {
     if (_isLoading) {
       return const Center(
-          child: CircularProgressIndicator(color: _kAccent, strokeWidth: 2));
+        child: CircularProgressIndicator(color: _kAccent, strokeWidth: 2),
+      );
     }
     return Column(
       children: [
@@ -483,13 +495,7 @@ class _PuppetDashboardState extends State<PuppetDashboard>
         LeaderboardScreen(),
         null,
       ),
-      (
-        Icons.redeem,
-        'Gifts',
-        _kAccent,
-        GiftScreen(),
-        null,
-      ),
+      (Icons.redeem, 'Gifts', _kAccent, GiftScreen(), null),
       (
         Icons.people_rounded,
         'Collabs',
@@ -503,13 +509,14 @@ class _PuppetDashboardState extends State<PuppetDashboard>
         const Color(0xFF4CAF50),
         ConversationsScreen() as Widget,
         null,
-      )
+      ),
     ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         children: navItems.map((item) {
+          final isMessagesItem = item.$2 == 'Messages';
           return Expanded(
             child: GestureDetector(
               onTap: () => _navigateTo(item.$4),
@@ -531,30 +538,78 @@ class _PuppetDashboardState extends State<PuppetDashboard>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: item.$3.withOpacity(0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: item.$5 != null
-                          ? ClipOval(
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: CachedNetworkImage(
-                                  imageUrl: item.$5!,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (_, __, ___) => Icon(
-                                    Icons.card_giftcard_rounded,
-                                    size: 15,
-                                    color: item.$3,
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: item.$3.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: item.$5 != null
+                              ? ClipOval(
+                                  child: SizedBox(
+                                    width: 28,
+                                    height: 28,
+                                    child: CachedNetworkImage(
+                                      imageUrl: item.$5!,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, __, ___) => Icon(
+                                        Icons.card_giftcard_rounded,
+                                        size: 15,
+                                        color: item.$3,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            )
-                          : Icon(item.$1, size: 15, color: item.$3),
+                                )
+                              : Icon(item.$1, size: 15, color: item.$3),
+                        ),
+                        if (isMessagesItem)
+                          Positioned(
+                            top: -4,
+                            right: -4,
+                            child: Consumer<Auth>(
+                              builder: (context, auth, _) {
+                                if (auth.unreadMessageCount <= 0) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 1,
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF5A5F),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFF0F0F0F),
+                                      width: 1.2,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    auth.unreadMessageCount > 99
+                                        ? '99+'
+                                        : auth.unreadMessageCount.toString(),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w700,
+                                      height: 1,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -606,10 +661,7 @@ class _HomeTab extends StatelessWidget {
   final void Function(Widget screen) onNavigate;
   final void Function(String route, {Object? arguments}) onPushNamed;
 
-  const _HomeTab({
-    required this.onNavigate,
-    required this.onPushNamed,
-  });
+  const _HomeTab({required this.onNavigate, required this.onPushNamed});
 
   @override
   Widget build(BuildContext context) {
@@ -617,7 +669,9 @@ class _HomeTab extends StatelessWidget {
       child: Column(
         children: [
           _CurrentQuestSection(
-              onNavigate: onNavigate, onPushNamed: onPushNamed),
+            onNavigate: onNavigate,
+            onPushNamed: onPushNamed,
+          ),
           const SizedBox(height: 10),
           _RewardProgressSection(onNavigate: onNavigate),
           const SizedBox(height: 10),
@@ -658,8 +712,10 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
       final hint = (seasonName != null && seasonName.isNotEmpty)
           ? 'Tap any episode in "$seasonName" to watch and complete the quiz! 📺'
           : 'Tap any episode to watch it and complete the quiz! 📺';
-      Provider.of<AssistiveTouchProvider>(context, listen: false)
-          .showQuestGuidance(hint);
+      Provider.of<AssistiveTouchProvider>(
+        context,
+        listen: false,
+      ).showQuestGuidance(hint);
     } catch (_) {}
 
     try {
@@ -730,7 +786,8 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
 
     DebugLogger.info('🎯 QUEST NAV: full_action=$action');
     DebugLogger.info(
-        '🎯 QUEST NAV: actionKey="$actionKey" type="$type" options="$options" (${options.runtimeType})');
+      '🎯 QUEST NAV: actionKey="$actionKey" type="$type" options="$options" (${options.runtimeType})',
+    );
     // Normalise the options field to a plain string for matching.
     String optionsStr = '';
     if (options is String) {
@@ -762,8 +819,9 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
         case 'episode':
         case 'season':
           final rawId = action['required_id'];
-          final seasonId =
-              rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '') ?? 0;
+          final seasonId = rawId is int
+              ? rawId
+              : int.tryParse(rawId?.toString() ?? '') ?? 0;
           final seasonName = action['required_value']?.toString() ?? '';
           if (seasonId > 0) {
             _navigateToSeasonById(seasonId, seasonName: seasonName);
@@ -819,8 +877,9 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
           // Fallback: infer route from title/description when action_key is
           // missing (e.g. backend didn't include it in the response).
           final title = (actionData['title'] ?? '').toString().toLowerCase();
-          final desc =
-              (actionData['description'] ?? '').toString().toLowerCase();
+          final desc = (actionData['description'] ?? '')
+              .toString()
+              .toLowerCase();
           final combined = '$title $desc';
           if (combined.contains('episode') || combined.contains('season')) {
             route = '/story-screen';
@@ -848,13 +907,16 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
     }
 
     DebugLogger.info(
-        '\ud83c\udfaf QUEST NAV: navigating to route="$route" arguments=$arguments');
+      '\ud83c\udfaf QUEST NAV: navigating to route="$route" arguments=$arguments',
+    );
     // Show quest guidance hint below the header on the destination screen
     final guidance = _guidanceFor(route, actionData: actionData);
     if (guidance.isNotEmpty) {
       try {
-        Provider.of<AssistiveTouchProvider>(context, listen: false)
-            .showQuestGuidance(guidance);
+        Provider.of<AssistiveTouchProvider>(
+          context,
+          listen: false,
+        ).showQuestGuidance(guidance);
       } catch (_) {}
     }
     widget.onPushNamed(route, arguments: arguments);
@@ -881,9 +943,10 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
           color: _kCardBg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: _expanded
-                  ? _kAccent.withOpacity(0.4)
-                  : _kBorderColor.withOpacity(0.6)),
+            color: _expanded
+                ? _kAccent.withOpacity(0.4)
+                : _kBorderColor.withOpacity(0.6),
+          ),
         ),
         child: Column(
           children: [
@@ -899,8 +962,11 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.bolt_rounded,
-                      color: Colors.black, size: 16),
+                  child: const Icon(
+                    Icons.bolt_rounded,
+                    color: Colors.black,
+                    size: 16,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -935,8 +1001,11 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
                 AnimatedRotation(
                   turns: _expanded ? 0.25 : 0,
                   duration: const Duration(milliseconds: 200),
-                  child:
-                      const Icon(Icons.chevron_right, color: _kMuted, size: 18),
+                  child: const Icon(
+                    Icons.chevron_right,
+                    color: _kMuted,
+                    size: 18,
+                  ),
                 ),
               ],
             ),
@@ -951,7 +1020,8 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
                     child: Container(
                       height: 4,
                       margin: EdgeInsets.only(
-                          right: i < totalActions.clamp(1, 10) - 1 ? 2 : 0),
+                        right: i < totalActions.clamp(1, 10) - 1 ? 2 : 0,
+                      ),
                       decoration: BoxDecoration(
                         color: i < completedCount
                             ? _kAccent
@@ -971,14 +1041,19 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
                       children: [
                         const SizedBox(height: 10),
                         ...remaining.take(4).map<Widget>((action) {
-                          final desc = action['action']?['description'] ??
+                          final desc =
+                              action['action']?['description'] ??
                               'Complete task';
                           final hint = action['hint'] ?? '';
-                          final current = num.tryParse(
-                                  '${action['current_progress'] ?? 0}') ??
+                          final current =
+                              num.tryParse(
+                                '${action['current_progress'] ?? 0}',
+                              ) ??
                               0;
-                          final required = num.tryParse(
-                                  '${action['required_value'] ?? 1}') ??
+                          final required =
+                              num.tryParse(
+                                '${action['required_value'] ?? 1}',
+                              ) ??
                               1;
                           final pct = required > 0
                               ? (current / required).clamp(0.0, 1.0)
@@ -1036,8 +1111,9 @@ class _RewardProgressSectionState extends State<_RewardProgressSection> {
 
     // Extract next reward info from level progress
     final nextLevel = progress['next_level'];
-    final nextLevelName =
-        nextLevel is Map ? nextLevel['name'] ?? 'Next Level' : 'Next Level';
+    final nextLevelName = nextLevel is Map
+        ? nextLevel['name'] ?? 'Next Level'
+        : 'Next Level';
     final nextLevelReward = nextLevel is Map ? nextLevel['coin_reward'] : null;
 
     return GestureDetector(
@@ -1049,9 +1125,10 @@ class _RewardProgressSectionState extends State<_RewardProgressSection> {
           color: _kCardBg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: _expanded
-                  ? const Color(0xFF4CAF50).withOpacity(0.4)
-                  : _kBorderColor.withOpacity(0.6)),
+            color: _expanded
+                ? const Color(0xFF4CAF50).withOpacity(0.4)
+                : _kBorderColor.withOpacity(0.6),
+          ),
         ),
         child: Column(
           children: [
@@ -1070,8 +1147,11 @@ class _RewardProgressSectionState extends State<_RewardProgressSection> {
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.emoji_events_rounded,
-                      color: Colors.white, size: 16),
+                  child: const Icon(
+                    Icons.emoji_events_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1107,8 +1187,11 @@ class _RewardProgressSectionState extends State<_RewardProgressSection> {
                 AnimatedRotation(
                   turns: _expanded ? 0.25 : 0,
                   duration: const Duration(milliseconds: 200),
-                  child:
-                      const Icon(Icons.chevron_right, color: _kMuted, size: 18),
+                  child: const Icon(
+                    Icons.chevron_right,
+                    color: _kMuted,
+                    size: 18,
+                  ),
                 ),
               ],
             ),
@@ -1148,7 +1231,8 @@ class _RewardProgressSectionState extends State<_RewardProgressSection> {
                       children: [
                         const SizedBox(height: 10),
                         ...completed.take(4).map<Widget>((action) {
-                          final desc = action['action']?['description'] ??
+                          final desc =
+                              action['action']?['description'] ??
                               action['description'] ??
                               'Completed task';
                           return _TaskRow(
@@ -1210,8 +1294,9 @@ class _StreaksSection extends StatelessWidget {
 
     // Show the current weekly cycle of the streak journey
     // Week 1: days 1-7, Week 2: 8-14, Week 3: 15-21, etc.
-    final weekStart =
-        currentStreak > 0 ? ((currentStreak - 1) ~/ 7) * 7 + 1 : 1;
+    final weekStart = currentStreak > 0
+        ? ((currentStreak - 1) ~/ 7) * 7 + 1
+        : 1;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1237,8 +1322,11 @@ class _StreaksSection extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.local_fire_department,
-                    color: Colors.white, size: 16),
+                child: const Icon(
+                  Icons.local_fire_department,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -1270,8 +1358,11 @@ class _StreaksSection extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.local_fire_department,
-                        size: 12, color: Color(0xFFFF7043)),
+                    const Icon(
+                      Icons.local_fire_department,
+                      size: 12,
+                      color: Color(0xFFFF7043),
+                    ),
                     const SizedBox(width: 2),
                     Text(
                       '$currentStreak',
@@ -1311,26 +1402,31 @@ class _StreaksSection extends StatelessWidget {
                       color: isActive
                           ? null
                           : isToday
-                              ? const Color(0xFFFF7043).withOpacity(0.1)
-                              : _kBorderColor.withOpacity(0.3),
+                          ? const Color(0xFFFF7043).withOpacity(0.1)
+                          : _kBorderColor.withOpacity(0.3),
                       border: Border.all(
                         color: isActive
                             ? const Color(0xFFFF7043)
                             : isToday
-                                ? const Color(0xFFFF7043).withOpacity(0.5)
-                                : _kBorderColor.withOpacity(0.5),
+                            ? const Color(0xFFFF7043).withOpacity(0.5)
+                            : _kBorderColor.withOpacity(0.5),
                         width: isToday ? 1.5 : 1,
                       ),
                     ),
                     child: Center(
                       child: isActive
-                          ? const Icon(Icons.check_rounded,
-                              size: 14, color: Colors.white)
-                          : Icon(Icons.local_fire_department,
+                          ? const Icon(
+                              Icons.check_rounded,
+                              size: 14,
+                              color: Colors.white,
+                            )
+                          : Icon(
+                              Icons.local_fire_department,
                               size: 14,
                               color: isToday
                                   ? const Color(0xFFFF7043).withOpacity(0.5)
-                                  : _kMuted.withOpacity(0.3)),
+                                  : _kMuted.withOpacity(0.3),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -1340,8 +1436,8 @@ class _StreaksSection extends StatelessWidget {
                       color: isActive
                           ? _kWhite
                           : isToday
-                              ? const Color(0xFFFF7043)
-                              : _kMuted.withOpacity(0.6),
+                          ? const Color(0xFFFF7043)
+                          : _kMuted.withOpacity(0.6),
                       fontSize: 10,
                       fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                     ),
@@ -1436,8 +1532,11 @@ class _TaskRow extends StatelessWidget {
             ),
             if (onTap != null) ...[
               const SizedBox(width: 4),
-              const Icon(Icons.arrow_forward_ios_rounded,
-                  size: 10, color: _kMuted)
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 10,
+                color: _kMuted,
+              ),
             ],
           ],
         ),
@@ -1461,8 +1560,10 @@ class _CompactRadarChart extends StatelessWidget {
     final progress = levels.userProgress;
 
     final levelMap = progress['current_level'];
-    final currentLevelNum = num.tryParse(
-            '${levelMap is Map ? levelMap['level_number'] ?? levelMap['id'] ?? 1 : levelMap ?? 1}') ??
+    final currentLevelNum =
+        num.tryParse(
+          '${levelMap is Map ? levelMap['level_number'] ?? levelMap['id'] ?? 1 : levelMap ?? 1}',
+        ) ??
         1;
     final levelVal = (currentLevelNum / 50).clamp(0.0, 1.0);
 
@@ -1549,13 +1650,19 @@ class _CompactRadarChart extends StatelessWidget {
                     entryRadius: 2,
                   ),
                 ],
-                radarBorderData:
-                    const BorderSide(color: _kBorderColor, width: 0.3),
+                radarBorderData: const BorderSide(
+                  color: _kBorderColor,
+                  width: 0.3,
+                ),
                 radarBackgroundColor: Colors.transparent,
-                tickBorderData:
-                    const BorderSide(color: _kBorderColor, width: 0.3),
-                gridBorderData:
-                    const BorderSide(color: _kBorderColor, width: 0.3),
+                tickBorderData: const BorderSide(
+                  color: _kBorderColor,
+                  width: 0.3,
+                ),
+                gridBorderData: const BorderSide(
+                  color: _kBorderColor,
+                  width: 0.3,
+                ),
                 tickCount: 3,
                 ticksTextStyle: const TextStyle(fontSize: 0),
                 titleTextStyle: const TextStyle(

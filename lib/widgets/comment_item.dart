@@ -7,6 +7,7 @@ import '../models/comment.dart';
 import '../providers/auth.dart';
 import 'package:baakhapaa/providers/comment.dart';
 import '../screens/user/player_profile_screen.dart';
+import '../screens/user/user_screen.dart';
 import '../utils/debug_logger.dart';
 import '../utils/guest_auth_helper.dart';
 
@@ -333,12 +334,18 @@ class _CommentItemState extends State<CommentItem> {
             children: [
               GestureDetector(
                 onTap: () {
+                  final auth = Provider.of<Auth>(context, listen: false);
+                  final currentUsername = auth.user['username'];
                   DebugLogger.info(
                       '💬 Navigating to profile for username: ${widget.comment.username}');
-                  Navigator.of(context).pushNamed(
-                    PlayerProfileScreen.routeName,
-                    arguments: widget.comment.username,
-                  );
+                  if (widget.comment.username == currentUsername) {
+                    Navigator.of(context).pushNamed(UserScreen.routeName);
+                  } else {
+                    Navigator.of(context).pushNamed(
+                      PlayerProfileScreen.routeName,
+                      arguments: widget.comment.username,
+                    );
+                  }
                 },
                 child: CircleAvatar(
                   radius: 16,
@@ -366,12 +373,21 @@ class _CommentItemState extends State<CommentItem> {
                           Flexible(
                             child: GestureDetector(
                               onTap: () {
+                                final auth =
+                                    Provider.of<Auth>(context, listen: false);
+                                final currentUsername = auth.user['username'];
                                 DebugLogger.info(
                                     '💬 Navigating to profile for username: ${widget.comment.username}');
-                                Navigator.of(context).pushNamed(
-                                  PlayerProfileScreen.routeName,
-                                  arguments: widget.comment.username,
-                                );
+                                if (widget.comment.username ==
+                                    currentUsername) {
+                                  Navigator.of(context)
+                                      .pushNamed(UserScreen.routeName);
+                                } else {
+                                  Navigator.of(context).pushNamed(
+                                    PlayerProfileScreen.routeName,
+                                    arguments: widget.comment.username,
+                                  );
+                                }
                               },
                               child: Text(
                                 widget.comment.username,

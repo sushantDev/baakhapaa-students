@@ -289,7 +289,7 @@ class _ConversationsScreenState extends State<ConversationsScreen>
                           ),
                           SizedBox(width: 6),
                           Text(
-                            'Baakhapaa Assistant',
+                            'Assistant',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -533,15 +533,15 @@ class _ConversationsScreenState extends State<ConversationsScreen>
                                   ),
                                   errorWidget: (context, url, error) =>
                                       Container(
-                                        color: Colors.amber.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        child: Icon(
-                                          Icons.person,
-                                          color: Colors.amber,
-                                          size: 30,
-                                        ),
-                                      ),
+                                    color: Colors.amber.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.amber,
+                                      size: 30,
+                                    ),
+                                  ),
                                 )
                               : Container(
                                   color: Colors.amber.withValues(alpha: 0.1),

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/auth.dart';
 import '../../story/creator_story_screen.dart';
+import '../../user/user_screen.dart';
 import '../followers_list_screen.dart';
 
 class FollowersTab extends StatelessWidget {
@@ -548,15 +551,22 @@ class _FollowerItem extends StatelessWidget {
 
   void _openProfile(BuildContext context) {
     try {
+      final auth = Provider.of<Auth>(context, listen: false);
+      final currentUserId = auth.user['id'];
+
       final int? userId =
           (follower['id'] is int) ? follower['id'] as int : null;
       final String? username = follower['username']?.toString();
 
       if (userId != null && username != null && username.isNotEmpty) {
-        Navigator.of(context).pushNamed(
-          CreatorStoryScreen.routeName,
-          arguments: [userId, username],
-        );
+        if (userId == currentUserId) {
+          Navigator.of(context).pushNamed(UserScreen.routeName);
+        } else {
+          Navigator.of(context).pushNamed(
+            CreatorStoryScreen.routeName,
+            arguments: [userId, username],
+          );
+        }
       }
     } catch (e) {
       debugPrint('Error opening profile: $e');

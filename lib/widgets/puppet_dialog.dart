@@ -194,7 +194,7 @@ class _PuppetDialogState extends State<PuppetDialog>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.puppet.title ?? 'Baakhapaa Assistant',
+                  widget.puppet.title ?? 'Assistant',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,

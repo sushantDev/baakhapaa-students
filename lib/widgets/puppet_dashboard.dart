@@ -10,6 +10,7 @@ import 'package:baakhapaa/screens/collaboration/collaborations_screen.dart';
 import 'package:baakhapaa/screens/gift/gift_screen.dart';
 import 'package:baakhapaa/screens/leaderboard/leaderboard_screen.dart';
 import 'package:baakhapaa/screens/messages/conversations_screen.dart';
+import 'package:baakhapaa/screens/level_map/level_map_screen.dart';
 import 'package:baakhapaa/screens/user/points_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -345,23 +346,26 @@ class _PuppetDashboardState extends State<PuppetDashboard>
             builder: (_, levels, __) {
               final lvl = levels.currentLevel;
               final lvlName = lvl?['name'] ?? 'Level 1';
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2A1F00), Color(0xFF1A1A1A)],
+              return GestureDetector(
+                onTap: () => _pushNamed(LevelMapScreen.routeName),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2A1F00), Color(0xFF1A1A1A)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  lvlName,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: _kAccent,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
+                  child: Text(
+                    lvlName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: _kAccent,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
               );
@@ -819,9 +823,8 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
         case 'episode':
         case 'season':
           final rawId = action['required_id'];
-          final seasonId = rawId is int
-              ? rawId
-              : int.tryParse(rawId?.toString() ?? '') ?? 0;
+          final seasonId =
+              rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '') ?? 0;
           final seasonName = action['required_value']?.toString() ?? '';
           if (seasonId > 0) {
             _navigateToSeasonById(seasonId, seasonName: seasonName);
@@ -877,9 +880,8 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
           // Fallback: infer route from title/description when action_key is
           // missing (e.g. backend didn't include it in the response).
           final title = (actionData['title'] ?? '').toString().toLowerCase();
-          final desc = (actionData['description'] ?? '')
-              .toString()
-              .toLowerCase();
+          final desc =
+              (actionData['description'] ?? '').toString().toLowerCase();
           final combined = '$title $desc';
           if (combined.contains('episode') || combined.contains('season')) {
             route = '/story-screen';
@@ -1041,17 +1043,14 @@ class _CurrentQuestSectionState extends State<_CurrentQuestSection> {
                       children: [
                         const SizedBox(height: 10),
                         ...remaining.take(4).map<Widget>((action) {
-                          final desc =
-                              action['action']?['description'] ??
+                          final desc = action['action']?['description'] ??
                               'Complete task';
                           final hint = action['hint'] ?? '';
-                          final current =
-                              num.tryParse(
+                          final current = num.tryParse(
                                 '${action['current_progress'] ?? 0}',
                               ) ??
                               0;
-                          final required =
-                              num.tryParse(
+                          final required = num.tryParse(
                                 '${action['required_value'] ?? 1}',
                               ) ??
                               1;
@@ -1111,9 +1110,8 @@ class _RewardProgressSectionState extends State<_RewardProgressSection> {
 
     // Extract next reward info from level progress
     final nextLevel = progress['next_level'];
-    final nextLevelName = nextLevel is Map
-        ? nextLevel['name'] ?? 'Next Level'
-        : 'Next Level';
+    final nextLevelName =
+        nextLevel is Map ? nextLevel['name'] ?? 'Next Level' : 'Next Level';
     final nextLevelReward = nextLevel is Map ? nextLevel['coin_reward'] : null;
 
     return GestureDetector(
@@ -1231,8 +1229,7 @@ class _RewardProgressSectionState extends State<_RewardProgressSection> {
                       children: [
                         const SizedBox(height: 10),
                         ...completed.take(4).map<Widget>((action) {
-                          final desc =
-                              action['action']?['description'] ??
+                          final desc = action['action']?['description'] ??
                               action['description'] ??
                               'Completed task';
                           return _TaskRow(
@@ -1294,9 +1291,8 @@ class _StreaksSection extends StatelessWidget {
 
     // Show the current weekly cycle of the streak journey
     // Week 1: days 1-7, Week 2: 8-14, Week 3: 15-21, etc.
-    final weekStart = currentStreak > 0
-        ? ((currentStreak - 1) ~/ 7) * 7 + 1
-        : 1;
+    final weekStart =
+        currentStreak > 0 ? ((currentStreak - 1) ~/ 7) * 7 + 1 : 1;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1402,14 +1398,14 @@ class _StreaksSection extends StatelessWidget {
                       color: isActive
                           ? null
                           : isToday
-                          ? const Color(0xFFFF7043).withOpacity(0.1)
-                          : _kBorderColor.withOpacity(0.3),
+                              ? const Color(0xFFFF7043).withOpacity(0.1)
+                              : _kBorderColor.withOpacity(0.3),
                       border: Border.all(
                         color: isActive
                             ? const Color(0xFFFF7043)
                             : isToday
-                            ? const Color(0xFFFF7043).withOpacity(0.5)
-                            : _kBorderColor.withOpacity(0.5),
+                                ? const Color(0xFFFF7043).withOpacity(0.5)
+                                : _kBorderColor.withOpacity(0.5),
                         width: isToday ? 1.5 : 1,
                       ),
                     ),
@@ -1436,8 +1432,8 @@ class _StreaksSection extends StatelessWidget {
                       color: isActive
                           ? _kWhite
                           : isToday
-                          ? const Color(0xFFFF7043)
-                          : _kMuted.withOpacity(0.6),
+                              ? const Color(0xFFFF7043)
+                              : _kMuted.withOpacity(0.6),
                       fontSize: 10,
                       fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                     ),
@@ -1560,8 +1556,7 @@ class _CompactRadarChart extends StatelessWidget {
     final progress = levels.userProgress;
 
     final levelMap = progress['current_level'];
-    final currentLevelNum =
-        num.tryParse(
+    final currentLevelNum = num.tryParse(
           '${levelMap is Map ? levelMap['level_number'] ?? levelMap['id'] ?? 1 : levelMap ?? 1}',
         ) ??
         1;

@@ -18,8 +18,9 @@ import './content_type_selector_sheet.dart';
 
 // ignore: must_be_immutable
 class Footer extends StatefulWidget {
+  final NavigatorState? navigator;
   int index;
-  Footer(this.index);
+  Footer(this.index, {this.navigator});
 
   static const Set<String> _routesWithOwnFooter = {
     '/story-screen',
@@ -351,12 +352,12 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       videoStateProvider.handleNavigationAway();
     }
 
+    final navigator = widget.navigator ?? Navigator.of(context);
     switch (index) {
       case 0:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.of(context, rootNavigator: true)
-            .pushReplacement(PageTransition(
+        navigator.pushReplacement(PageTransition(
           child: const StoryScreen(),
           type: PageTransitionType.fade,
           settings: const RouteSettings(name: StoryScreen.routeName),
@@ -365,8 +366,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       case 1:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.of(context, rootNavigator: true)
-            .pushReplacement(PageTransition(
+        navigator.pushReplacement(PageTransition(
           child: ShortsScreen(),
           type: PageTransitionType.fade,
           settings: const RouteSettings(name: ShortsScreen.routeName),
@@ -376,8 +376,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         // Allow guest users to browse the store
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.of(context, rootNavigator: true)
-            .pushReplacement(PageTransition(
+        navigator.pushReplacement(PageTransition(
           child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
           type: PageTransitionType.fade,
           settings: const RouteSettings(name: TabViewProduct.routeName),
@@ -390,8 +389,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         }
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.of(context, rootNavigator: true)
-            .pushReplacement(PageTransition(
+        navigator.pushReplacement(PageTransition(
           child: UserScreen(),
           type: PageTransitionType.fade,
           settings: const RouteSettings(name: UserScreen.routeName),

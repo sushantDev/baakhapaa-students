@@ -1007,7 +1007,10 @@ class _MyAppState extends State<MyApp> {
                               left: 0,
                               right: 0,
                               bottom: 0,
-                              child: Footer(footerIndex),
+                              child: Footer(
+                                footerIndex,
+                                navigator: mainNavigatorKey.currentState,
+                              ),
                             ),
                           // Global event listener for Pusher/FCM (replaces floating AssistiveTouch)
                           _GlobalEventListener(mainNavKey: mainNavigatorKey),

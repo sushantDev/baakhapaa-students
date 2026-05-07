@@ -155,6 +155,7 @@ import './screens/create/story/create_question_screen.dart';
 import './providers/assistive_touch_provider.dart';
 import './providers/video_state_provider.dart';
 import './providers/puppet_interaction_provider.dart';
+import './models/url.dart';
 import './config/app_credentials.dart';
 import '../utils/debug_logger.dart';
 import './deep_link_handler.dart';
@@ -324,17 +325,14 @@ void main() async {
     // Initialize other services
     try {
       unawaited(
-        MobileAds.instance
-            .initialize()
-            .then((_) {
-              // Preload interstitial ad once MobileAds is ready
-              AdService().preloadInterstitial();
-              // Fetch backend-controlled ad feature flags
-              AdService.fetchAdSettings();
-            })
-            .catchError((e) {
-              debug.DebugLogger.error('AdMob initialization failed: $e');
-            }),
+        MobileAds.instance.initialize().then((_) {
+          // Preload interstitial ad once MobileAds is ready
+          AdService().preloadInterstitial();
+          // Fetch backend-controlled ad feature flags
+          AdService.fetchAdSettings();
+        }).catchError((e) {
+          debug.DebugLogger.error('AdMob initialization failed: $e');
+        }),
       );
     } catch (e) {
       debug.DebugLogger.error('MobileAds init error: $e');
@@ -511,9 +509,8 @@ void main() async {
           type == 'shorts_commented' ||
           type == 'shorts_donation_received') {
         final rawId = message.data['shorts_id'];
-        final shortsId = rawId is int
-            ? rawId
-            : int.tryParse(rawId?.toString() ?? '') ?? 0;
+        final shortsId =
+            rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '') ?? 0;
         if (shortsId > 0) {
           mainNavigatorKey.currentState?.pushNamed(
             SingleShortsScreen.routeName,
@@ -579,10 +576,9 @@ void main() async {
           "Initial Deep Link detected: ${initialLink.toString()}",
         );
 
-        // For universal links (https://baakhapaa.com or https://www.baakhapaa.com), handle immediately to prevent browser fallback
+        // For universal links (https://student.baakhapaa.com), handle immediately to prevent browser fallback
         if (initialLink.scheme == 'https' &&
-            (initialLink.host == 'baakhapaa.com' ||
-                initialLink.host == 'www.baakhapaa.com')) {
+            initialLink.host == Url.deepLinkHost) {
           DebugLogger.info(
             "🌐 MAIN: Universal link detected, processing immediately",
           );
@@ -685,27 +681,26 @@ class _MyAppState extends State<MyApp> {
         // Make the payment result available through a custom method
         _handlePaymentResult(paymentResult);
       },
-      onMessage:
-          (
-            khalti, {
-            description,
-            statusCode,
-            event,
-            needsPaymentConfirmation,
-          }) async {
-            log(
-              'Khalti Message - Description: $description, Status Code: $statusCode, Event: $event, NeedsPaymentConfirmation: $needsPaymentConfirmation',
-            );
+      onMessage: (
+        khalti, {
+        description,
+        statusCode,
+        event,
+        needsPaymentConfirmation,
+      }) async {
+        log(
+          'Khalti Message - Description: $description, Status Code: $statusCode, Event: $event, NeedsPaymentConfirmation: $needsPaymentConfirmation',
+        );
 
-            // Verify payment if needed
-            if (needsPaymentConfirmation == true) {
-              try {
-                await khalti.verify();
-              } catch (e) {
-                log('Payment verification failed: $e');
-              }
-            }
-          },
+        // Verify payment if needed
+        if (needsPaymentConfirmation == true) {
+          try {
+            await khalti.verify();
+          } catch (e) {
+            log('Payment verification failed: $e');
+          }
+        }
+      },
       onReturn: () => log('Successfully redirected to return_url.'),
     );
 

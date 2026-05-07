@@ -484,7 +484,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
     // Generate share text for season with deep link
     String bs64str1 = base64Url.encode(utf8.encode(json.encode(seasonId)));
     final shareText =
-        'Check out "$seasonTitle" season on Baakhapaa! Watch amazing episodes and earn rewards. https://baakhapaa.com/season/$bs64str1';
+        'Check out "$seasonTitle" season on Baakhapaa! Watch amazing episodes and earn rewards. ${Url.deepLink('/season/$bs64str1')}';
 
     await showModalBottomSheet(
       context: context,
@@ -1910,8 +1910,9 @@ class _LockSectionState extends State<LockSection> {
                             ),
                             child: ElevatedButton(
                               onPressed: () {
-                                final episodeState = context.findAncestorStateOfType<
-                                    _EpisodeScreenState>();
+                                final episodeState =
+                                    context.findAncestorStateOfType<
+                                        _EpisodeScreenState>();
                                 if (episodeState != null) {
                                   episodeState._showUnlockDialog(context);
                                 }
@@ -2034,8 +2035,9 @@ class _LockSectionState extends State<LockSection> {
                                 left: Radius.circular(20),
                               ),
                               onTap: () async {
-                                final episodeState = context.findAncestorStateOfType<
-                                    _EpisodeScreenState>();
+                                final episodeState =
+                                    context.findAncestorStateOfType<
+                                        _EpisodeScreenState>();
                                 if (episodeState != null) {
                                   await episodeState._showShareModal(context);
                                 }

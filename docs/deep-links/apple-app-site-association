@@ -1,0 +1,31 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "WYN433NQT3.com.baakhapaa.student"
+        ],
+        "components": [
+          {
+            "/": "/referral/*"
+          },
+          {
+            "/": "/shorts/*"
+          },
+          {
+            "/": "/episode/*"
+          },
+          {
+            "/": "/season/*"
+          },
+          {
+            "/": "/gift/*"
+          },
+          {
+            "/": "/product/*"
+          }
+        ]
+      }
+    ]
+  }
+}

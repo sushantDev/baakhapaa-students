@@ -221,7 +221,7 @@ class _ReferralsScreenState extends State<ReferralsScreen>
 
   Future<void> _shareReferralLinkOnly(String username) async {
     try {
-      final appLink = 'https://baakhapaa.com/referral/$username';
+      final appLink = Url.deepLink('/referral/$username');
 
       await SharePlus.instance.share(
         ShareParams(
@@ -243,7 +243,7 @@ class _ReferralsScreenState extends State<ReferralsScreen>
   Future<void> _shareReferralLink(String username) async {
     try {
       // Create referral link
-      final appLink = 'https://baakhapaa.com/referral/$username';
+      final appLink = Url.deepLink('/referral/$username');
 
       final shareText = '''
 🎉 Join me on Skill Sikka!
@@ -282,7 +282,7 @@ Download the app and start earning rewards by watching videos, playing games, an
 
       // Fallback to clipboard on any error
       try {
-        final appLink = 'https://baakhapaa.com/referral/$username';
+        final appLink = Url.deepLink('/referral/$username');
         final shareText = '''
 🎉 Join me on Skill Sikka!
 

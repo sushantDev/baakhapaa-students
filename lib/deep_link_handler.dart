@@ -17,6 +17,7 @@ import '../screens/shorts/single_shorts_screen.dart';
 import '../screens/shorts/shorts_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../providers/story.dart';
+import 'models/url.dart';
 import 'package:provider/provider.dart';
 import 'utils/debug_logger.dart';
 
@@ -269,9 +270,9 @@ class DeepLinkHandler with ChangeNotifier {
         return;
       }
 
-      // Step 2: Handle Universal Links (https://baakhapaa.com) with immediate processing
+      // Step 2: Handle Universal Links (https://student.baakhapaa.com) with immediate processing
       if ((uri.scheme == 'https' || uri.scheme == 'http') &&
-          (uri.host == 'baakhapaa.com' || uri.host == 'www.baakhapaa.com')) {
+          uri.host == Url.deepLinkHost) {
         DebugLogger.info(
             "🌐 handleDeepLink() - Universal link detected: ${uri.toString()}");
         DebugLogger.info("Processing universal link: ${uri.toString()}");
@@ -286,7 +287,7 @@ class DeepLinkHandler with ChangeNotifier {
           return;
         }
 
-        // Handle referral path in universal links (https://baakhapaa.com/referral/code)
+        // Handle referral path in universal links (https://student.baakhapaa.com/referral/code)
         if (uri.pathSegments.isNotEmpty &&
             uri.pathSegments.first == 'referral' &&
             uri.pathSegments.length > 1) {

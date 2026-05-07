@@ -17,6 +17,7 @@ import '../screens/shorts/shorts_image_puzzle_screen.dart';
 import '../../helpers/helpers.dart';
 import 'skeleton_loading.dart';
 import '../../widgets/share_with_qr_modal.dart';
+import '../models/url.dart';
 
 class ShortsSideBar extends StatefulWidget {
   final int index;
@@ -990,7 +991,7 @@ class _ShortsSideBarState extends State<ShortsSideBar>
                       .encode(utf8.encode(json.encode(widget.shortsId)));
 
                   final shareText =
-                      'Baakhapaa Shorts https://baakhapaa.com/shorts/$bs64str1';
+                      'Baakhapaa Shorts ${Url.deepLink('/shorts/$bs64str1')}';
 
                   // Show a modal bottom sheet with sharing options
                   await showModalBottomSheet(

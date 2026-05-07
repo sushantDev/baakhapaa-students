@@ -2246,7 +2246,7 @@ class _VideoScreenState extends State<VideoScreen>
                                     String bs64str1 = base64Url.encode(utf8
                                         .encode(json.encode(episode['id'])));
                                     final shareText =
-                                        'Watch "${episode['title']}" on Baakhapaa! https://baakhapaa.com/episode/$bs64str1';
+                                        'Watch "${episode['title']}" on Baakhapaa! ${Url.deepLink('/episode/$bs64str1')}';
 
                                     await showModalBottomSheet(
                                       context: context,

@@ -1504,7 +1504,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                                   final shareText = '''
           Check out $creatorName on Baakhapaa!
 
-          🔗 View profile: https://baakhapaa.com/referral/$creatorName
+                                  🔗 View profile: ${Url.deepLink('/referral/$creatorName')}
 
           Using  $creatorName as refer code and both receive 25 bonus points when you create an account.
           '''
@@ -2000,7 +2000,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
           final shareText = '''
           Check out $creatorName on Baakhapaa!
 
-          🔗 View profile: https://baakhapaa.com/referral/$creatorName
+            🔗 View profile: ${Url.deepLink('/referral/$creatorName')}
 
           Using  $creatorName as refer code and both receive 25 bonus points when you create an account.
           '''

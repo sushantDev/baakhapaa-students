@@ -664,7 +664,7 @@ class _SingleProductScreenState extends State<SingleProductScreen>
                 String bs64str1 =
                     base64Url.encode(utf8.encode(json.encode(product['id'])));
                 final shareText =
-                    'Baakhapaa Product https://baakhapaa.com/product/$bs64str1';
+                    'Baakhapaa Product ${Url.deepLink('/product/$bs64str1')}';
 
                 await showModalBottomSheet(
                   context: context,

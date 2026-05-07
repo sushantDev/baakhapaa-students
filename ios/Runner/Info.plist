@@ -48,7 +48,7 @@
 				<string>google</string>
 				<key>CFBundleURLSchemes</key>
 				<array>
-					<string>com.googleusercontent.apps.587678856071-cd45gc2v591glv3hoctt9bu0etf2u2d6</string>
+					<string>com.googleusercontent.apps.587678856071-hiksj30dutr0crvbrp7j8phvpu6ojcs1</string>
 				</array>
 			</dict>
 		</array>
@@ -153,8 +153,7 @@
 		<false/>
 		<key>com.apple.developer.associated-domains</key>
 		<array>
-			<string>applinks:baakhapaa.com</string>
-			<string>applinks:www.baakhapaa.com</string>
+			<string>applinks:school.baakhapaa.com</string>
 		</array>
 		<key>com.apple.security.network.client</key>
 		<true/>

@@ -15,6 +15,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:baakhapaa/widgets/messages_bubble.dart';
+import '../../models/url.dart';
 import '../../utils/puppet_screen_mapping.dart';
 import '../../utils/debug_logger.dart';
 
@@ -359,14 +360,13 @@ class _MessagesScreenState extends State<MessagesScreen>
             // Check if message starts with any valid Baakhapaa URL pattern
             final isValidBaakhapaaUrl = validPaths.any((path) {
               final pattern = path == 'redeem gift'
-                  ? 'Baakhapaa Redeem Gift https://baakhapaa.com/gift/'
-                  : 'Baakhapaa ${path.capitalize()} https://baakhapaa.com/$path/';
+                  ? 'Baakhapaa Redeem Gift ${Url.deepLink('/gift/')}'
+                  : 'Baakhapaa ${path.capitalize()} ${Url.deepLink('/$path/')}';
               return text.startsWith(pattern);
             });
             // Use isValidBaakhapaaUrl to set metadata
-            final Map<String, dynamic>? metadata = isValidBaakhapaaUrl
-                ? {'clickable': true}
-                : null;
+            final Map<String, dynamic>? metadata =
+                isValidBaakhapaaUrl ? {'clickable': true} : null;
 
             return types.TextMessage(
               author: user,
@@ -430,46 +430,43 @@ class _MessagesScreenState extends State<MessagesScreen>
 
     authProvider
         .sendMessages(
-          args['conversation_id'] as int,
-          message.text,
-          'text',
-          null,
-          null,
-        )
+      args['conversation_id'] as int,
+      message.text,
+      'text',
+      null,
+      null,
+    )
         .then((_) {
-          _addMessage(textMessage);
-        })
-        .catchError((error) {
-          // Show user-friendly error message
-          if (mounted) {
-            String errorMessage = 'Failed to send message. Please try again.';
+      _addMessage(textMessage);
+    }).catchError((error) {
+      // Show user-friendly error message
+      if (mounted) {
+        String errorMessage = 'Failed to send message. Please try again.';
 
-            if (error is Exception) {
-              final errorString = error.toString();
-              if (errorString.contains('Exception:')) {
-                errorMessage = errorString
-                    .replaceFirst('Exception:', '')
-                    .trim();
-              }
-            }
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(errorMessage),
-                backgroundColor: Colors.red,
-                duration: Duration(seconds: 3),
-                action: SnackBarAction(
-                  label: 'Retry',
-                  textColor: Colors.white,
-                  onPressed: () => _handleSendPressed(message),
-                ),
-              ),
-            );
+        if (error is Exception) {
+          final errorString = error.toString();
+          if (errorString.contains('Exception:')) {
+            errorMessage = errorString.replaceFirst('Exception:', '').trim();
           }
+        }
 
-          // Log the error for debugging
-          DebugLogger.info('❌ Error sending message: $error');
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: () => _handleSendPressed(message),
+            ),
+          ),
+        );
+      }
+
+      // Log the error for debugging
+      DebugLogger.info('❌ Error sending message: $error');
+    });
   }
 
   void _handleImageSelection() async {
@@ -580,8 +577,8 @@ class _MessagesScreenState extends State<MessagesScreen>
       // Check if message starts with any valid Baakhapaa URL pattern
       final isValidBaakhapaaUrl = validPaths.any((path) {
         final pattern = path == 'redeem gift'
-            ? 'Baakhapaa Redeem Gift https://baakhapaa.com/gift/'
-            : 'Baakhapaa ${path.capitalize()} https://baakhapaa.com/$path/';
+            ? 'Baakhapaa Redeem Gift ${Url.deepLink('/gift/')}'
+            : 'Baakhapaa ${path.capitalize()} ${Url.deepLink('/$path/')}';
         return message.text.startsWith(pattern);
       });
 
@@ -597,8 +594,7 @@ class _MessagesScreenState extends State<MessagesScreen>
     // Default bubble for other messages
     return Bubble(
       child: child,
-      color:
-          _user.id != message.author.id ||
+      color: _user.id != message.author.id ||
               message.type == types.MessageType.image
           ? const Color(0xfff5f5f7)
           : const Color(0xff6f61e8),
@@ -608,8 +604,8 @@ class _MessagesScreenState extends State<MessagesScreen>
       nip: nextMessageInGroup
           ? BubbleNip.no
           : _user.id != message.author.id
-          ? BubbleNip.leftBottom
-          : BubbleNip.rightBottom,
+              ? BubbleNip.leftBottom
+              : BubbleNip.rightBottom,
     );
   }
 

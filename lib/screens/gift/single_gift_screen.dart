@@ -25,6 +25,7 @@ import '../../providers/puppet_interaction_provider.dart';
 import '../../utils/puppet_screen_mapping.dart';
 import '../../utils/debug_logger.dart';
 import '../../services/rating_service.dart';
+import '../../models/url.dart';
 
 class SingleGiftScreen extends StatefulWidget {
   static const routeName = '/single-gift-screen';
@@ -51,7 +52,6 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
   // Cooldown variables
   late DateTime _lastRedeemed;
   late int _cooldownDuration = 0;
-
 
   @override
   void initState() {
@@ -462,7 +462,7 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
                 String bs64str1 =
                     base64Url.encode(utf8.encode(json.encode(gift['id'])));
                 final shareText =
-                    'Baakhapaa Gift https://baakhapaa.com/gift/$bs64str1';
+                    'Baakhapaa Gift ${Url.deepLink('/gift/$bs64str1')}';
                 showModalBottomSheet(
                   context: context,
                   shape: RoundedRectangleBorder(

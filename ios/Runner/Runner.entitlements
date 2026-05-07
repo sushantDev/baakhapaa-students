@@ -10,8 +10,7 @@
 	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:baakhapaa.com</string>
-		<string>applinks:www.baakhapaa.com</string>
+		<string>applinks:school.baakhapaa.com</string>
 	</array>
 	<key>com.apple.security.application-groups</key>
 	<array>

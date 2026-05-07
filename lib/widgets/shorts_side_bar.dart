@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:baakhapaa/providers/video_state_provider.dart';
 import 'package:baakhapaa/screens/story/creator_story_screen.dart';
+import 'package:baakhapaa/screens/user/user_screen.dart';
 import 'package:baakhapaa/widgets/comments_sheet.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -1345,10 +1346,16 @@ class _ShortsSideBarState extends State<ShortsSideBar>
       onTap: () => _handleAuthenticatedAction(
         () {
           widget.onPlayPause();
-          Navigator.of(context).pushNamed(
-            CreatorStoryScreen.routeName,
-            arguments: [id, name],
-          );
+          final auth = Provider.of<Auth>(context, listen: false);
+          final currentUserId = auth.user['id'];
+          if (id == currentUserId) {
+            Navigator.of(context).pushNamed(UserScreen.routeName);
+          } else {
+            Navigator.of(context).pushNamed(
+              CreatorStoryScreen.routeName,
+              arguments: [id, name],
+            );
+          }
         },
         'profile viewing',
       ),

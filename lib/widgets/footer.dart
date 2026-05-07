@@ -319,27 +319,29 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                                   color: iconColor,
                                 ),
                     ),
-                    SizedBox(height: 6),
-                    Flexible(
-                      child: AnimatedDefaultTextStyle(
-                        duration: Duration(milliseconds: 200),
-                        style: TextStyle(
-                          fontSize: isSelected ? 11 : 9,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w600,
-                          color: iconColor,
-                          height: 1.2,
-                          letterSpacing: 0.3,
-                        ),
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          textScaler: TextScaler.linear(1.0),
+                    if (!(index == 3 && isSelected)) ...[
+                      SizedBox(height: 6),
+                      Flexible(
+                        child: AnimatedDefaultTextStyle(
+                          duration: Duration(milliseconds: 200),
+                          style: TextStyle(
+                            fontSize: isSelected ? 11 : 9,
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w600,
+                            color: iconColor,
+                            height: 1.2,
+                            letterSpacing: 0.3,
+                          ),
+                          child: Text(
+                            label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            textScaler: TextScaler.linear(1.0),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

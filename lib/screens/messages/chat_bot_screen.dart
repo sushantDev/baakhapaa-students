@@ -38,8 +38,8 @@ class _ChatbotScreenState extends State<ChatbotScreen>
     );
 
     _bot = const types.User(
-      id: 'baakhapaa_bot',
-      firstName: 'Baakhapaa Assistant',
+      id: 'skill_sikka_bot',
+      firstName: 'Assistant',
       imageUrl: 'https://baakhapaa.com/assets/img/logo/logo3.png',
     );
   }
@@ -389,7 +389,7 @@ I've done my best to assist you! For complex issues or personalized support, our
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Baakhapaa Assistant',
+                        'Assistant',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

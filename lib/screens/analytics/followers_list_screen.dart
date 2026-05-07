@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/auth.dart';
 import '../../widgets/skeleton_loading.dart';
 import '../story/creator_story_screen.dart';
+import '../user/user_screen.dart';
 
 class FollowersListScreen extends StatefulWidget {
   static const routeName = '/followers-list';
@@ -113,14 +114,21 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
 
   void _openProfile(dynamic user) {
     try {
+      final auth = Provider.of<Auth>(context, listen: false);
+      final currentUserId = auth.user['id'];
+
       final int? userId = (user['id'] is int) ? user['id'] as int : null;
       final String? username = user['username']?.toString();
 
       if (userId != null && username != null && username.isNotEmpty) {
-        Navigator.of(context).pushNamed(
-          CreatorStoryScreen.routeName,
-          arguments: [userId, username],
-        );
+        if (userId == currentUserId) {
+          Navigator.of(context).pushNamed(UserScreen.routeName);
+        } else {
+          Navigator.of(context).pushNamed(
+            CreatorStoryScreen.routeName,
+            arguments: [userId, username],
+          );
+        }
       }
     } catch (e) {
       debugPrint('Error opening profile: $e');

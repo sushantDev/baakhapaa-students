@@ -318,7 +318,7 @@ class ChatbotProvider extends ChangeNotifier {
 
   // Get initial welcome message
   String getWelcomeMessage() {
-    return '''Hello! 👋 I'm your Baakhapaa Assistant.
+    return '''Hello! 👋 I'm your Assistant.
 
 I can help you learn about:
 • How to earn and use points
@@ -376,7 +376,7 @@ They'll be able to check the exact episode/content you mentioned and resolve the
     // Handle greetings
     if (_isGreeting(message)) {
       _resetFailedQueries();
-      return '''Hello! 👋 I'm your Baakhapaa Assistant.
+      return '''Hello! 👋 I'm your Assistant.
 
 I can help you learn about:
 • How to earn and use points

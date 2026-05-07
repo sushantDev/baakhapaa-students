@@ -15,6 +15,7 @@ import '../../providers/auth.dart';
 import '../../providers/leaderboard.dart';
 import '../user/player_profile_screen.dart';
 import '../story/creator_story_screen.dart';
+import '../user/user_screen.dart';
 import '../../widgets/my_upgrader_messages.dart';
 import '../../widgets/share_with_qr_modal.dart';
 import '../../providers/puppet_interaction_provider.dart';
@@ -63,6 +64,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
   void _openProfileFromLeaderboard(Map<String, dynamic> item) {
     try {
+      final auth = Provider.of<Auth>(context, listen: false);
+      final currentUserId = auth.user['id'];
+      final currentUsername = auth.user['username'];
+
       final Map<String, dynamic> user =
           (item['user'] is Map<String, dynamic>) ? item['user'] : item;
 
@@ -91,10 +96,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             .toString();
 
         if (creatorId != null) {
-          Navigator.of(context).pushNamed(
-            CreatorStoryScreen.routeName,
-            arguments: [creatorId, creatorName],
-          );
+          if (creatorId == currentUserId) {
+            Navigator.of(context).pushNamed(UserScreen.routeName);
+          } else {
+            Navigator.of(context).pushNamed(
+              CreatorStoryScreen.routeName,
+              arguments: [creatorId, creatorName],
+            );
+          }
           return;
         }
       }
@@ -102,10 +111,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       final String? username =
           (user['username'] ?? item['username'])?.toString();
       if (username != null && username.isNotEmpty) {
-        Navigator.of(context).pushNamed(
-          PlayerProfileScreen.routeName,
-          arguments: username,
-        );
+        if (username == currentUsername) {
+          Navigator.of(context).pushNamed(UserScreen.routeName);
+        } else {
+          Navigator.of(context).pushNamed(
+            PlayerProfileScreen.routeName,
+            arguments: username,
+          );
+        }
       }
     } catch (_) {}
   }

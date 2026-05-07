@@ -21,6 +21,215 @@ class Footer extends StatefulWidget {
   int index;
   Footer(this.index);
 
+  static const Set<String> _routesWithOwnFooter = {
+    '/story-screen',
+    '/shorts-screen',
+    '/tab_view_product',
+    '/user-screen',
+    '/discover-screen',
+    '/challenges-screen',
+    '/creator-story-screen',
+    '/single-gift-screen',
+    '/single-product-screen',
+    '/player-profile-screen',
+  };
+
+  static const Set<String> _quizRoutes = {
+    '/question-screen',
+    '/shorts-question-screen',
+    '/shorts-loose-screen',
+    '/shorts-win-screen',
+    '/guest-winner-screen',
+    '/win-screen',
+    '/loose-screen',
+    '/video-screen',
+    '/crossword-screen',
+    '/image-puzzle-screen',
+    '/shorts-image-puzzle-screen',
+  };
+
+  static const Set<String> _authRouteKeywords = {
+    'login',
+    'register',
+    'welcome',
+    'verify',
+    'forgot',
+    'onboarding',
+    'splash',
+    'interest-selection',
+  };
+
+  static const Set<String> _createRouteKeywords = {
+    'create',
+    'drafts',
+    'preview',
+    'selector',
+    'camera_recording',
+    'youtube_video_selector',
+    'ai-content-generator',
+    'manage-episode-questions',
+  };
+
+  static bool _matchesAny(String? value, Set<String> patterns) {
+    if (value == null) return false;
+    final normalized = value.toLowerCase();
+    return patterns.any((pattern) => normalized.contains(pattern));
+  }
+
+  static bool _hasBottomNavigationBar(Widget? widget) {
+    if (widget == null) return false;
+    if (widget is Scaffold && widget.bottomNavigationBar != null) {
+      return true;
+    }
+    if (widget is PageTransition) {
+      final dynamic dynamicWidget = widget;
+      final childWidget = dynamicWidget.child;
+      if (childWidget is Scaffold && childWidget.bottomNavigationBar != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static bool shouldShowOnRoute(
+      BuildContext context, Widget? child, String? routeName) {
+    if (_hasBottomNavigationBar(child)) {
+      return false;
+    }
+    final normalizedRoute = routeName?.toLowerCase();
+    final childType = child?.runtimeType.toString().toLowerCase() ?? '';
+
+    if (_routesWithOwnFooter.contains(normalizedRoute)) {
+      return false;
+    }
+    if (normalizedRoute != null && _quizRoutes.contains(normalizedRoute)) {
+      return false;
+    }
+    if (_matchesAny(normalizedRoute, _authRouteKeywords) ||
+        _matchesAny(childType, _authRouteKeywords)) {
+      return false;
+    }
+    if (_matchesAny(normalizedRoute, _createRouteKeywords) ||
+        _matchesAny(childType, _createRouteKeywords)) {
+      return false;
+    }
+    if (childType.contains('create') ||
+        childType.contains('drafts') ||
+        childType.contains('preview') ||
+        childType.contains('youtube') ||
+        childType.contains('camerarecording') ||
+        childType.contains('aicontent') ||
+        childType.contains('manageepisodequestions')) {
+      return false;
+    }
+    if (childType.contains('storyscreen') ||
+        childType.contains('shortsscreen') ||
+        childType.contains('tabviewproduct') ||
+        childType.contains('userscreen') ||
+        childType.contains('discoverscreen') ||
+        childType.contains('challengesscreen') ||
+        childType.contains('creatorstoryscreen') ||
+        childType.contains('singlegiftscreen') ||
+        childType.contains('singleproductscreen')) {
+      return false;
+    }
+    return true;
+  }
+
+  static int indexForRoute(Widget? child, String? routeName) {
+    final normalizedRoute = routeName?.toLowerCase() ?? '';
+    final childType = child?.runtimeType.toString().toLowerCase() ?? '';
+
+    if (normalizedRoute.contains('shorts') || childType.contains('shorts')) {
+      return 1;
+    }
+    if (normalizedRoute.contains('shop') ||
+        normalizedRoute.contains('product') ||
+        normalizedRoute.contains('cart') ||
+        normalizedRoute.contains('order') ||
+        normalizedRoute.contains('shipping') ||
+        normalizedRoute.contains('vendor') ||
+        normalizedRoute.contains('gift') ||
+        normalizedRoute.contains('for_you') ||
+        normalizedRoute.contains('for-you') ||
+        childType.contains('shop') ||
+        childType.contains('product') ||
+        childType.contains('cart') ||
+        childType.contains('order') ||
+        childType.contains('shipping') ||
+        childType.contains('vendor') ||
+        childType.contains('gift')) {
+      return 2;
+    }
+    if (normalizedRoute.contains('user') ||
+        normalizedRoute.contains('profile') ||
+        normalizedRoute.contains('point') ||
+        normalizedRoute.contains('wallet') ||
+        normalizedRoute.contains('level') ||
+        normalizedRoute.contains('weekly') ||
+        normalizedRoute.contains('achievement') ||
+        normalizedRoute.contains('setting') ||
+        normalizedRoute.contains('privacy') ||
+        normalizedRoute.contains('social') ||
+        normalizedRoute.contains('language') ||
+        normalizedRoute.contains('referral') ||
+        normalizedRoute.contains('notification') ||
+        normalizedRoute.contains('chat') ||
+        normalizedRoute.contains('analytics') ||
+        normalizedRoute.contains('affiliate') ||
+        normalizedRoute.contains('mlbb') ||
+        childType.contains('user') ||
+        childType.contains('profile') ||
+        childType.contains('point') ||
+        childType.contains('wallet') ||
+        childType.contains('level') ||
+        childType.contains('weekly') ||
+        childType.contains('achievement') ||
+        childType.contains('setting') ||
+        childType.contains('privacy') ||
+        childType.contains('social') ||
+        childType.contains('language') ||
+        childType.contains('referral') ||
+        childType.contains('notification') ||
+        childType.contains('chat') ||
+        childType.contains('analytics') ||
+        childType.contains('affiliate')) {
+      return 3;
+    }
+    return 0;
+  }
+
+  static double estimatedHeight(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bottomNavBarPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    final bool hasThreeButtonNav = isAndroid && bottomNavBarPadding >= 40;
+
+    double containerHeight;
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      containerHeight = screenWidth <= 380
+          ? 0.175 * screenWidth
+          : screenWidth <= 480
+              ? 0.15 * screenWidth
+              : 0.1 * screenWidth;
+    } else if (screenWidth >= 768 && screenWidth <= 834) {
+      containerHeight = 0.07 * screenWidth;
+    } else {
+      containerHeight = screenWidth <= 320
+          ? 0.15 * screenWidth
+          : screenWidth <= 375
+              ? 0.175 * screenWidth
+              : screenWidth <= 414
+                  ? 0.2 * screenWidth
+                  : 0.22 * screenWidth;
+    }
+
+    final double adjustedHeight = (containerHeight + 15).clamp(60.0, 90.0);
+    final double totalBottomPadding =
+        hasThreeButtonNav ? bottomNavBarPadding : 0.0;
+    return adjustedHeight + totalBottomPadding;
+  }
+
   @override
   State<Footer> createState() => _FooterState();
 }
@@ -146,28 +355,33 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       case 0:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.pushReplacement(
-            context,
-            PageTransition(
-                child: const StoryScreen(), type: PageTransitionType.fade));
+        Navigator.of(context, rootNavigator: true)
+            .pushReplacement(PageTransition(
+          child: const StoryScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: StoryScreen.routeName),
+        ));
         break;
       case 1:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.pushReplacement(
-            context,
-            PageTransition(
-                child: ShortsScreen(), type: PageTransitionType.fade));
+        Navigator.of(context, rootNavigator: true)
+            .pushReplacement(PageTransition(
+          child: ShortsScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: ShortsScreen.routeName),
+        ));
         break;
       case 2:
         // Allow guest users to browse the store
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.pushReplacement(
-            context,
-            PageTransition(
-                child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
-                type: PageTransitionType.fade));
+        Navigator.of(context, rootNavigator: true)
+            .pushReplacement(PageTransition(
+          child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: TabViewProduct.routeName),
+        ));
         break;
       case 3:
         if (auth.isGuest) {
@@ -176,8 +390,12 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         }
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.pushReplacement(context,
-            PageTransition(child: UserScreen(), type: PageTransitionType.fade));
+        Navigator.of(context, rootNavigator: true)
+            .pushReplacement(PageTransition(
+          child: UserScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: UserScreen.routeName),
+        ));
         break;
     }
   }

@@ -31,6 +31,7 @@ import 'package:baakhapaa/utils/debug_logger.dart' as debug;
 // AssistiveTouch replaced by PuppetDashboard + GlobalEventListener
 import 'package:baakhapaa/widgets/puppet_speech_bubble.dart';
 import 'package:baakhapaa/widgets/connectivity_aware_widget.dart';
+import 'package:baakhapaa/widgets/footer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:khalti_checkout_flutter/khalti_checkout_flutter.dart';
@@ -163,6 +164,53 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 final GlobalKey<NavigatorState> mainNavigatorKey = GlobalKey<NavigatorState>();
+
+class _FooterRouteObserver extends NavigatorObserver {
+  final ValueNotifier<String?> currentRouteName = ValueNotifier(null);
+  final List<String?> _routeStack = [];
+
+  void _updateCurrentRoute(String? routeName) {
+    currentRouteName.value = routeName;
+  }
+
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    super.didPush(route, previousRoute);
+    _routeStack.add(route.settings.name);
+    _updateCurrentRoute(route.settings.name);
+  }
+
+  @override
+  void didReplace({Route? newRoute, Route? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    if (_routeStack.isNotEmpty) {
+      _routeStack.removeLast();
+    }
+    _routeStack.add(newRoute?.settings.name);
+    _updateCurrentRoute(newRoute?.settings.name);
+  }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    super.didPop(route, previousRoute);
+    if (_routeStack.isNotEmpty) {
+      _routeStack.removeLast();
+    }
+    if (previousRoute != null) {
+      _routeStack.add(previousRoute.settings.name);
+      _updateCurrentRoute(previousRoute.settings.name);
+    } else {
+      _updateCurrentRoute(_routeStack.isNotEmpty ? _routeStack.last : null);
+    }
+  }
+
+  @override
+  void didRemove(Route route, Route? previousRoute) {
+    super.didRemove(route, previousRoute);
+    _routeStack.remove(route.settings.name);
+    _updateCurrentRoute(_routeStack.isNotEmpty ? _routeStack.last : null);
+  }
+}
 
 // Add the globalAuth variable - this will be used to track the Auth instance globally
 final Auth globalAuth = Auth();
@@ -324,17 +372,14 @@ void main() async {
     // Initialize other services
     try {
       unawaited(
-        MobileAds.instance
-            .initialize()
-            .then((_) {
-              // Preload interstitial ad once MobileAds is ready
-              AdService().preloadInterstitial();
-              // Fetch backend-controlled ad feature flags
-              AdService.fetchAdSettings();
-            })
-            .catchError((e) {
-              debug.DebugLogger.error('AdMob initialization failed: $e');
-            }),
+        MobileAds.instance.initialize().then((_) {
+          // Preload interstitial ad once MobileAds is ready
+          AdService().preloadInterstitial();
+          // Fetch backend-controlled ad feature flags
+          AdService.fetchAdSettings();
+        }).catchError((e) {
+          debug.DebugLogger.error('AdMob initialization failed: $e');
+        }),
       );
     } catch (e) {
       debug.DebugLogger.error('MobileAds init error: $e');
@@ -511,9 +556,8 @@ void main() async {
           type == 'shorts_commented' ||
           type == 'shorts_donation_received') {
         final rawId = message.data['shorts_id'];
-        final shortsId = rawId is int
-            ? rawId
-            : int.tryParse(rawId?.toString() ?? '') ?? 0;
+        final shortsId =
+            rawId is int ? rawId : int.tryParse(rawId?.toString() ?? '') ?? 0;
         if (shortsId > 0) {
           mainNavigatorKey.currentState?.pushNamed(
             SingleShortsScreen.routeName,
@@ -661,10 +705,13 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Future<Khalti> _khaltiInstance;
+  late final _FooterRouteObserver _footerRouteObserver;
+
   // Use the global mainNavigatorKey from main.dart (imported by DeepLinkHandler)
   @override
   void initState() {
     super.initState();
+    _footerRouteObserver = _FooterRouteObserver();
 
     // Initialize Khalti with the new SDK approach - using a default placeholder PIDX
     // This will be updated when making actual payments
@@ -685,27 +732,26 @@ class _MyAppState extends State<MyApp> {
         // Make the payment result available through a custom method
         _handlePaymentResult(paymentResult);
       },
-      onMessage:
-          (
-            khalti, {
-            description,
-            statusCode,
-            event,
-            needsPaymentConfirmation,
-          }) async {
-            log(
-              'Khalti Message - Description: $description, Status Code: $statusCode, Event: $event, NeedsPaymentConfirmation: $needsPaymentConfirmation',
-            );
+      onMessage: (
+        khalti, {
+        description,
+        statusCode,
+        event,
+        needsPaymentConfirmation,
+      }) async {
+        log(
+          'Khalti Message - Description: $description, Status Code: $statusCode, Event: $event, NeedsPaymentConfirmation: $needsPaymentConfirmation',
+        );
 
-            // Verify payment if needed
-            if (needsPaymentConfirmation == true) {
-              try {
-                await khalti.verify();
-              } catch (e) {
-                log('Payment verification failed: $e');
-              }
-            }
-          },
+        // Verify payment if needed
+        if (needsPaymentConfirmation == true) {
+          try {
+            await khalti.verify();
+          } catch (e) {
+            log('Payment verification failed: $e');
+          }
+        }
+      },
       onReturn: () => log('Successfully redirected to return_url.'),
     );
 
@@ -714,6 +760,12 @@ class _MyAppState extends State<MyApp> {
       DeepLinkHandler().init();
       DeepLinkHandler.processInitialLink();
     });
+  }
+
+  @override
+  void dispose() {
+    _footerRouteObserver.currentRouteName.dispose();
+    super.dispose();
   }
 
   // New method to use the _khaltiInstance field
@@ -904,6 +956,7 @@ class _MyAppState extends State<MyApp> {
             navigatorObservers: [
               SentryNavigatorObserver(),
               AnalyticsService.observer,
+              _footerRouteObserver,
             ],
             title: AppLocalizations.of(context)?.appTitle ?? 'Baakhapaa',
             locale: languageProvider.currentLocale,
@@ -926,13 +979,36 @@ class _MyAppState extends State<MyApp> {
             themeMode: ThemeMode.dark,
             darkTheme: theme_constants.darkTheme,
             builder: (context, child) {
-              return Builder(
-                builder: (builderContext) {
+              return ValueListenableBuilder<String?>(
+                valueListenable: _footerRouteObserver.currentRouteName,
+                builder: (builderContext, observedRouteName, _) {
+                  final routeName = observedRouteName ??
+                      ModalRoute.of(builderContext)?.settings.name;
+                  final shouldShowFooter = Footer.shouldShowOnRoute(
+                    builderContext,
+                    child,
+                    routeName,
+                  );
+                  final footerHeight = shouldShowFooter
+                      ? Footer.estimatedHeight(builderContext)
+                      : 0.0;
+                  final footerIndex = Footer.indexForRoute(child, routeName);
+
                   return Scaffold(
                     body: ConnectivityAwareWidget(
                       child: Stack(
                         children: [
-                          child ?? const SizedBox.shrink(),
+                          Padding(
+                            padding: EdgeInsets.only(bottom: footerHeight),
+                            child: child ?? const SizedBox.shrink(),
+                          ),
+                          if (shouldShowFooter)
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: Footer(footerIndex),
+                            ),
                           // Global event listener for Pusher/FCM (replaces floating AssistiveTouch)
                           _GlobalEventListener(mainNavKey: mainNavigatorKey),
                           // Quest guidance hint — below header, pointing to puppet

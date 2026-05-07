@@ -1146,8 +1146,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                               icon: Icons.qr_code,
                                               label: 'QR code',
                                               onTap: () {
-                                                final shareText =
-                                                    'https://baakhapaa.com/referral/${_user['username']}';
+                                                final shareText = Url.deepLink(
+                                                    '/referral/${_user['username']}');
 
                                                 showModalBottomSheet(
                                                   context: context,
@@ -1174,8 +1174,8 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                                               label: 'Share\nProfile',
                                               onTap: () async {
                                                 // Share profile link with username using share_plus
-                                                final profileLink =
-                                                    'https://baakhapaa.com/referral/${_user['username']}';
+                                                final profileLink = Url.deepLink(
+                                                    '/referral/${_user['username']}');
 
                                                 final shareText = '''
                                                   Check out my Baakhapaa profile!

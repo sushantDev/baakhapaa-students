@@ -41,36 +41,20 @@
             />
             <!-- Deep Link Intent Filters -->
 
-            <!-- Universal Links (https://baakhapaa.com) -->
+            <!-- Universal Links (https://school.baakhapaa.com) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="baakhapaa.com" />
+                <data android:scheme="https" android:host="school.baakhapaa.com" />
             </intent-filter>
 
-            <!-- Universal Links (https://www.baakhapaa.com) -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="www.baakhapaa.com" />
-            </intent-filter>
-
-            <!-- HTTP Links (http://baakhapaa.com) -->
+            <!-- HTTP Links (http://school.baakhapaa.com) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" android:host="baakhapaa.com" />
-            </intent-filter>
-
-            <!-- HTTP Links (http://www.baakhapaa.com) -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" android:host="www.baakhapaa.com" />
+                <data android:scheme="http" android:host="school.baakhapaa.com" />
             </intent-filter>
 
             <!-- Custom Scheme (baakhapaa://) -->

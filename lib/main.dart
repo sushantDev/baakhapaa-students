@@ -156,6 +156,7 @@ import './screens/create/story/create_question_screen.dart';
 import './providers/assistive_touch_provider.dart';
 import './providers/video_state_provider.dart';
 import './providers/puppet_interaction_provider.dart';
+import './models/url.dart';
 import './config/app_credentials.dart';
 import '../utils/debug_logger.dart';
 import './deep_link_handler.dart';
@@ -623,10 +624,9 @@ void main() async {
           "Initial Deep Link detected: ${initialLink.toString()}",
         );
 
-        // For universal links (https://baakhapaa.com or https://www.baakhapaa.com), handle immediately to prevent browser fallback
+        // For universal links (https://student.baakhapaa.com), handle immediately to prevent browser fallback
         if (initialLink.scheme == 'https' &&
-            (initialLink.host == 'baakhapaa.com' ||
-                initialLink.host == 'www.baakhapaa.com')) {
+            initialLink.host == Url.deepLinkHost) {
           DebugLogger.info(
             "🌐 MAIN: Universal link detected, processing immediately",
           );

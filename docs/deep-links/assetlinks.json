@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.baakhapaa.student",
+      "sha256_cert_fingerprints": [
+        "PASTE_PLAY_APP_SIGNING_SHA256_HERE",
+        "15:51:04:98:7E:79:7C:60:B2:08:C2:C7:0E:97:39:0A:5D:F0:B9:9C:CA:25:BB:33:F6:AE:AF:DB:AC:8D:83:78"
+      ]
+    }
+  }
+]

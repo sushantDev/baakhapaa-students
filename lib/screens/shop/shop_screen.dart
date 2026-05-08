@@ -10,6 +10,7 @@ import 'package:baakhapaa/screens/shop/vendor_product_screen.dart';
 import 'package:baakhapaa/screens/shop/cart_screen.dart';
 import 'package:baakhapaa/screens/story/video_screen.dart';
 import 'package:baakhapaa/screens/subscription/subscription_screen.dart';
+import '../../models/url.dart';
 import '../../providers/cart.dart';
 import '../../providers/favorites.dart';
 import 'package:baakhapaa/widgets/header.dart';
@@ -94,7 +95,7 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
 
       final response = await http.get(
         Uri.parse(
-          'https://student.baakhapaa.com/api/products/filter?sort=$sortParam',
+          Url.baakhapaaApi('/products/filter?$sortParam'),
         ),
         headers: headers,
       );

@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:baakhapaa/providers/auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:baakhapaa/screens/shop/search_product_screen.dart';
 import 'package:baakhapaa/screens/shop/vendor_product_screen.dart';
 import 'package:baakhapaa/screens/story/video_screen.dart';
@@ -45,6 +47,11 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
   late List<dynamic> _productSliders = [];
   late Shop shopProvider;
 
+  // Cache constants for preventing duplicate API calls on navigation
+  static const String _cacheKeyProducts = 'shop_cache_products';
+  static const String _cacheKeyProductsTimestamp = 'shop_cache_products_ts';
+  static const Duration _cacheExpiration = Duration(minutes: 30);
+
   bool _isUserLoggedIn() {
     final authProvider = Provider.of<Auth>(context, listen: false);
     return authProvider.isAuth;
@@ -80,8 +87,86 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
     if (_isInit) {
       _mainInit();
       _isInit = false;
+    } else {
+      // When returning to this screen from another screen, check if cache is stale
+      // before reloading all products
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _checkAndRestoreProductCache();
+      });
     }
     super.didChangeDependencies();
+  }
+
+  /// Check if the products cache is stale or missing.
+  /// Returns true only if cache doesn't exist or has expired.
+  Future<bool> _isCacheStaleOrMissing() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedData = prefs.getString(_cacheKeyProducts);
+
+      // If no cache exists, it's missing
+      if (cachedData == null) {
+        DebugLogger.info('🏪 Shop: Cache missing: no products cache');
+        return true;
+      }
+
+      // Check if cache has expired
+      final timestampMs = prefs.getInt(_cacheKeyProductsTimestamp) ?? 0;
+      final cacheTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);
+      final now = DateTime.now();
+      final isExpired = now.difference(cacheTime) > _cacheExpiration;
+
+      if (isExpired) {
+        DebugLogger.info(
+            '🏪 Shop: Cache expired: last updated ${now.difference(cacheTime).inMinutes} min ago');
+      } else {
+        DebugLogger.info(
+            '🏪 Shop: Cache fresh: ${_cacheExpiration.inMinutes - now.difference(cacheTime).inMinutes} min remaining');
+      }
+
+      return isExpired;
+    } catch (e) {
+      DebugLogger.error('Shop: Error checking cache staleness: $e');
+      // On error, assume cache is stale and reload
+      return true;
+    }
+  }
+
+  /// Check if cache is stale and restore from cache if fresh
+  Future<void> _checkAndRestoreProductCache() async {
+    try {
+      final isCacheStale = await _isCacheStaleOrMissing();
+
+      if (isCacheStale) {
+        DebugLogger.info(
+            '🏪 Shop: Cache is stale/missing, reloading products...');
+        _mainInit();
+      } else {
+        DebugLogger.info('🏪 Shop: Cache is fresh, restoring from cache');
+        // Restore products from cache
+        final prefs = await SharedPreferences.getInstance();
+        final cachedJson = prefs.getString(_cacheKeyProducts);
+        if (cachedJson != null && mounted) {
+          try {
+            final Map<String, dynamic> cachedProducts =
+                Map<String, dynamic>.from(json.decode(cachedJson));
+            setState(() {
+              products = cachedProducts;
+              productKeys = products.keys.toList();
+            });
+            DebugLogger.info(
+                '🏪 Shop: Restored ${productKeys.length} products from cache');
+          } catch (e) {
+            DebugLogger.error('Shop: Error parsing cached products: $e');
+            _mainInit();
+          }
+        }
+      }
+    } catch (e) {
+      DebugLogger.error('Shop: Error in cache restoration: $e');
+      _mainInit();
+    }
   }
 
   Future<void> _mainInit() async {
@@ -101,10 +186,32 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
           _isLoading = true;
         });
 
+        // CRITICAL: Save to SharedPreferences to survive navigation
+        _cacheProductsToPrefs();
+
         // Refresh puppet suggestions when products load
         refreshPuppetSuggestions();
       }
     });
+  }
+
+  /// Save products to SharedPreferences cache
+  Future<void> _cacheProductsToPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        _cacheKeyProducts,
+        json.encode(products),
+      );
+      await prefs.setInt(
+        _cacheKeyProductsTimestamp,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+      DebugLogger.info(
+          '🏪 Shop: Cached ${productKeys.length} products to disk');
+    } catch (e) {
+      DebugLogger.error('Shop: Failed to cache products: $e');
+    }
   }
 
   @override

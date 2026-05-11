@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:baakhapaa/helpers/helpers.dart';
 // import 'package:baakhapaa/l10n/app_localizations.dart';
@@ -47,6 +48,11 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
   late Map<String, dynamic> products = {};
   var _isLoading = false;
   late List<String> productKeys;
+  static const String _cacheKeyProducts = 'shop_products_cache';
+  static const String _cacheKeyProductsTimestamp =
+      'shop_products_cache_timestamp';
+  static const Duration _cacheExpiration = Duration(minutes: 15);
+  static const int _maxVendorPreviewProducts = 6;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String selectedCategory = '';
   List<String> selectedBrands = [];
@@ -212,8 +218,78 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
     super.didChangeDependencies();
   }
 
+  Future<bool> _isCacheStaleOrMissing() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedData = prefs.getString(_cacheKeyProducts);
+      if (cachedData == null) return true;
+      final timestampMs = prefs.getInt(_cacheKeyProductsTimestamp) ?? 0;
+      final cacheTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);
+      final now = DateTime.now();
+      return now.difference(cacheTime) > _cacheExpiration;
+    } catch (e) {
+      DebugLogger.error('Error checking shop cache status: $e');
+      return true;
+    }
+  }
+
+  Future<void> _restoreProductsFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedData = prefs.getString(_cacheKeyProducts);
+      if (cachedData == null) return;
+      final decoded = json.decode(cachedData);
+      if (decoded is Map<String, dynamic>) {
+        products = decoded;
+        productKeys = products.keys.toList();
+        DebugLogger.info(
+            'ShopScreen: Restored ${productKeys.length} vendors from cache');
+        if (mounted) {
+          setState(() {
+            _isLoading = true;
+          });
+        }
+      }
+    } catch (e) {
+      DebugLogger.error('Error restoring shop cache: $e');
+    }
+  }
+
+  Future<void> _cacheProductsToPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cacheKeyProducts, json.encode(products));
+      await prefs.setInt(
+          _cacheKeyProductsTimestamp, DateTime.now().millisecondsSinceEpoch);
+      DebugLogger.info('ShopScreen: Saved products cache to disk');
+    } catch (e) {
+      DebugLogger.error('Error saving shop cache: $e');
+    }
+  }
+
   Future<void> _mainInit() async {
     var _productProvider = Provider.of<Shop>(context, listen: false);
+    final bool isCacheStale = await _isCacheStaleOrMissing();
+    if (!isCacheStale) {
+      await _restoreProductsFromCache();
+      // Refresh in the background if cache is still valid
+      _productProvider.getAllProducts(page: 1, limit: 40).then((_) async {
+        if (mounted) {
+          products = _productProvider.products;
+          productKeys = products.keys.toList();
+          await _cacheProductsToPrefs();
+          setState(() {
+            _isLoading = true;
+          });
+          refreshPuppetSuggestions();
+          DebugLogger.info(
+              'ShopScreen: Background refresh completed after cache restore');
+        }
+      }).catchError((e) {
+        DebugLogger.error('Error refreshing products after cache restore: $e');
+      });
+    }
+
     _productProvider.fetchProductSlider().then((___) {
       if (mounted) {
         setState(() {
@@ -235,56 +311,60 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
       DebugLogger.error('Error fetching for-you products: $e');
     });
 
-    // Fetch all products with timeout protection
-    Provider.of<Shop>(context, listen: false)
-        .getAllProducts()
-        .timeout(Duration(seconds: 10), onTimeout: () async {
-      DebugLogger.error('getAllProducts timed out after 10 seconds');
-      if (mounted) {
-        setState(() {
-          _isLoading = true;
-          products = {};
-          productKeys = [];
-        });
-      }
-    }).then((_) {
-      if (mounted) {
-        final shop = Provider.of<Shop>(context, listen: false);
-        products = shop.products;
-        productKeys = products.keys.toList();
+    if (isCacheStale) {
+      // Fetch all products with timeout protection when cache is stale or missing.
+      Provider.of<Shop>(context, listen: false)
+          .getAllProducts(page: 1, limit: 40)
+          .timeout(Duration(seconds: 10), onTimeout: () async {
+        DebugLogger.error('getAllProducts timed out after 10 seconds');
+        if (mounted) {
+          setState(() {
+            _isLoading = true;
+            products = {};
+            productKeys = [];
+          });
+        }
+        return Future.value();
+      }).then((_) {
+        if (mounted) {
+          final shop = Provider.of<Shop>(context, listen: false);
+          products = shop.products;
+          productKeys = products.keys.toList();
 
-        DebugLogger.info('📦 Products received: ${productKeys.length} vendors');
-        productKeys.forEach((key) {
-          final vendorProducts = products[key];
-          if (vendorProducts is List) {
-            DebugLogger.info(
-                // ignore: unnecessary_cast
-                '  • Vendor $key: ${(vendorProducts as List).length} products');
-          } else {
-            DebugLogger.error(
-                '  ❌ Vendor $key has invalid type: ${vendorProducts.runtimeType}');
-          }
-        });
+          DebugLogger.info(
+              '📦 Products received: ${productKeys.length} vendors');
+          productKeys.forEach((key) {
+            final vendorProducts = products[key];
+            if (vendorProducts is List) {
+              DebugLogger.info(
+                  // ignore: unnecessary_cast
+                  '  • Vendor $key: ${(vendorProducts as List).length} products');
+            } else {
+              DebugLogger.error(
+                  '  ❌ Vendor $key has invalid type: ${vendorProducts.runtimeType}');
+            }
+          });
 
-        setState(() {
-          _isLoading = true;
-          DebugLogger.success('✅ Shop screen UI updated');
-        });
+          setState(() {
+            _isLoading = true;
+            DebugLogger.success('✅ Shop screen UI updated');
+          });
 
-        // Refresh puppet suggestions when products load
-        refreshPuppetSuggestions();
-      }
-    }).catchError((e) {
-      if (mounted) {
-        DebugLogger.error('Error fetching all products: $e');
-        setState(() {
-          // Still set loading to true to show empty state even on error
-          _isLoading = true;
-          products = {};
-          productKeys = [];
-        });
-      }
-    });
+          // Refresh puppet suggestions when products load
+          refreshPuppetSuggestions();
+        }
+      }).catchError((e) {
+        if (mounted) {
+          DebugLogger.error('Error fetching all products: $e');
+          setState(() {
+            // Still set loading to true to show empty state even on error
+            _isLoading = true;
+            products = {};
+            productKeys = [];
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -1787,6 +1867,10 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
       profileImagePath = 'assets/images/sudip.png';
     }
 
+    final previewProducts =
+        vendorProducts.take(_maxVendorPreviewProducts).toList();
+    final extraCount = vendorProducts.length - previewProducts.length;
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
@@ -1902,15 +1986,26 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.zero,
-                  itemCount: vendorProducts.length,
+                  itemCount: previewProducts.length,
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: EdgeInsets.only(right: 8),
-                      child: ProductItem(vendorProducts[index]),
+                      child: ProductItem(previewProducts[index]),
                     );
                   },
                 ),
               ),
+              if (extraCount > 0)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    '+$extraCount more products • Tap to view all',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

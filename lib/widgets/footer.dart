@@ -535,7 +535,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                                   color: iconColor,
                                 ),
                     ),
-                    if (!(index == 3 && isSelected)) ...[
+                    if (!isSelected) ...[
                       SizedBox(height: 6),
                       Flexible(
                         child: AnimatedDefaultTextStyle(

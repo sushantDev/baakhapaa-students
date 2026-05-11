@@ -7,9 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:share_plus/share_plus.dart';
 
@@ -57,9 +58,16 @@ class _EpisodeScreenState extends State<EpisodeScreen>
   Map<String, dynamic>? _detailedSeasonData;
   bool _isLoading = true;
   String _errorMessage = '';
+  bool _isInit = true;
 
   // Getter to access episodes from child widgets
   List<dynamic> get episodes => _episodes;
+
+  // Cache constants for preventing duplicate API calls on navigation
+  static const String _cacheKeyEpisodes = 'episode_cache_episodes';
+  static const String _cacheKeySeasonDetails = 'episode_cache_season_details';
+  static const String _cacheKeyEpisodesTimestamp = 'episode_cache_episodes_ts';
+  static const Duration _cacheExpiration = Duration(minutes: 30);
 
   @override
   void initState() {
@@ -154,6 +162,102 @@ class _EpisodeScreenState extends State<EpisodeScreen>
           _isLoading = false;
         });
       }
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      _isInit = false;
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _checkAndRestoreEpisodeCache();
+    });
+  }
+
+  Future<bool> _isCacheStaleOrMissing() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedEpisodes = prefs.getString(_cacheKeyEpisodes);
+      final timestampMs = prefs.getInt(_cacheKeyEpisodesTimestamp) ?? 0;
+
+      if (cachedEpisodes == null || timestampMs == 0) {
+        DebugLogger.api('🎬 Episode Screen: Cache missing or empty');
+        return true;
+      }
+
+      final cacheTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);
+      final isExpired = DateTime.now().difference(cacheTime) > _cacheExpiration;
+      if (isExpired) {
+        DebugLogger.api('🎬 Episode Screen: Cache is expired');
+      }
+      return isExpired;
+    } catch (e) {
+      DebugLogger.api('🎬 Episode Screen: Cache validation failed: $e');
+      return true;
+    }
+  }
+
+  Future<void> _cacheSeasonDataToPrefs(
+      Map<String, dynamic> seasonDetails) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final episodesJson = json.encode(seasonDetails['episodes'] ?? []);
+      final seasonDetailsJson = json.encode(seasonDetails);
+      await prefs.setString(_cacheKeyEpisodes, episodesJson);
+      await prefs.setString(_cacheKeySeasonDetails, seasonDetailsJson);
+      await prefs.setInt(
+        _cacheKeyEpisodesTimestamp,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+      DebugLogger.api('🎬 Episode Screen: Saved season data to cache');
+    } catch (e) {
+      DebugLogger.api('🎬 Episode Screen: Failed to cache season data: $e');
+    }
+  }
+
+  Future<void> _checkAndRestoreEpisodeCache() async {
+    if (await _isCacheStaleOrMissing()) {
+      DebugLogger.api(
+          '🎬 Episode Screen: Cache stale or missing, refreshing data');
+      await _fetchSeasonDetails();
+      return;
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedSeasonDetails = prefs.getString(_cacheKeySeasonDetails);
+      if (cachedSeasonDetails == null) {
+        DebugLogger.api('🎬 Episode Screen: Cached season details missing');
+        await _fetchSeasonDetails();
+        return;
+      }
+
+      final seasonDetails =
+          json.decode(cachedSeasonDetails) as Map<String, dynamic>;
+      final cachedEpisodes = seasonDetails['episodes'] as List<dynamic>? ?? [];
+
+      setState(() {
+        _detailedSeasonData = seasonDetails;
+        _episodes = cachedEpisodes;
+        _isLoading = false;
+      });
+
+      final storyProvider = Provider.of<Story>(context, listen: false);
+      final currentSeason =
+          Map<String, dynamic>.from(storyProvider.selectedSeason);
+      currentSeason['episodes'] = _episodes;
+      storyProvider.setSelectedSeason(currentSeason);
+
+      DebugLogger.api(
+          '🎬 Episode Screen: Restored ${_episodes.length} episodes from cache');
+    } catch (e) {
+      DebugLogger.api('🎬 Episode Screen: Failed to restore cache: $e');
+      await _fetchSeasonDetails();
     }
   }
 
@@ -295,6 +399,8 @@ class _EpisodeScreenState extends State<EpisodeScreen>
           _isLoading = false;
         });
 
+        await _cacheSeasonDataToPrefs(seasonDetails);
+
         // ✅ Debug logging to verify data
         DebugLogger.api('🎬 Description: ${seasonDetails['description']}');
         DebugLogger.api('🎬 Cast: ${seasonDetails['cast']}');
@@ -384,9 +490,14 @@ class _EpisodeScreenState extends State<EpisodeScreen>
             if (_detailedSeasonData != null) {
               _detailedSeasonData!['creator_id'] = data['user_id'];
               DebugLogger.api(
-                  '👤 Injected creator_id into detailedSeasonData: {data["user_id"]}');
+                  '👤 Injected creator_id into detailedSeasonData: ${data["user_id"]}');
             }
             _isLoading = false;
+          });
+
+          await _cacheSeasonDataToPrefs({
+            'episodes': _episodes,
+            'creator_id': data['user_id'],
           });
 
           DebugLogger.api(
@@ -400,6 +511,9 @@ class _EpisodeScreenState extends State<EpisodeScreen>
           setState(() {
             _episodes = episodes;
             _isLoading = false;
+          });
+          await _cacheSeasonDataToPrefs({
+            'episodes': _episodes,
           });
         }
       }

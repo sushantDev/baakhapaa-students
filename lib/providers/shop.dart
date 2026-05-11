@@ -79,9 +79,9 @@ class Shop with ChangeNotifier {
     return _isProductRedeemable;
   }
 
-  Future<void> getAllProducts() async {
+  Future<void> getAllProducts({int page = 1, int limit = 50}) async {
     try {
-      final url = Url.baakhapaaApi('/products');
+      final url = Url.baakhapaaApi('/products?page=$page&limit=$limit');
       DebugLogger.api('Fetching shop products from: $url');
 
       final response = await http.get(

@@ -78,6 +78,12 @@ class _StoryScreenState extends State<StoryScreen>
   bool _initInProgress = false;
   bool _mainInitInProgress = false;
 
+  // Cache constants for preventing duplicate API calls on navigation
+  static const String _cacheKeyFeaturedSeasons = 'story_cache_featured_seasons';
+  static const String _cacheKeyFeaturedSeasonsTimestamp =
+      'story_cache_featured_seasons_ts';
+  static const Duration _cacheExpiration = Duration(minutes: 30);
+
   // Performance: Track last known data state to prevent unnecessary rebuilds
   int _lastKnownSuggestedCount = 0;
   int _lastKnownDifficultCount = 0;
@@ -198,22 +204,56 @@ class _StoryScreenState extends State<StoryScreen>
     // while _mainInit() API calls are still in-flight (race condition).
     final route = ModalRoute.of(context);
     if (route != null && !_isInit && !_mainInitInProgress) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
-        // If the Story provider was recreated with empty data (e.g. triggered by
-        // user_screen calling auth.getUser() before this screen's data loaded),
-        // run a full re-init to restore all content sections.
-        final story = Provider.of<Story>(context, listen: false);
-        final hasNoData = story.featuredSeasons.isEmpty &&
-            story.suggestedSeasons.isEmpty &&
-            _cachedFeaturedSeasons.isEmpty &&
-            !_isLoading;
-        if (hasNoData) {
+        // FIX: Instead of checking if provider is empty (which triggers duplicate
+        // API calls), check if cache is stale. Only reload if cache is truly missing.
+        final isCacheStale = await _isCacheStaleOrMissing();
+
+        if (isCacheStale) {
+          DebugLogger.info('🏛️ Cache is stale/missing, reloading data...');
           _mainInit();
         } else if (route.isCurrent) {
+          DebugLogger.info(
+              '🏛️ Cache is fresh, refreshing continue watching only');
           _refreshContinueWatchingIfNeeded();
         }
       });
+    }
+  }
+
+  /// Check if the featured seasons cache is stale or missing.
+  /// Returns true only if cache doesn't exist or has expired.
+  Future<bool> _isCacheStaleOrMissing() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedData = prefs.getString(_cacheKeyFeaturedSeasons);
+
+      // If no cache exists, it's missing
+      if (cachedData == null) {
+        DebugLogger.info('🏛️ Cache missing: no featured seasons cache');
+        return true;
+      }
+
+      // Check if cache has expired
+      final timestampMs = prefs.getInt(_cacheKeyFeaturedSeasonsTimestamp) ?? 0;
+      final cacheTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);
+      final now = DateTime.now();
+      final isExpired = now.difference(cacheTime) > _cacheExpiration;
+
+      if (isExpired) {
+        DebugLogger.info(
+            '🏛️ Cache expired: last updated ${now.difference(cacheTime).inMinutes} min ago');
+      } else {
+        DebugLogger.info(
+            '🏛️ Cache fresh: ${_cacheExpiration.inMinutes - now.difference(cacheTime).inMinutes} min remaining');
+      }
+
+      return isExpired;
+    } catch (e) {
+      DebugLogger.error('Error checking cache staleness: $e');
+      // On error, assume cache is stale and reload
+      return true;
     }
   }
 
@@ -400,49 +440,31 @@ class _StoryScreenState extends State<StoryScreen>
       if (!mounted) return;
 
       try {
-        // Fetch both featured seasons and all seasons for continue watching
-        DebugLogger.info('🏛️ Starting Future.wait for API calls...');
+        // Fetch critical story sections first so the screen becomes usable quickly.
+        DebugLogger.info(
+            '🏛️ Starting reduced Future.wait for core story API calls...');
 
         // Use allSettled pattern to handle partial failures gracefully
         await Future.wait([
           _storyProvider.fetchFeaturedSeasons().catchError((e) {
             DebugLogger.error('Featured seasons API failed: $e');
-            return Future.value(); // Continue with other APIs
+            return Future.value();
           }),
           _storyProvider.fetchSuggestedSeasons().catchError((e) {
             DebugLogger.error('Suggested seasons API failed: $e');
-            return Future.value(); // Continue with other APIs
-          }),
-          _storyProvider.fetchDifficultSeasons().catchError((e) {
-            DebugLogger.error(
-                'Difficult seasons API failed (backend error): $e');
-            // This is expected to fail due to backend DatePoint::addMinutes() error
-            return Future.value(); // Continue with other APIs
+            return Future.value();
           }),
           _storyProvider.fetchMyList().catchError((e) {
             DebugLogger.error('My List API failed: $e');
-            return Future.value(); // Continue with other APIs
+            return Future.value();
           }),
           _storyProvider.fetchContinueWatching().catchError((e) {
             DebugLogger.error('Continue watching API failed: $e');
-            return Future.value(); // Continue with other APIs
-          }),
-          _storyProvider.fetchPremiumCreatorSeasons().catchError((e) {
-            DebugLogger.error('Premium creator seasons API failed: $e');
             return Future.value();
           }),
-          _storyProvider.fetchReadableSeasons().catchError((e) {
-            DebugLogger.error('Readable seasons API failed: $e');
-            return Future.value();
-          }),
-          _storyProvider.fetchReadingStreak().catchError((e) {
-            DebugLogger.error('Reading streak API failed: $e');
-            return Future.value();
-          }),
-        ], eagerError: false); // Don't fail fast, wait for all to complete
+        ], eagerError: false);
 
-        DebugLogger.info(
-            '🏛️ Future.wait completed (some APIs may have failed gracefully)');
+        DebugLogger.info('🏛️ Core story API batch completed');
 
         // Re-read the provider after await — the ChangeNotifierProxyProvider
         // may have created a new Story instance while the API calls were
@@ -469,6 +491,22 @@ class _StoryScreenState extends State<StoryScreen>
               List<Map<String, dynamic>>.from(_storyProvider.featuredSeasons);
           DebugLogger.info(
               'Cached ${_cachedFeaturedSeasons.length} featured seasons');
+
+          // CRITICAL: Save to SharedPreferences to survive navigation
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(
+              _cacheKeyFeaturedSeasons,
+              json.encode(_cachedFeaturedSeasons),
+            );
+            await prefs.setInt(
+              _cacheKeyFeaturedSeasonsTimestamp,
+              DateTime.now().millisecondsSinceEpoch,
+            );
+            DebugLogger.info('🏛️ Saved featured seasons cache to disk');
+          } catch (e) {
+            DebugLogger.error('Failed to cache featured seasons: $e');
+          }
         }
 
         // Cache the My List data to prevent loss during rebuilds
@@ -521,10 +559,28 @@ class _StoryScreenState extends State<StoryScreen>
       }
 
       // Mark loading complete early — core content data is ready
-      // Sequential operations below (slider, gifts, creators, challenges) load in background
+      // Sequential and lower-priority operations load after the main UI renders.
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+
+      if (mounted) {
+        final backgroundStoryProvider =
+            Provider.of<Story>(context, listen: false);
+        backgroundStoryProvider.fetchDifficultSeasons().catchError((e) {
+          DebugLogger.error('Background difficult seasons API failed: $e');
+        });
+        backgroundStoryProvider.fetchPremiumCreatorSeasons().catchError((e) {
+          DebugLogger.error(
+              'Background premium creator seasons API failed: $e');
+        });
+        backgroundStoryProvider.fetchReadableSeasons().catchError((e) {
+          DebugLogger.error('Background readable seasons API failed: $e');
+        });
+        backgroundStoryProvider.fetchReadingStreak().catchError((e) {
+          DebugLogger.error('Background reading streak API failed: $e');
         });
       }
 

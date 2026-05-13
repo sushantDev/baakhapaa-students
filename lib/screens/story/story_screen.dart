@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element, unused_import
+
 import 'dart:io';
 import 'dart:async';
 
@@ -2820,7 +2822,6 @@ class _StoryScreenState extends State<StoryScreen>
                 child: _upgradeAlertWidget(),
               )
             : _upgradeAlertWidget(),
-        bottomNavigationBar: Footer(0),
       ),
     );
   }
@@ -3148,7 +3149,7 @@ class _StoryScreenState extends State<StoryScreen>
         _buildStorytellersSection(),
 
         // 3. Continue Watching Section
-        _buildContinueWatchingSection(),
+        // _buildContinueWatchingSection(),
 
         // 3.5. Books Section (Readable Seasons)
         _buildBooksSection(),

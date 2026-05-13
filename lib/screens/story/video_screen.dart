@@ -69,6 +69,9 @@ class _VideoScreenState extends State<VideoScreen>
   // Store Story provider reference for safe access in dispose
   Story? _storyProvider;
 
+  // Resume override for My Courses feature
+  int? _resumeOverrideSeconds;
+
   // Episode progress tracking variables
   Timer? _progressTimer;
   int _currentProgressSeconds = 0;
@@ -306,12 +309,22 @@ class _VideoScreenState extends State<VideoScreen>
         } else if (_navArgs is Map) {
           // Handle episode map - ALWAYS fetch fresh data to get duration skip fields
           final rawEpisodeId = (_navArgs as Map)['id'];
+          final resumeAtSeconds =
+              (_navArgs as Map)['resumeAtSeconds'] as int? ?? 0;
+
+          // Store resume override if provided (from My Courses feature)
+          if (resumeAtSeconds > 0) {
+            _resumeOverrideSeconds = resumeAtSeconds;
+            DebugLogger.info(
+                '🎯 Resume override set for My Courses: ${_resumeOverrideSeconds}s');
+          }
+
           final episodeId = rawEpisodeId is int
               ? rawEpisodeId
               : int.tryParse(rawEpisodeId?.toString() ?? '');
           if (episodeId != null) {
             DebugLogger.info(
-                '🔄 VideoScreen: Fetching fresh episode data for ID: $episodeId');
+                '🔄 VideoScreen: Fetching fresh episode data for ID: $episodeId (resume at ${resumeAtSeconds}s)');
             // DON'T use old episode data - wait for fresh fetch
             // Fetch both episode and popups in parallel for fresh data
             Future.wait([
@@ -781,10 +794,14 @@ class _VideoScreenState extends State<VideoScreen>
   Future<void> _resumeFromPreviousPosition(
       VideoPlayerController? controller) async {
     try {
-      // Check if episode has previous progress - try progress_seconds first, then calculate from completion_percent
+      // Check if there's a resume override from My Courses feature (highest priority)
       int progressSeconds = 0;
 
-      if (episode['progress_seconds'] != null) {
+      if (_resumeOverrideSeconds != null && _resumeOverrideSeconds! > 0) {
+        progressSeconds = _resumeOverrideSeconds!;
+        DebugLogger.info(
+            '🎯 Using My Courses resume override: ${progressSeconds}s');
+      } else if (episode['progress_seconds'] != null) {
         progressSeconds =
             int.tryParse(episode['progress_seconds'].toString()) ?? 0;
         DebugLogger.info(

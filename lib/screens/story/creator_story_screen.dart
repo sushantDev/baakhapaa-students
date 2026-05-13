@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
@@ -1094,7 +1096,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
           ],
         ),
         bottomNavigationBar:
-            _isLoading ? null : Footer(0), // Hide footer during loading
+            _isLoading ? null : null, // Hide footer during loading
       ),
     );
   }

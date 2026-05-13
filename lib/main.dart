@@ -53,6 +53,7 @@ import 'package:baakhapaa/providers/collaboration_provider.dart';
 import 'package:baakhapaa/screens/collaboration/collaborations_screen.dart';
 import 'package:baakhapaa/screens/collaboration/collaboration_detail_screen.dart';
 import 'package:baakhapaa/screens/collaboration/create_collaboration_screen.dart';
+import 'package:baakhapaa/screens/my_courses/my_courses_screen.dart';
 import 'package:baakhapaa/screens/others/language_screen.dart';
 import 'package:baakhapaa/services/clarity_service.dart';
 import 'package:baakhapaa/services/sentry_service.dart';
@@ -1002,6 +1003,12 @@ class _MyAppState extends State<MyApp> {
                             padding: EdgeInsets.only(bottom: footerHeight),
                             child: child ?? const SizedBox.shrink(),
                           ),
+                          // Global event listener for Pusher/FCM (replaces floating AssistiveTouch)
+                          _GlobalEventListener(mainNavKey: mainNavigatorKey),
+                          // Quest guidance hint — below header, pointing to puppet
+                          const QuestHintBubble(),
+                          // Bottom-of-screen puppet speech bubble
+                          const PuppetSpeechOverlay(),
                           if (shouldShowFooter)
                             Positioned(
                               left: 0,
@@ -1012,12 +1019,6 @@ class _MyAppState extends State<MyApp> {
                                 navigator: mainNavigatorKey.currentState,
                               ),
                             ),
-                          // Global event listener for Pusher/FCM (replaces floating AssistiveTouch)
-                          _GlobalEventListener(mainNavKey: mainNavigatorKey),
-                          // Quest guidance hint — below header, pointing to puppet
-                          const QuestHintBubble(),
-                          // Bottom-of-screen puppet speech bubble
-                          const PuppetSpeechOverlay(),
                         ],
                       ),
                     ),
@@ -1153,6 +1154,7 @@ class _MyAppState extends State<MyApp> {
                   const ShippingAddressScreen(),
               OrderTrackingScreen.routeName: (ctx) =>
                   const OrderTrackingScreen(),
+              MyCourses.routeName: (ctx) => const MyCourses(),
             },
           );
         },

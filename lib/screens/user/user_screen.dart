@@ -1,4 +1,4 @@
-// ignore_for_file: unused_local_variable
+// ignore_for_file: duplicate_ignore, unused_import, unused_local_variable
 
 import 'dart:async';
 import 'dart:convert';
@@ -36,6 +36,7 @@ import 'package:baakhapaa/widgets/footer.dart';
 import 'package:baakhapaa/widgets/nav_bar.dart';
 import 'package:baakhapaa/utils/exit_confirmation_dialog.dart';
 import 'package:baakhapaa/utils/puppet_screen_mapping.dart';
+import 'package:baakhapaa/utils/guest_auth_helper.dart';
 import 'package:baakhapaa/widgets/share_with_qr_modal.dart';
 // ignore: unused_import
 import 'package:baakhapaa/widgets/wallet_widget.dart';
@@ -94,6 +95,19 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     try {
       // Cache provider references BEFORE any async operations
       final auth = Provider.of<Auth>(context, listen: false);
+      final isUnauthenticated =
+          auth.isGuest || !auth.isAuth || (auth.user.isEmpty && !auth.isLoadingUser);
+
+      if (isUnauthenticated) {
+        final didLogin = await GuestAuthHelper.showGuestLoginDialog(
+          context,
+          'user profile',
+        );
+        if (!didLogin && mounted) {
+          Navigator.of(context).maybePop();
+        }
+        return;
+      }
 
       await auth.getUnreadMessageCount();
 
@@ -4963,7 +4977,6 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   ),
                 ),
               ),
-        bottomNavigationBar: Footer(3),
       ),
     );
   }

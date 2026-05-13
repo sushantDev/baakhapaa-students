@@ -1,3 +1,5 @@
+// ignore_for_file: duplicate_ignore, unused_import
+
 import 'dart:convert';
 
 import 'package:baakhapaa/screens/story/video_screen.dart';
@@ -321,7 +323,6 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
                   minimum: EdgeInsets.only(bottom: 8, left: 16, right: 16),
                   child: _buildStickyRedeemButton(),
                 ),
-                Footer(2),
               ],
             ),
     );

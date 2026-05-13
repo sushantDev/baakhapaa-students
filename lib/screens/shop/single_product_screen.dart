@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:convert';
 
 import 'package:baakhapaa/helpers/helpers.dart';
@@ -412,7 +414,6 @@ class _SingleProductScreenState extends State<SingleProductScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildStickyPurchaseBar(cart),
-          Footer(2),
         ],
       ),
       body: _isLoading

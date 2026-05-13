@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:io';
 
 import 'package:baakhapaa/providers/video_state_provider.dart';
@@ -898,7 +900,6 @@ class _ChallengesScreenState extends State<ChallengesScreen>
           },
         ),
       ),
-      bottomNavigationBar: Footer(1),
     );
   }
 }

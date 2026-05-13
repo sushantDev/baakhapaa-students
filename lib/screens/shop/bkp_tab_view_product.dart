@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:baakhapaa/l10n/app_localizations.dart';
 import 'package:baakhapaa/providers/tutorial_flow_provider.dart';
@@ -268,7 +270,6 @@ class _TabViewProductState extends State<TabViewProduct>
             ),
           ),
         ),
-        bottomNavigationBar: Footer(2),
       ),
     );
   }

@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:baakhapaa/widgets/header.dart';
 import 'package:baakhapaa/widgets/subscriptionBanner.dart';
@@ -898,7 +900,6 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                   ),
           ),
         ),
-        bottomNavigationBar: Footer(0),
       ),
     );
   }

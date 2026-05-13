@@ -12,6 +12,7 @@ import '../providers/auth.dart';
 import '../screens/shop/tab_view_product.dart';
 import '../screens/story/story_screen.dart';
 import '../screens/shorts/shorts_screen.dart';
+import '../screens/my_courses/my_courses_screen.dart';
 import '../screens/others/creator_request_screen.dart';
 import '../utils/guest_auth_helper.dart';
 import './content_type_selector_sheet.dart';
@@ -22,18 +23,7 @@ class Footer extends StatefulWidget {
   int index;
   Footer(this.index, {this.navigator});
 
-  static const Set<String> _routesWithOwnFooter = {
-    '/story-screen',
-    '/shorts-screen',
-    '/tab_view_product',
-    '/user-screen',
-    '/discover-screen',
-    '/challenges-screen',
-    '/creator-story-screen',
-    '/single-gift-screen',
-    '/single-product-screen',
-    '/player-profile-screen',
-  };
+  static const Set<String> _routesWithOwnFooter = {};
 
   static const Set<String> _quizRoutes = {
     '/question-screen',
@@ -77,16 +67,33 @@ class Footer extends StatefulWidget {
     return patterns.any((pattern) => normalized.contains(pattern));
   }
 
+  static bool _containsFooterWidget(Widget? widget) {
+    if (widget == null) return false;
+    if (widget is Footer) return true;
+
+    if (widget is SingleChildRenderObjectWidget) {
+      return _containsFooterWidget(widget.child);
+    }
+
+    if (widget is MultiChildRenderObjectWidget) {
+      for (final child in widget.children) {
+        if (_containsFooterWidget(child)) return true;
+      }
+    }
+
+    return false;
+  }
+
   static bool _hasBottomNavigationBar(Widget? widget) {
     if (widget == null) return false;
     if (widget is Scaffold && widget.bottomNavigationBar != null) {
-      return true;
+      return _containsFooterWidget(widget.bottomNavigationBar);
     }
     if (widget is PageTransition) {
       final dynamic dynamicWidget = widget;
       final childWidget = dynamicWidget.child;
       if (childWidget is Scaffold && childWidget.bottomNavigationBar != null) {
-        return true;
+        return _containsFooterWidget(childWidget.bottomNavigationBar);
       }
     }
     return false;
@@ -123,17 +130,6 @@ class Footer extends StatefulWidget {
         childType.contains('manageepisodequestions')) {
       return false;
     }
-    if (childType.contains('storyscreen') ||
-        childType.contains('shortsscreen') ||
-        childType.contains('tabviewproduct') ||
-        childType.contains('userscreen') ||
-        childType.contains('discoverscreen') ||
-        childType.contains('challengesscreen') ||
-        childType.contains('creatorstoryscreen') ||
-        childType.contains('singlegiftscreen') ||
-        childType.contains('singleproductscreen')) {
-      return false;
-    }
     return true;
   }
 
@@ -143,6 +139,11 @@ class Footer extends StatefulWidget {
 
     if (normalizedRoute.contains('shorts') || childType.contains('shorts')) {
       return 1;
+    }
+    if (normalizedRoute.contains('my-courses') ||
+        normalizedRoute.contains('mycourses') ||
+        childType.contains('mycourses')) {
+      return 2;
     }
     if (normalizedRoute.contains('shop') ||
         normalizedRoute.contains('product') ||
@@ -160,7 +161,7 @@ class Footer extends StatefulWidget {
         childType.contains('shipping') ||
         childType.contains('vendor') ||
         childType.contains('gift')) {
-      return 2;
+      return 3;
     }
     if (normalizedRoute.contains('user') ||
         normalizedRoute.contains('profile') ||
@@ -195,7 +196,7 @@ class Footer extends StatefulWidget {
         childType.contains('chat') ||
         childType.contains('analytics') ||
         childType.contains('affiliate')) {
-      return 3;
+      return 4;
     }
     return 0;
   }
@@ -226,9 +227,10 @@ class Footer extends StatefulWidget {
     }
 
     final double adjustedHeight = (containerHeight + 15).clamp(60.0, 90.0);
+    final double extraBottomSpace = 24.0;
     final double totalBottomPadding =
         hasThreeButtonNav ? bottomNavBarPadding : 0.0;
-    return adjustedHeight + totalBottomPadding;
+    return adjustedHeight + totalBottomPadding + extraBottomSpace;
   }
 
   @override
@@ -335,15 +337,27 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
   }
 
   void _onItemTapped(int index) async {
-    setState(() => widget.index = index);
+    if (widget.index == index) return;
+
     final auth = Provider.of<Auth>(context, listen: false);
+
+    // Protect My Courses/Profile for all unauthenticated states.
+    if ((index == 2 || index == 4) && (auth.isGuest || !auth.isAuth)) {
+      await GuestAuthHelper.showGuestLoginDialog(
+        context,
+        index == 2 ? 'my courses' : 'user profile',
+      );
+      return;
+    }
 
     // If user data is still loading during initial authentication, don't allow navigation
     if (auth.isLoadingUser &&
         auth.user.isEmpty &&
-        (index == 0 || index == 2 || index == 3)) {
+        (index == 0 || index == 2 || index == 3 || index == 4)) {
       return;
     }
+
+    setState(() => widget.index = index);
 
     // Handle video state when navigating away from shorts screen
     final videoStateProvider =
@@ -357,43 +371,53 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       case 0:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator.pushReplacement(PageTransition(
-          child: const StoryScreen(),
-          type: PageTransitionType.fade,
-          settings: const RouteSettings(name: StoryScreen.routeName),
-        ));
+        navigator
+            .pushReplacement(PageTransition(
+              child: const StoryScreen(),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: StoryScreen.routeName),
+            ));
         break;
       case 1:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator.pushReplacement(PageTransition(
-          child: ShortsScreen(),
-          type: PageTransitionType.fade,
-          settings: const RouteSettings(name: ShortsScreen.routeName),
-        ));
+        navigator
+            .pushReplacement(PageTransition(
+              child: ShortsScreen(),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: ShortsScreen.routeName),
+            ));
         break;
       case 2:
+        // small haptic feedback on tab switch
+        HapticFeedback.selectionClick();
+        navigator
+            .pushReplacement(PageTransition(
+              child: MyCourses(),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: '/my-courses'),
+            ));
+        break;
+      case 3:
         // Allow guest users to browse the store
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator.pushReplacement(PageTransition(
-          child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
-          type: PageTransitionType.fade,
-          settings: const RouteSettings(name: TabViewProduct.routeName),
-        ));
+        navigator
+            .pushReplacement(PageTransition(
+              child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: TabViewProduct.routeName),
+            ));
         break;
-      case 3:
-        if (auth.isGuest) {
-          await GuestAuthHelper.showGuestLoginDialog(context, "user profile");
-          return;
-        }
+      case 4:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator.pushReplacement(PageTransition(
-          child: UserScreen(),
-          type: PageTransitionType.fade,
-          settings: const RouteSettings(name: UserScreen.routeName),
-        ));
+        navigator
+            .pushReplacement(PageTransition(
+              child: UserScreen(),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: UserScreen.routeName),
+            ));
         break;
     }
   }
@@ -404,9 +428,11 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         return Color(0xFF5DBBFF);
       case 1: // Shorts - Purple/Magenta
         return Color(0xFFD084FF);
-      case 2: // Store - Pink
+      case 2: // My Courses - Warm Orange/Coral
+        return Color(0xFFFF9A56);
+      case 3: // Store - Pink
         return Color(0xFFFF6B9D);
-      case 3: // Profile - Golden/Yellow
+      case 4: // Profile - Golden/Yellow
         return Color(0xFFFFD700);
       default:
         return Colors.amber;
@@ -419,9 +445,11 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         return Color(0xFF5DBBFF).withValues(alpha: 0.5);
       case 1: // Shorts - Purple/Magenta
         return Color(0xFFD084FF).withValues(alpha: 0.5);
-      case 2: // Store - Pink
+      case 2: // My Courses - Warm Orange/Coral
+        return Color(0xFFFF9A56).withValues(alpha: 0.5);
+      case 3: // Store - Pink
         return Color(0xFFFF6B9D).withValues(alpha: 0.5);
-      case 3: // Profile - Golden/Yellow
+      case 4: // Profile - Golden/Yellow
         return Color(0xFFFFD700).withValues(alpha: 0.5);
       default:
         return Colors.amber.withValues(alpha: 0.5);
@@ -606,9 +634,10 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
     final bool hasThreeButtonNav = isAndroid && bottomNavBarPadding >= 40;
     final totalBottomPadding = hasThreeButtonNav ? bottomNavBarPadding : 0.0;
+    final extraBottomSpace = 16.0;
 
     return Container(
-      height: adjustedHeight + totalBottomPadding,
+      height: adjustedHeight + totalBottomPadding + extraBottomSpace,
       padding: EdgeInsets.only(bottom: totalBottomPadding),
       child: Consumer<TutorialFlowProvider>(
         builder: (context, tutorial, _) {
@@ -683,9 +712,20 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                         // Store tab
                         Expanded(
                           child: _buildNavItem(
-                            index: 2,
+                            index: 3,
                             icon: Icons.shopping_cart_rounded,
                             label: AppLocalizations.of(context)!.store,
+                            isSelected: widget.index == 3,
+                            tutorial: tutorial,
+                            tutorialCondition: false,
+                          ),
+                        ),
+                        // My Courses tab
+                        Expanded(
+                          child: _buildNavItem(
+                            index: 2,
+                            icon: Icons.bookmark_rounded,
+                            label: 'My Courses',
                             isSelected: widget.index == 2,
                             tutorial: tutorial,
                             tutorialCondition: false,
@@ -695,10 +735,10 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                         // Profile tab
                         Expanded(
                           child: _buildNavItem(
-                            index: 3,
+                            index: 4,
                             icon: Icons.person_rounded,
                             label: AppLocalizations.of(context)!.profile,
-                            isSelected: widget.index == 3,
+                            isSelected: widget.index == 4,
                             tutorial: tutorial,
                             tutorialCondition: false,
                           ),

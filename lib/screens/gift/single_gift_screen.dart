@@ -1,9 +1,12 @@
+// ignore_for_file: duplicate_ignore, unused_import
+
 import 'dart:convert';
 
 import 'package:baakhapaa/screens/story/video_screen.dart';
 import 'package:baakhapaa/widgets/popup.dart';
 import 'package:baakhapaa/widgets/rating_sheet.dart';
 import 'package:baakhapaa/widgets/rating_summary.dart';
+// ignore: unused_import
 import 'package:baakhapaa/widgets/subscriptionBanner.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -20,6 +23,7 @@ import '../../helpers/helpers.dart';
 import '../../widgets/skeleton_loading.dart';
 import '../user/achievements_screen.dart';
 import '../../widgets/share_with_qr_modal.dart';
+import '../../widgets/footer.dart';
 import '../../utils/guest_auth_helper.dart';
 import '../../providers/puppet_interaction_provider.dart';
 import '../../utils/puppet_screen_mapping.dart';
@@ -278,9 +282,9 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       // Gift Image Section
-                      SubscriptionBanner(
-                        bannerType: 'png',
-                      ),
+                      // SubscriptionBanner(
+                      //   bannerType: 'png',
+                      // ),
                       _buildGiftImageSection(),
 
                       // Gift Info Section
@@ -304,11 +308,22 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
                       // Redeem Section
                       _buildRedeemSection(),
 
-                      SizedBox(height: 100), // Bottom padding
+                      SizedBox(height: 120), // Bottom padding for sticky button
                     ],
                   ),
                 ),
               ),
+            ),
+      bottomNavigationBar: _isLoading
+          ? null
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SafeArea(
+                  minimum: EdgeInsets.only(bottom: 8, left: 16, right: 16),
+                  child: _buildStickyRedeemButton(),
+                ),
+              ],
             ),
     );
   }
@@ -1498,167 +1513,7 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
 
           SizedBox(height: 20),
 
-          // Redeem Button
-          Container(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: userAvailableCoins >= gift['coin'] &&
-                      _isRedeemable &&
-                      qty > 0 &&
-                      !isCooldownActive
-                  ? () async {
-                      // Check if all episodes are watched
-                      if (!areAllEpisodesWatched) {
-                        showDialogEpisodeNotCompleted(context);
-                        return;
-                      }
-
-                      // Check if all achievements are unlocked
-                      if (!areAllAchievementsUnlocked) {
-                        showDialogAchievementNotCompleted(context);
-                        return;
-                      }
-
-                      // Validate friend username if gift to friend is selected
-                      if (isGiftToFriend &&
-                          _friendUsernameController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('Please enter friend\'s username')),
-                        );
-                        return;
-                      }
-
-                      // Show loading state
-                      setState(() {
-                        _isLoading = true;
-                      });
-
-                      try {
-                        // Check if profile is completed
-                        bool isProfileCompleted =
-                            await checkAndShowProfileDialog(context);
-
-                        if (isProfileCompleted) {
-                          // Place the order
-                          if (isGiftToFriend) {
-                            // Gift to friend - need to implement friend lookup first
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Gift to friend feature will be implemented soon')),
-                            );
-                          } else {
-                            // Redeem for self
-                            await Provider.of<Orders>(context, listen: false)
-                                .addGiftOrder(gift['id'] as int, 1)
-                                .then((_) {
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: Text('Successful'),
-                                  content: Text(
-                                      'Your order has been placed. We will get back to you soon.'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(ctx).pop();
-                                        // Refresh the gift data
-                                        Provider.of<Shop>(context,
-                                                listen: false)
-                                            .getSingleProduct(navArgs);
-                                      },
-                                      child: Text('Okay'),
-                                    )
-                                  ],
-                                ),
-                              );
-                            });
-                          }
-                        }
-                      } catch (error) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                                'Failed to place order. Please try again.'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      } finally {
-                        setState(() {
-                          _isLoading = false;
-                        });
-                      }
-                    }
-                  : !areAllEpisodesWatched ||
-                          !areAllAchievementsUnlocked ||
-                          qty <= 0 ||
-                          isCooldownActive
-                      ? () {
-                          if (qty <= 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text('This gift is out of stock')),
-                            );
-                          } else if (isCooldownActive) {
-                            final remaining = remainingCooldownTime;
-                            final hours = remaining.inHours;
-                            final minutes = remaining.inMinutes.remainder(60);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    'Please wait $hours hours and $minutes minutes before redeeming another gift'),
-                                backgroundColor: Colors.orange,
-                              ),
-                            );
-                          } else if (!areAllEpisodesWatched) {
-                            showDialogEpisodeNotCompleted(context);
-                          } else if (!areAllAchievementsUnlocked) {
-                            showDialogAchievementNotCompleted(context);
-                          }
-                        }
-                      : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: qty <= 0
-                    ? Colors.grey
-                    : isCooldownActive
-                        ? Colors.orange
-                        : !areAllEpisodesWatched || !areAllAchievementsUnlocked
-                            ? Colors.orange
-                            : Colors.purple,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                      qty <= 0
-                          ? Icons.block_rounded
-                          : isCooldownActive
-                              ? Icons.timer_rounded
-                              : !areAllEpisodesWatched
-                                  ? Icons.play_circle_filled_rounded
-                                  : !areAllAchievementsUnlocked
-                                      ? Icons.emoji_events_rounded
-                                      : Icons.card_giftcard_rounded,
-                      size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    buttonText,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          SizedBox(height: 0),
 
           if (userAvailableCoins < gift['coin'])
             Container(
@@ -1704,6 +1559,169 @@ class _SingleGiftScreenState extends State<SingleGiftScreen>
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStickyRedeemButton() {
+    final userAvailableCoins =
+        Provider.of<Auth>(context, listen: false).userAvailableCoins;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: ElevatedButton(
+        onPressed: userAvailableCoins >= gift['coin'] &&
+                _isRedeemable &&
+                qty > 0 &&
+                !isCooldownActive
+            ? () async {
+                if (!areAllEpisodesWatched) {
+                  showDialogEpisodeNotCompleted(context);
+                  return;
+                }
+
+                if (!areAllAchievementsUnlocked) {
+                  showDialogAchievementNotCompleted(context);
+                  return;
+                }
+
+                if (isGiftToFriend && _friendUsernameController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please enter friend\'s username')),
+                  );
+                  return;
+                }
+
+                setState(() {
+                  _isLoading = true;
+                });
+
+                try {
+                  bool isProfileCompleted =
+                      await checkAndShowProfileDialog(context);
+
+                  if (isProfileCompleted) {
+                    if (isGiftToFriend) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(
+                                'Gift to friend feature will be implemented soon')),
+                      );
+                    } else {
+                      await Provider.of<Orders>(context, listen: false)
+                          .addGiftOrder(gift['id'] as int, 1)
+                          .then((_) {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: Text('Successful'),
+                            content: Text(
+                                'Your order has been placed. We will get back to you soon.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(ctx).pop();
+                                  Provider.of<Shop>(context, listen: false)
+                                      .getSingleProduct(navArgs);
+                                },
+                                child: Text('Okay'),
+                              )
+                            ],
+                          ),
+                        );
+                      });
+                    }
+                  }
+                } catch (error) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to place order. Please try again.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                } finally {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                }
+              }
+            : !areAllEpisodesWatched ||
+                    !areAllAchievementsUnlocked ||
+                    qty <= 0 ||
+                    isCooldownActive
+                ? () {
+                    if (qty <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('This gift is out of stock')),
+                      );
+                    } else if (isCooldownActive) {
+                      final remaining = remainingCooldownTime;
+                      final hours = remaining.inHours;
+                      final minutes = remaining.inMinutes.remainder(60);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Please wait $hours hours and $minutes minutes before redeeming another gift'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    } else if (!areAllEpisodesWatched) {
+                      showDialogEpisodeNotCompleted(context);
+                    } else if (!areAllAchievementsUnlocked) {
+                      showDialogAchievementNotCompleted(context);
+                    }
+                  }
+                : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: qty <= 0
+              ? Colors.grey
+              : isCooldownActive
+                  ? Colors.orange
+                  : !areAllEpisodesWatched || !areAllAchievementsUnlocked
+                      ? Colors.orange
+                      : Colors.purple,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              qty <= 0
+                  ? Icons.block_rounded
+                  : isCooldownActive
+                      ? Icons.timer_rounded
+                      : !areAllEpisodesWatched
+                          ? Icons.play_circle_filled_rounded
+                          : !areAllAchievementsUnlocked
+                              ? Icons.emoji_events_rounded
+                              : Icons.card_giftcard_rounded,
+              size: 20,
+            ),
+            SizedBox(width: 8),
+            Text(
+              buttonText,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

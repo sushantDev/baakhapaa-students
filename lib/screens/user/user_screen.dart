@@ -1,8 +1,9 @@
-// ignore_for_file: unused_local_variable
+// ignore_for_file: unused_field, unused_element, duplicate_ignore, unused_import, unused_local_variable
 
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:baakhapaa/l10n/app_localizations.dart';
 import 'package:baakhapaa/models/url.dart';
@@ -36,6 +37,7 @@ import 'package:baakhapaa/widgets/footer.dart';
 import 'package:baakhapaa/widgets/nav_bar.dart';
 import 'package:baakhapaa/utils/exit_confirmation_dialog.dart';
 import 'package:baakhapaa/utils/puppet_screen_mapping.dart';
+import 'package:baakhapaa/utils/guest_auth_helper.dart';
 import 'package:baakhapaa/widgets/share_with_qr_modal.dart';
 // ignore: unused_import
 import 'package:baakhapaa/widgets/wallet_widget.dart';
@@ -48,6 +50,7 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:baakhapaa/utils/debug_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 // ignore: unused_import
 import '../../services/ad_service.dart';
 
@@ -94,6 +97,20 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     try {
       // Cache provider references BEFORE any async operations
       final auth = Provider.of<Auth>(context, listen: false);
+      final isUnauthenticated = auth.isGuest ||
+          !auth.isAuth ||
+          (auth.user.isEmpty && !auth.isLoadingUser);
+
+      if (isUnauthenticated) {
+        final didLogin = await GuestAuthHelper.showGuestLoginDialog(
+          context,
+          'user profile',
+        );
+        if (!didLogin && mounted) {
+          Navigator.of(context).pushReplacementNamed('/story-screen');
+        }
+        return;
+      }
 
       await auth.getUnreadMessageCount();
 
@@ -4433,98 +4450,100 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     //   return _buildPublicEmptyCoursesState();
     // }
 
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              const double spacing = 12;
-              final int columns = _resolvePublicCreationsColumns(
-                constraints.maxWidth,
-              );
-              final double totalSpacing = spacing * (columns - 1);
-              final double availableWidth = constraints.maxWidth - totalSpacing;
-              final double computedWidth = availableWidth > 0
-                  ? availableWidth / columns
-                  : constraints.maxWidth / columns;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 8.0;
+        const columns = 3;
+        final cardWidth =
+            (constraints.maxWidth - (spacing * (columns - 1))) / columns;
 
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                alignment: WrapAlignment.start,
-                children: List.generate(_localCreatorSeasons.length, (index) {
-                  try {
-                    final season =
-                        _localCreatorSeasons[index] as Map<String, dynamic>;
-                    final imageUrl = _resolvePublicSeasonImage(season);
-                    final subtitle = _resolvePublicSeasonSubtitle(season);
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 10,
+          children: [
+            SizedBox(
+              width: cardWidth,
+              child: _buildAddCourseCard(width: cardWidth),
+            ),
+            ..._localCreatorSeasons.map((season) {
+              try {
+                return SizedBox(
+                  width: cardWidth,
+                  child: _buildCourseStripCard(
+                    season as Map<String, dynamic>,
+                    width: cardWidth,
+                  ),
+                );
+              } catch (e) {
+                return const SizedBox.shrink();
+              }
+            }),
+          ],
+        );
+      },
+    );
+  }
 
-                    return SizedBox(
-                      width: computedWidth,
-                      child: CreatorStoryPreviewCard(
-                        title: season['title']?.toString() ?? 'Untitled Story',
-                        subtitle: subtitle,
-                        imageUrl: imageUrl,
-                        onTap: () {
-                          // Navigate to episode screen for this specific story
-                          try {
-                            final story = Provider.of<Story>(
-                              context,
-                              listen: false,
-                            );
-                            // Add creator information if available
-                            Map<String, dynamic> seasonWithContext = Map.from(
-                              season,
-                            );
-                            if (_user['id'] != null) {
-                              seasonWithContext['creatorId'] = _user['id'];
-                              seasonWithContext['isCreatorSeason'] = true;
-                            } else {
-                              seasonWithContext['isCreatorSeason'] = false;
-                            }
-                            story
-                                .setSelectedSeason(seasonWithContext)
-                                .then((_) {
-                              Navigator.of(
-                                context,
-                              ).pushNamed(EpisodeScreen.routeName);
-                            }).catchError((error) {
-                              DebugLogger.error(
-                                'Error navigating to episode screen: $error',
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Unable to open story'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            });
-                          } catch (e) {
-                            DebugLogger.error(
-                              'Error navigating to episode screen: $e',
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Unable to open story'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    );
-                  } catch (e) {
-                    return const SizedBox.shrink();
-                  }
-                }),
-              );
-            },
-          ),
+  Widget _buildCourseStripCard(
+    Map<String, dynamic> season, {
+    double width = 92,
+  }) {
+    final imageUrl = _resolvePublicSeasonImage(season);
+    final title = season['title']?.toString() ?? 'Untitled Course';
+    final meta = _resolvePublicCourseMeta(season);
+
+    return GestureDetector(
+      onTap: () => _openPublicSeason(season),
+      child: Container(
+        width: width,
+        height: width + 38,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A222B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
-        const SizedBox(height: 16),
-        _buildAddCourseCard(),
-      ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
+              child: SizedBox(
+                width: width,
+                height: width,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) =>
+                      _buildStripFallback(Icons.menu_book_outlined),
+                  errorWidget: (_, __, ___) =>
+                      _buildStripFallback(Icons.menu_book_outlined),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(5, 4, 5, 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '$title - $meta',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.88),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      height: 1.08,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -4543,81 +4562,226 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
 
     if (_localCreatorShorts.isEmpty) {
       DebugLogger.info('📭 No shorts, showing empty state');
-      return _buildPublicEmptyShortsState();
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          const spacing = 8.0;
+          const columns = 3;
+          final cardWidth =
+              (constraints.maxWidth - (spacing * (columns - 1))) / columns;
+
+          return Wrap(
+            spacing: spacing,
+            runSpacing: 10,
+            children: [
+              SizedBox(
+                width: cardWidth,
+                child: _buildAddShortCard(width: cardWidth),
+              ),
+              SizedBox(
+                width: (cardWidth * 2) + spacing,
+                child: _buildEmptyStripCard(
+                  icon: Icons.video_collection_outlined,
+                  title: 'No Shorts Yet',
+                  description: 'Tap + to create shorts',
+                  width: (cardWidth * 2) + spacing,
+                  height: cardWidth + 38,
+                ),
+              ),
+            ],
+          );
+        },
+      );
     }
 
     DebugLogger.info('✅ Showing ${_localCreatorShorts.length} shorts');
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              const double spacing = 8;
-              const int columns = 3;
-              final double totalSpacing = spacing * (columns - 1);
-              final double availableWidth = constraints.maxWidth - totalSpacing;
-              final double computedWidth = availableWidth > 0
-                  ? availableWidth / columns
-                  : constraints.maxWidth / columns;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 8.0;
+        const columns = 3;
+        final cardWidth =
+            (constraints.maxWidth - (spacing * (columns - 1))) / columns;
 
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                alignment: WrapAlignment.start,
-                children: List.generate(_localCreatorShorts.length, (index) {
-                  try {
-                    final short = _localCreatorShorts[index];
-                    final commentsCount = short['comments_count'] ?? 0;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 10,
+          children: [
+            SizedBox(
+              width: cardWidth,
+              child: _buildAddShortCard(width: cardWidth),
+            ),
+            ..._localCreatorShorts.map((short) {
+              try {
+                if (short is! Map<String, dynamic>) {
+                  return const SizedBox.shrink();
+                }
+                return SizedBox(
+                  width: cardWidth,
+                  child: _buildShortStripCard(short, width: cardWidth),
+                );
+              } catch (e) {
+                return const SizedBox.shrink();
+              }
+            }),
+          ],
+        );
+      },
+    );
+  }
 
-                    return SizedBox(
-                      width: computedWidth,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.25),
-                              Colors.black.withValues(alpha: 0.05),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.25),
-                              blurRadius: 16,
-                              offset: Offset(0, 10),
-                            ),
-                          ],
+  Widget _buildShortStripCard(
+    Map<String, dynamic> short, {
+    double width = 92,
+  }) {
+    final title = short['title']?.toString() ?? 'Untitled Short';
+    final views = _formatPublicCompactCount(
+      short['users_count'] ?? short['views'] ?? short['views_count'] ?? 0,
+    );
+    final thumbnailUrl = _resolveShortThumbnail(short);
+    final videoUrl = _resolveShortVideoUrl(short);
+
+    return GestureDetector(
+      onTap: () {
+        final shortId = _resolveInt(short['id']);
+        Navigator.of(context).pushNamed(
+          ShortsScreen.routeName,
+          arguments: shortId > 0 ? {'returnToShortsId': shortId} : null,
+        );
+      },
+      child: Container(
+        width: width,
+        height: width + 38,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A222B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
+              child: SizedBox(
+                width: width,
+                height: width,
+                child: thumbnailUrl != null && thumbnailUrl.trim().isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: thumbnailUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => _buildStripFallback(
+                          Icons.play_circle_outline_rounded,
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(18),
-                          child: FlickShortsPlayer(
-                            shortsId: short['id'] ?? 0,
-                            videoUrl: short['video_url'] ?? '',
-                            title: short['title'] ?? '',
-                            likesCount: short['likes_count'] ?? 0,
-                            usersCount: short['users_count'] ?? 0,
-                            userId: short['user_id'] ?? 0,
-                            commentsCount: commentsCount,
-                            showLikes: _isLikesVisible(),
-                            showViews: _isViewCountVisible(),
-                          ),
+                        errorWidget: (_, __, ___) => _buildStripFallback(
+                          Icons.play_circle_outline_rounded,
+                        ),
+                      )
+                    : _ShortVideoThumbnail(
+                        videoUrl: videoUrl,
+                        fallback: _buildStripFallback(
+                          Icons.play_circle_outline_rounded,
                         ),
                       ),
-                    );
-                  } catch (e) {
-                    return const SizedBox.shrink();
-                  }
-                }),
-              );
-            },
-          ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(5, 4, 5, 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '$title',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.88),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      height: 1.08,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        _buildAddShortCard(),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildStripFallback(IconData icon) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF2F3640),
+            Color(0xFF171B20),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          icon,
+          color: Colors.white.withValues(alpha: 0.78),
+          size: 32,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyStripCard({
+    required IconData icon,
+    required String title,
+    required String description,
+    double width = 168,
+    double height = 92,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white.withValues(alpha: 0.5), size: 28),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.56),
+                    fontSize: 10.5,
+                    height: 1.15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -4663,46 +4827,65 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     );
   }
 
-  Widget _buildPublicEmptyShortsState() {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 40),
-      decoration: BoxDecoration(
-        color: isDark ? Color(0xFF252525) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.12)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.video_collection_outlined, size: 52, color: Colors.grey),
-          SizedBox(height: 14),
-          Text(
-            'No Shorts Yet',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : Colors.black,
-            ),
+  Widget _buildCreateContentTile({
+    required String label,
+    required VoidCallback onPressed,
+    double width = 92,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        width: width,
+        height: width + 38,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF34383A),
+              Color(0xFF171A1D),
+            ],
           ),
-          SizedBox(height: 6),
-          Text(
-            'Tap "+" to create shorts',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.withValues(alpha: 0.8),
-            ),
+          border: Border.all(
+            color: const Color(0xFFFFD54F).withValues(alpha: 0.76),
+            width: 1.4,
           ),
-          SizedBox(height: 20),
-          _buildAddShortCard(),
-        ],
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD54F).withValues(alpha: 0.30),
+              blurRadius: 12,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.add_rounded,
+              color: Color(0xFFFFD54F),
+              size: 38,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.84),
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAddShortCard() {
+  Widget _buildAddShortCard({double width = 92}) {
     bool isProfileEmailVerified() {
       final value = _user['email_verified_at'] ??
           (_user['information'] is Map<String, dynamic>
@@ -4738,7 +4921,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       );
     }
 
-    return ElevatedButton.icon(
+    return _buildCreateContentTile(
+      label: 'Create Shorts',
+      width: width,
       onPressed: () {
         if (!isProfileEmailVerified()) {
           showEmailVerificationWarning();
@@ -4774,24 +4959,10 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
           }
         });
       },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.amber.shade600,
-        foregroundColor: Colors.black,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        elevation: 2,
-      ),
-      icon: const Icon(Icons.add, size: 20),
-      label: const Text(
-        'Add Shorts',
-        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-      ),
     );
   }
 
-  Widget _buildAddCourseCard() {
+  Widget _buildAddCourseCard({double width = 92}) {
     bool isProfileEmailVerified() {
       final value = _user['email_verified_at'] ??
           (_user['information'] is Map<String, dynamic>
@@ -4827,7 +4998,9 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
       );
     }
 
-    return ElevatedButton.icon(
+    return _buildCreateContentTile(
+      label: 'Create Courses',
+      width: width,
       onPressed: () {
         if (!isProfileEmailVerified()) {
           showEmailVerificationWarning();
@@ -4873,27 +5046,134 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
           },
         );
       },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.amber.shade600,
-        foregroundColor: Colors.black,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        elevation: 2,
-      ),
-      icon: const Icon(Icons.add, size: 20),
-      label: const Text(
-        'Add Courses',
-        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-      ),
     );
   }
 
-  int _resolvePublicCreationsColumns(double maxWidth) {
-    if (maxWidth >= 1024) return 4;
-    if (maxWidth >= 780) return 3;
-    return 2;
+  void _openPublicSeason(Map<String, dynamic> season) {
+    try {
+      final story = Provider.of<Story>(
+        context,
+        listen: false,
+      );
+      Map<String, dynamic> seasonWithContext = Map.from(season);
+      if (_user['id'] != null) {
+        seasonWithContext['creatorId'] = _user['id'];
+        seasonWithContext['isCreatorSeason'] = true;
+      } else {
+        seasonWithContext['isCreatorSeason'] = false;
+      }
+      story.setSelectedSeason(seasonWithContext).then((_) {
+        Navigator.of(context).pushNamed(EpisodeScreen.routeName);
+      }).catchError((error) {
+        DebugLogger.error('Error navigating to episode screen: $error');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Unable to open story'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      });
+    } catch (e) {
+      DebugLogger.error('Error navigating to episode screen: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to open story'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  String? _resolveShortThumbnail(Map<String, dynamic> short) {
+    final candidates = [
+      short['thumbnail'],
+      short['thumbnail_url'],
+      short['image'],
+      short['image_url'],
+      short['cover'],
+      short['cover_image'],
+      short['poster'],
+    ];
+
+    for (final candidate in candidates) {
+      if (candidate is String && candidate.trim().isNotEmpty) {
+        return candidate.trim();
+      }
+      if (candidate is Map &&
+          candidate['url'] is String &&
+          candidate['url'].toString().trim().isNotEmpty) {
+        return candidate['url'].toString().trim();
+      }
+    }
+
+    final images = short['images'];
+    if (images is List && images.isNotEmpty) {
+      final first = images.first;
+      if (first is Map) {
+        final url = first['thumbnail'] ?? first['url'];
+        if (url is String && url.trim().isNotEmpty) {
+          return url.trim();
+        }
+      }
+      if (first is String && first.trim().isNotEmpty) {
+        return first.trim();
+      }
+    }
+    return null;
+  }
+
+  String? _resolveShortVideoUrl(Map<String, dynamic> short) {
+    final rawVideoUrl = short['video_url'] ?? short['video'];
+    if (rawVideoUrl is! String || rawVideoUrl.trim().isEmpty) {
+      return null;
+    }
+    final videoUrl = rawVideoUrl.trim();
+    if (videoUrl.startsWith('http://') || videoUrl.startsWith('https://')) {
+      return videoUrl;
+    }
+    return '${Url.mediaUrl}/$videoUrl';
+  }
+
+  int _resolveInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  String _formatPublicCompactCount(dynamic value) {
+    final count = _resolveInt(value);
+    if (count >= 1000000) {
+      final formatted = (count / 1000000).toStringAsFixed(1);
+      final trimmed = formatted.endsWith('.0')
+          ? formatted.substring(0, formatted.length - 2)
+          : formatted;
+      return '${trimmed}M';
+    }
+    if (count >= 1000) {
+      final formatted = (count / 1000).toStringAsFixed(1);
+      final trimmed = formatted.endsWith('.0')
+          ? formatted.substring(0, formatted.length - 2)
+          : formatted;
+      return '${trimmed}k';
+    }
+    return count.toString();
+  }
+
+  String _resolvePublicCourseMeta(Map<String, dynamic> season) {
+    final episodes = season['episodes'];
+    if (episodes is List && episodes.isNotEmpty) {
+      return '${episodes.length}';
+    }
+
+    final count = _resolveInt(
+      season['episodes_count'] ??
+          season['episode_count'] ??
+          season['total_episodes'] ??
+          season['lessons_count'],
+    );
+    if (count > 0) return count.toString();
+
+    return 'Course';
   }
 
   String _resolvePublicSeasonImage(Map<String, dynamic> season) {
@@ -4963,8 +5243,82 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   ),
                 ),
               ),
-        bottomNavigationBar: Footer(3),
       ),
+    );
+  }
+}
+
+class _ShortVideoThumbnail extends StatefulWidget {
+  final String? videoUrl;
+  final Widget fallback;
+
+  const _ShortVideoThumbnail({
+    required this.videoUrl,
+    required this.fallback,
+  });
+
+  @override
+  State<_ShortVideoThumbnail> createState() => _ShortVideoThumbnailState();
+}
+
+class _ShortVideoThumbnailState extends State<_ShortVideoThumbnail> {
+  Uint8List? _bytes;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThumbnail();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ShortVideoThumbnail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoUrl != widget.videoUrl) {
+      _bytes = null;
+      _loadThumbnail();
+    }
+  }
+
+  Future<void> _loadThumbnail() async {
+    final videoUrl = widget.videoUrl;
+    if (videoUrl == null || videoUrl.trim().isEmpty) {
+      return;
+    }
+
+    _isLoading = true;
+    try {
+      final bytes = await VideoThumbnail.thumbnailData(
+        video: videoUrl,
+        imageFormat: ImageFormat.JPEG,
+        maxHeight: 256,
+        quality: 70,
+        timeMs: 1000,
+      ).timeout(const Duration(seconds: 8), onTimeout: () => null);
+
+      if (!mounted || videoUrl != widget.videoUrl) return;
+      setState(() {
+        _bytes = bytes != null && bytes.length > 5000 ? bytes : null;
+      });
+    } catch (e) {
+      DebugLogger.error('Shorts thumbnail generation failed: $e');
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bytes = _bytes;
+    if (bytes == null) {
+      return widget.fallback;
+    }
+    return Image.memory(
+      bytes,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      gaplessPlayback: true,
     );
   }
 }

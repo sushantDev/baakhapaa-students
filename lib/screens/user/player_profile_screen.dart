@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:baakhapaa/providers/auth.dart';
 import 'package:baakhapaa/widgets/header.dart';
 import 'package:baakhapaa/widgets/footer.dart';
@@ -142,7 +144,6 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
                         ),
                       ),
                     ),
-      bottomNavigationBar: Footer(3),
     );
   }
 

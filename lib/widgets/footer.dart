@@ -12,14 +12,212 @@ import '../providers/auth.dart';
 import '../screens/shop/tab_view_product.dart';
 import '../screens/story/story_screen.dart';
 import '../screens/shorts/shorts_screen.dart';
+import '../screens/my_courses/my_courses_screen.dart';
 import '../screens/others/creator_request_screen.dart';
 import '../utils/guest_auth_helper.dart';
 import './content_type_selector_sheet.dart';
 
 // ignore: must_be_immutable
 class Footer extends StatefulWidget {
+  final NavigatorState? navigator;
   int index;
-  Footer(this.index);
+  Footer(this.index, {this.navigator});
+
+  static const Set<String> _routesWithOwnFooter = {
+    '/single-product-screen',
+    '/single-gift-screen',
+  };
+
+  static const Set<String> _quizRoutes = {
+    '/question-screen',
+    '/shorts-question-screen',
+    '/shorts-loose-screen',
+    '/shorts-win-screen',
+    '/guest-winner-screen',
+    '/win-screen',
+    '/loose-screen',
+    '/video-screen',
+    '/crossword-screen',
+    '/image-puzzle-screen',
+    '/shorts-image-puzzle-screen',
+  };
+
+  static const Set<String> _authRouteKeywords = {
+    'login',
+    'register',
+    'welcome',
+    'verify',
+    'forgot',
+    'onboarding',
+    'splash',
+    'interest-selection',
+  };
+
+  static const Set<String> _createRouteKeywords = {
+    'create',
+    'drafts',
+    'preview',
+    'selector',
+    'camera_recording',
+    'youtube_video_selector',
+    'ai-content-generator',
+    'manage-episode-questions',
+  };
+
+  static bool _matchesAny(String? value, Set<String> patterns) {
+    if (value == null) return false;
+    final normalized = value.toLowerCase();
+    return patterns.any((pattern) => normalized.contains(pattern));
+  }
+
+  static bool _hasBottomNavigationBar(Widget? widget) {
+    if (widget == null) return false;
+    if (widget is Scaffold && widget.bottomNavigationBar != null) {
+      return true;
+    }
+    if (widget is PageTransition) {
+      final dynamic dynamicWidget = widget;
+      final childWidget = dynamicWidget.child;
+      if (childWidget is Scaffold && childWidget.bottomNavigationBar != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static bool shouldShowOnRoute(
+      BuildContext context, Widget? child, String? routeName) {
+    if (_hasBottomNavigationBar(child)) {
+      return false;
+    }
+    final normalizedRoute = routeName?.toLowerCase();
+    final childType = child?.runtimeType.toString().toLowerCase() ?? '';
+
+    if (_routesWithOwnFooter.contains(normalizedRoute)) {
+      return false;
+    }
+    if (normalizedRoute != null && _quizRoutes.contains(normalizedRoute)) {
+      return false;
+    }
+    if (_matchesAny(normalizedRoute, _authRouteKeywords) ||
+        _matchesAny(childType, _authRouteKeywords)) {
+      return false;
+    }
+    if (_matchesAny(normalizedRoute, _createRouteKeywords) ||
+        _matchesAny(childType, _createRouteKeywords)) {
+      return false;
+    }
+    if (childType.contains('create') ||
+        childType.contains('drafts') ||
+        childType.contains('preview') ||
+        childType.contains('youtube') ||
+        childType.contains('camerarecording') ||
+        childType.contains('aicontent') ||
+        childType.contains('manageepisodequestions')) {
+      return false;
+    }
+    return true;
+  }
+
+  static int indexForRoute(Widget? child, String? routeName) {
+    final normalizedRoute = routeName?.toLowerCase() ?? '';
+    final childType = child?.runtimeType.toString().toLowerCase() ?? '';
+
+    if (normalizedRoute.contains('shorts') || childType.contains('shorts')) {
+      return 1;
+    }
+    if (normalizedRoute.contains('my-courses') ||
+        normalizedRoute.contains('mycourses') ||
+        childType.contains('mycourses')) {
+      return 2;
+    }
+    if (normalizedRoute.contains('shop') ||
+        normalizedRoute.contains('product') ||
+        normalizedRoute.contains('cart') ||
+        normalizedRoute.contains('order') ||
+        normalizedRoute.contains('shipping') ||
+        normalizedRoute.contains('vendor') ||
+        normalizedRoute.contains('gift') ||
+        normalizedRoute.contains('for_you') ||
+        normalizedRoute.contains('for-you') ||
+        childType.contains('shop') ||
+        childType.contains('product') ||
+        childType.contains('cart') ||
+        childType.contains('order') ||
+        childType.contains('shipping') ||
+        childType.contains('vendor') ||
+        childType.contains('gift')) {
+      return 3;
+    }
+    if (normalizedRoute.contains('user') ||
+        normalizedRoute.contains('profile') ||
+        normalizedRoute.contains('point') ||
+        normalizedRoute.contains('wallet') ||
+        normalizedRoute.contains('level') ||
+        normalizedRoute.contains('weekly') ||
+        normalizedRoute.contains('achievement') ||
+        normalizedRoute.contains('setting') ||
+        normalizedRoute.contains('privacy') ||
+        normalizedRoute.contains('social') ||
+        normalizedRoute.contains('language') ||
+        normalizedRoute.contains('referral') ||
+        normalizedRoute.contains('notification') ||
+        normalizedRoute.contains('chat') ||
+        normalizedRoute.contains('analytics') ||
+        normalizedRoute.contains('affiliate') ||
+        normalizedRoute.contains('mlbb') ||
+        childType.contains('user') ||
+        childType.contains('profile') ||
+        childType.contains('point') ||
+        childType.contains('wallet') ||
+        childType.contains('level') ||
+        childType.contains('weekly') ||
+        childType.contains('achievement') ||
+        childType.contains('setting') ||
+        childType.contains('privacy') ||
+        childType.contains('social') ||
+        childType.contains('language') ||
+        childType.contains('referral') ||
+        childType.contains('notification') ||
+        childType.contains('chat') ||
+        childType.contains('analytics') ||
+        childType.contains('affiliate')) {
+      return 4;
+    }
+    return 0;
+  }
+
+  static double estimatedHeight(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bottomNavBarPadding = MediaQuery.of(context).viewPadding.bottom;
+    final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    final bool hasThreeButtonNav = isAndroid && bottomNavBarPadding >= 40;
+
+    double containerHeight;
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      containerHeight = screenWidth <= 380
+          ? 0.175 * screenWidth
+          : screenWidth <= 480
+              ? 0.15 * screenWidth
+              : 0.1 * screenWidth;
+    } else if (screenWidth >= 768 && screenWidth <= 834) {
+      containerHeight = 0.07 * screenWidth;
+    } else {
+      containerHeight = screenWidth <= 320
+          ? 0.15 * screenWidth
+          : screenWidth <= 375
+              ? 0.175 * screenWidth
+              : screenWidth <= 414
+                  ? 0.2 * screenWidth
+                  : 0.22 * screenWidth;
+    }
+
+    final double adjustedHeight = (containerHeight + 15).clamp(60.0, 90.0);
+    final double extraBottomSpace = 24.0;
+    final double totalBottomPadding =
+        hasThreeButtonNav ? bottomNavBarPadding : 0.0;
+    return adjustedHeight + totalBottomPadding + extraBottomSpace;
+  }
 
   @override
   State<Footer> createState() => _FooterState();
@@ -29,6 +227,8 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> scaffoldKeyProduct =
       GlobalKey<ScaffoldState>();
   late AnimationController _animationController;
+
+  BuildContext get _dialogContext => widget.navigator?.context ?? context;
 
   @override
   void initState() {
@@ -55,7 +255,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     }
 
     if (auth.isGuest) {
-      GuestAuthHelper.showGuestLoginDialog(context, "create content");
+      GuestAuthHelper.showGuestLoginDialog(_dialogContext, "create content");
       return;
     }
 
@@ -125,15 +325,30 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
   }
 
   void _onItemTapped(int index) async {
-    setState(() => widget.index = index);
     final auth = Provider.of<Auth>(context, listen: false);
+    final isUnauthenticated = auth.isGuest ||
+        !auth.isAuth ||
+        (auth.user.isEmpty && !auth.isLoadingUser);
+
+    // Protect My Courses/Profile for all unauthenticated states.
+    if ((index == 2 || index == 4) && isUnauthenticated) {
+      await GuestAuthHelper.showGuestLoginDialog(
+        _dialogContext,
+        index == 2 ? 'my courses' : 'user profile',
+      );
+      return;
+    }
+
+    if (widget.index == index) return;
 
     // If user data is still loading during initial authentication, don't allow navigation
     if (auth.isLoadingUser &&
         auth.user.isEmpty &&
-        (index == 0 || index == 2 || index == 3)) {
+        (index == 0 || index == 2 || index == 3 || index == 4)) {
       return;
     }
+
+    setState(() => widget.index = index);
 
     // Handle video state when navigating away from shorts screen
     final videoStateProvider =
@@ -142,42 +357,58 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       videoStateProvider.handleNavigationAway();
     }
 
+    final navigator = widget.navigator ?? Navigator.of(context);
     switch (index) {
       case 0:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.pushReplacement(
-            context,
-            PageTransition(
-                child: const StoryScreen(), type: PageTransitionType.fade));
+        navigator
+            .pushReplacement(PageTransition(
+              child: const StoryScreen(),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: StoryScreen.routeName),
+            ));
         break;
       case 1:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.pushReplacement(
-            context,
-            PageTransition(
-                child: ShortsScreen(), type: PageTransitionType.fade));
+        navigator
+            .pushReplacement(PageTransition(
+              child: ShortsScreen(),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: ShortsScreen.routeName),
+            ));
         break;
       case 2:
+        // small haptic feedback on tab switch
+        HapticFeedback.selectionClick();
+        navigator
+            .pushReplacement(PageTransition(
+              child: MyCourses(),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: '/my-courses'),
+            ));
+        break;
+      case 3:
         // Allow guest users to browse the store
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.pushReplacement(
-            context,
-            PageTransition(
-                child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
-                type: PageTransitionType.fade));
+        navigator
+            .pushReplacement(PageTransition(
+              child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: TabViewProduct.routeName),
+            ));
         break;
-      case 3:
-        if (auth.isGuest) {
-          await GuestAuthHelper.showGuestLoginDialog(context, "user profile");
-          return;
-        }
+      case 4:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        Navigator.pushReplacement(context,
-            PageTransition(child: UserScreen(), type: PageTransitionType.fade));
+        navigator
+            .pushReplacement(PageTransition(
+              child: UserScreen(),
+              type: PageTransitionType.fade,
+              settings: const RouteSettings(name: UserScreen.routeName),
+            ));
         break;
     }
   }
@@ -188,9 +419,11 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         return Color(0xFF5DBBFF);
       case 1: // Shorts - Purple/Magenta
         return Color(0xFFD084FF);
-      case 2: // Store - Pink
+      case 2: // My Courses - Warm Orange/Coral
+        return Color(0xFFFF9A56);
+      case 3: // Store - Pink
         return Color(0xFFFF6B9D);
-      case 3: // Profile - Golden/Yellow
+      case 4: // Profile - Golden/Yellow
         return Color(0xFFFFD700);
       default:
         return Colors.amber;
@@ -203,9 +436,11 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         return Color(0xFF5DBBFF).withValues(alpha: 0.5);
       case 1: // Shorts - Purple/Magenta
         return Color(0xFFD084FF).withValues(alpha: 0.5);
-      case 2: // Store - Pink
+      case 2: // My Courses - Warm Orange/Coral
+        return Color(0xFFFF9A56).withValues(alpha: 0.5);
+      case 3: // Store - Pink
         return Color(0xFFFF6B9D).withValues(alpha: 0.5);
-      case 3: // Profile - Golden/Yellow
+      case 4: // Profile - Golden/Yellow
         return Color(0xFFFFD700).withValues(alpha: 0.5);
       default:
         return Colors.amber.withValues(alpha: 0.5);
@@ -319,7 +554,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                                   color: iconColor,
                                 ),
                     ),
-                    if (!(index == 3 && isSelected)) ...[
+                    if (!isSelected) ...[
                       SizedBox(height: 6),
                       Flexible(
                         child: AnimatedDefaultTextStyle(
@@ -390,9 +625,10 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
     final bool hasThreeButtonNav = isAndroid && bottomNavBarPadding >= 40;
     final totalBottomPadding = hasThreeButtonNav ? bottomNavBarPadding : 0.0;
+    final extraBottomSpace = 16.0;
 
     return Container(
-      height: adjustedHeight + totalBottomPadding,
+      height: adjustedHeight + totalBottomPadding + extraBottomSpace,
       padding: EdgeInsets.only(bottom: totalBottomPadding),
       child: Consumer<TutorialFlowProvider>(
         builder: (context, tutorial, _) {
@@ -467,9 +703,20 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                         // Store tab
                         Expanded(
                           child: _buildNavItem(
-                            index: 2,
+                            index: 3,
                             icon: Icons.shopping_cart_rounded,
                             label: AppLocalizations.of(context)!.store,
+                            isSelected: widget.index == 3,
+                            tutorial: tutorial,
+                            tutorialCondition: false,
+                          ),
+                        ),
+                        // My Courses tab
+                        Expanded(
+                          child: _buildNavItem(
+                            index: 2,
+                            icon: Icons.bookmark_rounded,
+                            label: 'My Courses',
                             isSelected: widget.index == 2,
                             tutorial: tutorial,
                             tutorialCondition: false,
@@ -479,10 +726,10 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                         // Profile tab
                         Expanded(
                           child: _buildNavItem(
-                            index: 3,
+                            index: 4,
                             icon: Icons.person_rounded,
                             label: AppLocalizations.of(context)!.profile,
-                            isSelected: widget.index == 3,
+                            isSelected: widget.index == 4,
                             tutorial: tutorial,
                             tutorialCondition: false,
                           ),

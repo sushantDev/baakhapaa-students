@@ -69,6 +69,9 @@ class _VideoScreenState extends State<VideoScreen>
   // Store Story provider reference for safe access in dispose
   Story? _storyProvider;
 
+  // Resume override for My Courses feature
+  int? _resumeOverrideSeconds;
+
   // Episode progress tracking variables
   Timer? _progressTimer;
   int _currentProgressSeconds = 0;
@@ -306,12 +309,22 @@ class _VideoScreenState extends State<VideoScreen>
         } else if (_navArgs is Map) {
           // Handle episode map - ALWAYS fetch fresh data to get duration skip fields
           final rawEpisodeId = (_navArgs as Map)['id'];
+          final resumeAtSeconds =
+              (_navArgs as Map)['resumeAtSeconds'] as int? ?? 0;
+
+          // Store resume override if provided (from My Courses feature)
+          if (resumeAtSeconds > 0) {
+            _resumeOverrideSeconds = resumeAtSeconds;
+            DebugLogger.info(
+                '🎯 Resume override set for My Courses: ${_resumeOverrideSeconds}s');
+          }
+
           final episodeId = rawEpisodeId is int
               ? rawEpisodeId
               : int.tryParse(rawEpisodeId?.toString() ?? '');
           if (episodeId != null) {
             DebugLogger.info(
-                '🔄 VideoScreen: Fetching fresh episode data for ID: $episodeId');
+                '🔄 VideoScreen: Fetching fresh episode data for ID: $episodeId (resume at ${resumeAtSeconds}s)');
             // DON'T use old episode data - wait for fresh fetch
             // Fetch both episode and popups in parallel for fresh data
             Future.wait([
@@ -781,10 +794,14 @@ class _VideoScreenState extends State<VideoScreen>
   Future<void> _resumeFromPreviousPosition(
       VideoPlayerController? controller) async {
     try {
-      // Check if episode has previous progress - try progress_seconds first, then calculate from completion_percent
+      // Check if there's a resume override from My Courses feature (highest priority)
       int progressSeconds = 0;
 
-      if (episode['progress_seconds'] != null) {
+      if (_resumeOverrideSeconds != null && _resumeOverrideSeconds! > 0) {
+        progressSeconds = _resumeOverrideSeconds!;
+        DebugLogger.info(
+            '🎯 Using My Courses resume override: ${progressSeconds}s');
+      } else if (episode['progress_seconds'] != null) {
         progressSeconds =
             int.tryParse(episode['progress_seconds'].toString()) ?? 0;
         DebugLogger.info(
@@ -1491,15 +1508,54 @@ class _VideoScreenState extends State<VideoScreen>
     );
   }
 
-  void _showGameModeSelector(int episodeId) async {
-    final selectedMode = await GameModeSelector.show(context);
-    if (selectedMode == null || !mounted) return;
+  bool _isQuizCompleted(Map<String, dynamic> episodeData) {
+    final watched = episodeData['watched'];
+    return watched == true ||
+        watched == 1 ||
+        watched == '1' ||
+        watched == 'true';
+  }
+
+  Future<bool> _isQuizCompletedForEpisode(int episodeId) async {
+    if (_isQuizCompleted(episode)) return true;
 
     final story = Provider.of<Story>(context, listen: false);
+    final completed = await story.hasCompletedEpisodeQuiz(episodeId);
+    if (completed && mounted) {
+      setState(() {
+        episode['watched'] = true;
+      });
+    }
+    return completed;
+  }
+
+  void _showGameModeSelector(int episodeId) async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (auth.isGuest || !auth.isAuth) {
+      await GuestAuthHelper.showGuestLoginDialog(context, 'take quizzes');
+      return;
+    }
+
+    final story = Provider.of<Story>(context, listen: false);
+    final quizAvailable = !await _isQuizCompletedForEpisode(episodeId);
+    if (!mounted) return;
+
+    final selectedMode = await GameModeSelector.show(
+      context,
+      allowedModes:
+          quizAvailable ? null : [GameMode.crossword, GameMode.imagePuzzle],
+    );
+    if (selectedMode == null || !mounted) return;
+
     story.selectedGameMode = selectedMode;
 
     switch (selectedMode) {
       case GameMode.quiz:
+        if (!quizAvailable) {
+          _showErrorDialog(
+              'You have already completed the quiz for this episode. Please choose another challenge.');
+          return;
+        }
         goToQuestionScreen(episodeId);
         break;
       case GameMode.crossword:
@@ -1559,14 +1615,14 @@ class _VideoScreenState extends State<VideoScreen>
       final episodeData = Provider.of<Story>(context, listen: false);
       await episodeData.fetchEpisode(episodeId);
       final episode = episodeData.episode;
+      if (_isQuizCompleted(episode)) {
+        _showErrorDialog(
+            'You have already completed the quiz for this episode. Please choose another challenge.');
+        return;
+      }
       List questions = episode['questions'] as List? ?? [];
 
-      // REMOVED: Don't block users from retaking quiz if they lost previously
-      // Users should be able to retry the quiz even if they attempted it before
-      // Only WinScreen should mark episode as truly "watched"
-      // The 'watched' field can be true if they lost, but they should still be able to retry
-
-      if (questions.length < 1) {
+      if (questions.isEmpty) {
         _showErrorDialog('Sorry no questions are available.');
         _isOk = false;
       }
@@ -3442,7 +3498,11 @@ class _VideoScreenState extends State<VideoScreen>
       // Calculate resume seconds from progress_seconds or completion_percent
       int? resumeSeconds;
 
-      if (episode['progress_seconds'] != null) {
+      if (_resumeOverrideSeconds != null && _resumeOverrideSeconds! > 0) {
+        resumeSeconds = _resumeOverrideSeconds;
+        DebugLogger.info(
+            '🎯 YouTube: Using My Courses resume override: ${resumeSeconds}s');
+      } else if (episode['progress_seconds'] != null) {
         resumeSeconds = int.tryParse(episode['progress_seconds'].toString());
         DebugLogger.info(
             '📹 YouTube: Found direct progress_seconds: ${resumeSeconds}s');
@@ -4098,63 +4158,6 @@ class _VideoScreenState extends State<VideoScreen>
         flex: _allEpisodes.length > 1 ? 4 : 6,
         child: Consumer<TutorialFlowProvider>(
           builder: (context, tutorial, _) {
-            final bool isQuizCompleted = episode['watched'] ?? false;
-
-            if (isQuizCompleted) {
-              return InkWell(
-                onTap: () {
-                  // Navigate to next episode instead of replaying
-                  if (_currentEpisodeIndex < _allEpisodes.length - 1) {
-                    _navigateToEpisode(1);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            'You have completed all episodes in this season!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
-                },
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF0DFF00), Color(0xFF0D9900)],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(50),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
-                      )
-                    ],
-                  ),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.white, size: 20),
-                        SizedBox(width: 6),
-                        Text(
-                          'Completed ✓',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }
-
             final durationSkipsBought =
                 episode['duration_skips_bought'] as int? ?? 0;
             final maxDurationSkips = episode['max_duration_skips'] as int? ?? 0;
@@ -4179,8 +4182,10 @@ class _VideoScreenState extends State<VideoScreen>
               onTap: _countdownCompleted && !episode.isEmpty
                   ? () {
                       final id = episode['id'];
-                      if (id != null && id is int) {
-                        _showGameModeSelector(id);
+                      final episodeId =
+                          id is int ? id : int.tryParse(id?.toString() ?? '');
+                      if (episodeId != null) {
+                        _showGameModeSelector(episodeId);
                       }
                     }
                   : null,

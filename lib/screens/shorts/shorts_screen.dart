@@ -16,6 +16,7 @@ import '../../providers/shorts.dart';
 import '../../providers/auth.dart';
 import '../../models/short_topic.dart';
 import '../../models/url.dart';
+// ignore: unused_import
 import '../../widgets/footer.dart';
 import '../../widgets/shorts_side_bar.dart';
 import '../../widgets/shorts_detail.dart';
@@ -1560,7 +1561,6 @@ class _ShortsScreenState extends State<ShortsScreen>
                   },
                 ),
               ),
-        bottomNavigationBar: Footer(1),
       ),
     );
   }

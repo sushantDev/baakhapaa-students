@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:baakhapaa/widgets/header.dart';
 import 'package:baakhapaa/widgets/subscriptionBanner.dart';
@@ -10,6 +12,7 @@ import '../../providers/auth.dart';
 import '../../providers/challenge.dart';
 import '../../widgets/skeleton_loading.dart';
 import '../../widgets/nav_bar.dart';
+import '../../widgets/footer.dart';
 import '../../utils/exit_confirmation_dialog.dart';
 import '../story/creator_story_screen.dart';
 import '../story/creators_screen.dart';
@@ -897,7 +900,6 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                   ),
           ),
         ),
-        bottomNavigationBar: null, // Remove footer for discover screen
       ),
     );
   }

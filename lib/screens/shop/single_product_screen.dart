@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:convert';
 
 import 'package:baakhapaa/helpers/helpers.dart';
@@ -24,6 +26,7 @@ import '../../providers/cart.dart';
 import '../../providers/favorites.dart';
 import '../../widgets/header.dart';
 import '../../widgets/share_with_qr_modal.dart';
+import '../../widgets/footer.dart';
 import '../../widgets/product.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../utils/puppet_screen_mapping.dart';
@@ -407,7 +410,12 @@ class _SingleProductScreenState extends State<SingleProductScreen>
       appBar: header(
           context: context,
           titleText: product['title']?.toString() ?? 'Product Details'),
-      bottomNavigationBar: _buildStickyPurchaseBar(cart),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildStickyPurchaseBar(cart),
+        ],
+      ),
       body: _isLoading
           ? _buildLoadingState()
           : product.isEmpty

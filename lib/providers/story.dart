@@ -39,6 +39,7 @@ class Story with ChangeNotifier {
   late List<dynamic> _readableSeasons = [];
   late List<dynamic> _episodePages = [];
   bool _isLoadingPages = false;
+  bool _isLoadingContinueWatching = false;
   Map<String, dynamic> _readingStreak = {};
   DateTime? _streakLastFetched;
   bool _isStreakFetching = false;
@@ -193,6 +194,7 @@ class Story with ChangeNotifier {
   }
 
   bool get isLoadingPages => _isLoadingPages;
+  bool get isLoadingContinueWatching => _isLoadingContinueWatching;
 
   List<dynamic> get creatorSeasons {
     return _creatorSeasons;
@@ -414,7 +416,8 @@ class Story with ChangeNotifier {
         headers: Url.baakhapaaAuthHeaders(authToken),
       );
 
-      DebugLogger.api('đŹ Episode API Response Status: ${response.statusCode}');
+      DebugLogger.api(
+          'đŹ Episode API Response Status: ${response.statusCode}');
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       DebugLogger.api('đŹ Episode API Response: ${responseData.toString()}');
 
@@ -659,7 +662,8 @@ class Story with ChangeNotifier {
             .map((e) => Map<String, dynamic>.from(e))
             .toList();
 
-        DebugLogger.info('đş Final list size after filtering: ${list.length}');
+        DebugLogger.info(
+            'đş Final list size after filtering: ${list.length}');
         DebugLogger.info('đş Returning list for creator $creatorId');
 
         if (!returnList) {
@@ -867,6 +871,32 @@ class Story with ChangeNotifier {
       );
     } catch (error) {
       throw error;
+    }
+  }
+
+  Future<bool> hasCompletedEpisodeQuiz(int episodeId) async {
+    try {
+      final response = await http.get(
+        Uri.parse(Url.baakhapaaApi('/episode/$episodeId/watched')),
+        headers: Url.baakhapaaAuthHeaders(authToken),
+      );
+      final responseData = json.decode(utf8.decode(response.bodyBytes));
+      final message = (responseData['message'] ?? '').toString().toLowerCase();
+      final code = responseData['code']?.toString();
+      final completed = responseData['success'] == true &&
+          (message.contains('completed') ||
+              message.contains('congratulations') ||
+              code == '0');
+
+      if (completed) {
+        _episode['watched'] = true;
+        updateEpisodeWatchedStatusLocally(episodeId);
+      }
+
+      return completed;
+    } catch (error) {
+      DebugLogger.error('Error checking episode watched status: $error');
+      return false;
     }
   }
 
@@ -1237,7 +1267,8 @@ class Story with ChangeNotifier {
       DebugLogger.api(
         'đ My List Toggle API Response Status: ${response.statusCode}',
       );
-      DebugLogger.api('đ My List Toggle API Response Body: ${response.body}');
+      DebugLogger.api(
+          'đ My List Toggle API Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
@@ -1376,7 +1407,8 @@ class Story with ChangeNotifier {
 
   Future<Map<String, dynamic>?> fetchSeasonDetails(int seasonId) async {
     try {
-      DebugLogger.api('đŹ STARTING fetchSeasonDetails - Season ID: $seasonId');
+      DebugLogger.api(
+          'đŹ STARTING fetchSeasonDetails - Season ID: $seasonId');
 
       final String apiUrl = Url.baakhapaaApi('/season-details/$seasonId');
       DebugLogger.api('đŹ API URL: $apiUrl');
@@ -1417,6 +1449,9 @@ class Story with ChangeNotifier {
   // Add this method to your Story provider class
 
   Future<void> fetchContinueWatching() async {
+    _isLoadingContinueWatching = true;
+    notifyListeners();
+
     try {
       DebugLogger.api(
         'âŻď¸ STARTING fetchContinueWatching - authToken length: ${authToken.length}',
@@ -1474,12 +1509,14 @@ class Story with ChangeNotifier {
             );
           }
 
+          _isLoadingContinueWatching = false;
           notifyListeners();
         } else {
           DebugLogger.api(
             'âŻď¸ Continue Watching API Error: ${responseData['message'] ?? 'Unknown error'}',
           );
           _continueWatchingItems = [];
+          _isLoadingContinueWatching = false;
           notifyListeners();
         }
       } else {
@@ -1487,11 +1524,13 @@ class Story with ChangeNotifier {
           'âŻď¸ Continue Watching API Error: ${response.statusCode} - ${response.body}',
         );
         _continueWatchingItems = [];
+        _isLoadingContinueWatching = false;
         notifyListeners();
       }
     } catch (e) {
       DebugLogger.api('âŻď¸ Error fetching continue watching: $e');
       _continueWatchingItems = [];
+      _isLoadingContinueWatching = false;
       notifyListeners();
     }
   }

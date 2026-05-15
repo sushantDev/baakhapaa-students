@@ -31,6 +31,7 @@ import 'package:baakhapaa/utils/debug_logger.dart' as debug;
 // AssistiveTouch replaced by PuppetDashboard + GlobalEventListener
 import 'package:baakhapaa/widgets/puppet_speech_bubble.dart';
 import 'package:baakhapaa/widgets/connectivity_aware_widget.dart';
+import 'package:baakhapaa/widgets/footer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:khalti_checkout_flutter/khalti_checkout_flutter.dart';
@@ -52,6 +53,7 @@ import 'package:baakhapaa/providers/collaboration_provider.dart';
 import 'package:baakhapaa/screens/collaboration/collaborations_screen.dart';
 import 'package:baakhapaa/screens/collaboration/collaboration_detail_screen.dart';
 import 'package:baakhapaa/screens/collaboration/create_collaboration_screen.dart';
+import 'package:baakhapaa/screens/my_courses/my_courses_screen.dart';
 import 'package:baakhapaa/screens/others/language_screen.dart';
 import 'package:baakhapaa/services/clarity_service.dart';
 import 'package:baakhapaa/services/sentry_service.dart';
@@ -164,6 +166,52 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 final GlobalKey<NavigatorState> mainNavigatorKey = GlobalKey<NavigatorState>();
+
+class _FooterRouteObserver extends NavigatorObserver {
+  final ValueNotifier<String?> currentRouteName = ValueNotifier(null);
+  final List<String?> _routeStack = [];
+
+  void _updateCurrentRoute(String? routeName) {
+    currentRouteName.value = routeName;
+  }
+
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    super.didPush(route, previousRoute);
+    _routeStack.add(route.settings.name);
+    _updateCurrentRoute(route.settings.name);
+  }
+
+  @override
+  void didReplace({Route? newRoute, Route? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    if (_routeStack.isNotEmpty) {
+      _routeStack.removeLast();
+    }
+    _routeStack.add(newRoute?.settings.name);
+    _updateCurrentRoute(newRoute?.settings.name);
+  }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    super.didPop(route, previousRoute);
+    if (_routeStack.isNotEmpty) {
+      _routeStack.removeLast();
+    }
+    if (previousRoute != null) {
+      _updateCurrentRoute(previousRoute.settings.name);
+    } else {
+      _updateCurrentRoute(_routeStack.isNotEmpty ? _routeStack.last : null);
+    }
+  }
+
+  @override
+  void didRemove(Route route, Route? previousRoute) {
+    super.didRemove(route, previousRoute);
+    _routeStack.remove(route.settings.name);
+    _updateCurrentRoute(_routeStack.isNotEmpty ? _routeStack.last : null);
+  }
+}
 
 // Add the globalAuth variable - this will be used to track the Auth instance globally
 final Auth globalAuth = Auth();
@@ -657,10 +705,13 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Future<Khalti> _khaltiInstance;
+  late final _FooterRouteObserver _footerRouteObserver;
+
   // Use the global mainNavigatorKey from main.dart (imported by DeepLinkHandler)
   @override
   void initState() {
     super.initState();
+    _footerRouteObserver = _FooterRouteObserver();
 
     // Initialize Khalti with the new SDK approach - using a default placeholder PIDX
     // This will be updated when making actual payments
@@ -709,6 +760,12 @@ class _MyAppState extends State<MyApp> {
       DeepLinkHandler().init();
       DeepLinkHandler.processInitialLink();
     });
+  }
+
+  @override
+  void dispose() {
+    _footerRouteObserver.currentRouteName.dispose();
+    super.dispose();
   }
 
   // New method to use the _khaltiInstance field
@@ -899,6 +956,7 @@ class _MyAppState extends State<MyApp> {
             navigatorObservers: [
               SentryNavigatorObserver(),
               AnalyticsService.observer,
+              _footerRouteObserver,
             ],
             title: AppLocalizations.of(context)?.appTitle ?? 'Baakhapaa',
             locale: languageProvider.currentLocale,
@@ -921,19 +979,45 @@ class _MyAppState extends State<MyApp> {
             themeMode: ThemeMode.dark,
             darkTheme: theme_constants.darkTheme,
             builder: (context, child) {
-              return Builder(
-                builder: (builderContext) {
+              return ValueListenableBuilder<String?>(
+                valueListenable: _footerRouteObserver.currentRouteName,
+                builder: (builderContext, observedRouteName, _) {
+                  final routeName = observedRouteName ??
+                      ModalRoute.of(builderContext)?.settings.name;
+                  final shouldShowFooter = Footer.shouldShowOnRoute(
+                    builderContext,
+                    child,
+                    routeName,
+                  );
+                  final footerHeight = shouldShowFooter
+                      ? Footer.estimatedHeight(builderContext)
+                      : 0.0;
+                  final footerIndex = Footer.indexForRoute(child, routeName);
+
                   return Scaffold(
                     body: ConnectivityAwareWidget(
                       child: Stack(
                         children: [
-                          child ?? const SizedBox.shrink(),
+                          Padding(
+                            padding: EdgeInsets.only(bottom: footerHeight),
+                            child: child ?? const SizedBox.shrink(),
+                          ),
                           // Global event listener for Pusher/FCM (replaces floating AssistiveTouch)
                           _GlobalEventListener(mainNavKey: mainNavigatorKey),
                           // Quest guidance hint — below header, pointing to puppet
                           const QuestHintBubble(),
                           // Bottom-of-screen puppet speech bubble
                           const PuppetSpeechOverlay(),
+                          if (shouldShowFooter)
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: Footer(
+                                footerIndex,
+                                navigator: mainNavigatorKey.currentState,
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -1069,6 +1153,7 @@ class _MyAppState extends State<MyApp> {
                   const ShippingAddressScreen(),
               OrderTrackingScreen.routeName: (ctx) =>
                   const OrderTrackingScreen(),
+              MyCourses.routeName: (ctx) => const MyCourses(),
             },
           );
         },

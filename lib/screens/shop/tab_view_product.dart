@@ -1,5 +1,7 @@
 // import 'package:baakhapaa/helpers/helpers.dart';
 // import 'package:baakhapaa/l10n/app_localizations.dart';
+// ignore_for_file: unused_import
+
 import 'package:baakhapaa/providers/tutorial_flow_provider.dart';
 import 'package:baakhapaa/utils/exit_confirmation_dialog.dart';
 // import 'package:baakhapaa/widgets/header.dart';
@@ -134,7 +136,6 @@ class _TabViewProductState extends State<TabViewProduct>
             ),
           ),
         ),
-        bottomNavigationBar: Footer(2),
       ),
     );
   }

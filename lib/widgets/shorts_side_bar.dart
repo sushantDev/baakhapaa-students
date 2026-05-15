@@ -354,7 +354,13 @@ class _ShortsSideBarState extends State<ShortsSideBar>
       shorts.unliked(widget.shortsId);
     }
 
-    void _onQuiz() {
+    void _onQuiz() async {
+      final auth = Provider.of<Auth>(context, listen: false);
+      if (auth.isGuest || !auth.isAuth) {
+        await GuestAuthHelper.showGuestLoginDialog(context, 'take quizzes');
+        return;
+      }
+
       widget.onPlayPause();
       final videoStateProvider =
           Provider.of<VideoStateProvider>(context, listen: false);

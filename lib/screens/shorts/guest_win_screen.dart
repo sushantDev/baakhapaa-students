@@ -171,7 +171,7 @@ class _GuestWinnerScreenState extends State<GuestWinnerScreen>
                                   ),
                                   SizedBox(width: 10),
                                   Text(
-                                    '10 Points',
+                                    '10 Sikka',
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
@@ -235,7 +235,7 @@ class _GuestWinnerScreenState extends State<GuestWinnerScreen>
                         SizedBox(height: 15),
 
                         Text(
-                          'Sign in to collect your points!',
+                          'Sign in to collect your Sikka!',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],

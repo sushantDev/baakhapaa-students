@@ -44,7 +44,7 @@ class _WinScreenState extends State<WinScreen>
   late Map<String, dynamic> episode = {};
   late List<dynamic> season = [];
 
-  // Multi-step flow: loading → premiumUpsell → streak → widgetPrompt → win
+  // Multi-step flow: loading → streak → widgetPrompt → win
   String _flowStep =
       'loading'; // loading, premiumUpsell, streak, widgetPrompt, win
   bool _isPremium = false;
@@ -139,14 +139,14 @@ class _WinScreenState extends State<WinScreen>
         await auth.coinTransaction(
           pointsEarned,
           'credited',
-          'Double points reward from watching ad on win screen.',
+          'Double sikka reward from watching ad on win screen.',
         );
         await auth.getUser();
         if (mounted) {
           setState(() => _doublePointsClaimed = true);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-                '🎉 +$pointsEarned bonus points! You doubled your reward!'),
+            content:
+                Text('🎉 +$pointsEarned bonus sikka! You doubled your reward!'),
             backgroundColor: Colors.green.shade700,
             duration: const Duration(seconds: 3),
           ));
@@ -218,7 +218,11 @@ class _WinScreenState extends State<WinScreen>
         final streakFuture = _fetchStreakData(story, episodeId);
 
         // Only award coins if episode hasn't been watched/completed before
-        final alreadyWatched = episode['watched'] == true;
+        final watched = episode['watched'];
+        final alreadyWatched = watched == true ||
+            watched == 1 ||
+            watched == '1' ||
+            watched == 'true';
         final coinFuture = alreadyWatched
             ? Future.value()
             : story.episodeWatched(
@@ -404,12 +408,10 @@ class _WinScreenState extends State<WinScreen>
     String nextStep;
     switch (currentStep) {
       case 'loading':
-        // Premium upsell first (if not premium), then streak, then widget prompt
-        nextStep = !_isPremium
-            ? 'premiumUpsell'
-            : (_hasStreakData
-                ? 'streak'
-                : (_widgetPromptCompleted ? 'win' : 'widgetPrompt'));
+        // Skip premium upsell and go directly to streak/widget/win flow.
+        nextStep = _hasStreakData
+            ? 'streak'
+            : (_widgetPromptCompleted ? 'win' : 'widgetPrompt');
         break;
       case 'premiumUpsell':
         nextStep = _hasStreakData
@@ -772,7 +774,7 @@ class _WinScreenState extends State<WinScreen>
                       _buildBenefitRowWidget(
                           Image.asset('assets/images/coins.png',
                               width: 22, height: 22),
-                          'Bonus points daily'),
+                          'Bonus sikka daily'),
                       const SizedBox(height: 14),
                       _buildBenefitRow(
                           Icons.lock_open_rounded, 'Exclusive content access'),
@@ -2106,7 +2108,7 @@ class _WinScreenState extends State<WinScreen>
                                 ),
                                 SizedBox(width: 6),
                                 Text(
-                                  'points',
+                                  'sikka',
                                   style: GoogleFonts.inter(
                                     fontSize: 14,
                                     color: Colors.amber.withValues(alpha: 0.7),
@@ -2125,7 +2127,7 @@ class _WinScreenState extends State<WinScreen>
                                     size: 12, color: Colors.white38),
                                 SizedBox(width: 4),
                                 Text(
-                                  'Fallback points (creator pool used)',
+                                  'Fallback sikka (creator pool used)',
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     color: Colors.white38,
@@ -2169,7 +2171,7 @@ class _WinScreenState extends State<WinScreen>
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        'Watch ad to double your points',
+                                        'Watch ad to double your sikka',
                                         style: GoogleFonts.inter(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -2177,7 +2179,7 @@ class _WinScreenState extends State<WinScreen>
                                         ),
                                       ),
                                       Text(
-                                        '+$pointsEarned bonus points',
+                                        '+$pointsEarned bonus sikka',
                                         style: GoogleFonts.inter(
                                           fontSize: 11,
                                           color: Color(0xFF22C55E)
@@ -2221,7 +2223,7 @@ class _WinScreenState extends State<WinScreen>
                                   color: Color(0xFF22C55E), size: 20),
                               SizedBox(width: 8),
                               Text(
-                                'Bonus points claimed! 🎉',
+                                'Bonus sikka claimed! 🎉',
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -2303,8 +2305,7 @@ class _WinScreenState extends State<WinScreen>
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(
-                                    '$pointsEarned Baakhapaa points claimed!'),
+                                content: Text('$pointsEarned Sikka claimed!'),
                                 backgroundColor: Colors.green,
                                 duration: Duration(seconds: 2),
                               ),
@@ -2347,7 +2348,7 @@ class _WinScreenState extends State<WinScreen>
                                   ),
                                   SizedBox(width: 8),
                                   Text(
-                                    'Next Chapter\n+$pointsEarned pts',
+                                    'Next Chapter\n+$pointsEarned sikka',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 14,

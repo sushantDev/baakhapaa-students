@@ -220,6 +220,38 @@ class _QuestionScreenState extends State<QuestionScreen>
       }
 
       episode = Provider.of<Story>(context).episode;
+      final watched = episode['watched'];
+      final quizCompleted = watched == true ||
+          watched == 1 ||
+          watched == '1' ||
+          watched == 'true';
+      if (quizCompleted) {
+        _isInit = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Challenge Completed'),
+              content: const Text(
+                'You have already completed the quiz for this episode. Please choose another challenge.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    if (mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: const Text('Okay'),
+                ),
+              ],
+            ),
+          );
+        });
+        return;
+      }
       DebugLogger.success(
           '❓ QuestionScreen: Episode loaded: ${episode['title']} (ID: ${episode['id']}));');
       questions = episode['questions'] as List;

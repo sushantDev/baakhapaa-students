@@ -1516,6 +1516,19 @@ class _VideoScreenState extends State<VideoScreen>
         watched == 'true';
   }
 
+  Future<bool> _isQuizCompletedForEpisode(int episodeId) async {
+    if (_isQuizCompleted(episode)) return true;
+
+    final story = Provider.of<Story>(context, listen: false);
+    final completed = await story.hasCompletedEpisodeQuiz(episodeId);
+    if (completed && mounted) {
+      setState(() {
+        episode['watched'] = true;
+      });
+    }
+    return completed;
+  }
+
   void _showGameModeSelector(int episodeId) async {
     final auth = Provider.of<Auth>(context, listen: false);
     if (auth.isGuest || !auth.isAuth) {
@@ -1524,8 +1537,8 @@ class _VideoScreenState extends State<VideoScreen>
     }
 
     final story = Provider.of<Story>(context, listen: false);
-    final currentEpisode = story.episode;
-    final quizAvailable = !_isQuizCompleted(currentEpisode);
+    final quizAvailable = !await _isQuizCompletedForEpisode(episodeId);
+    if (!mounted) return;
 
     final selectedMode = await GameModeSelector.show(
       context,
@@ -3485,7 +3498,11 @@ class _VideoScreenState extends State<VideoScreen>
       // Calculate resume seconds from progress_seconds or completion_percent
       int? resumeSeconds;
 
-      if (episode['progress_seconds'] != null) {
+      if (_resumeOverrideSeconds != null && _resumeOverrideSeconds! > 0) {
+        resumeSeconds = _resumeOverrideSeconds;
+        DebugLogger.info(
+            '🎯 YouTube: Using My Courses resume override: ${resumeSeconds}s');
+      } else if (episode['progress_seconds'] != null) {
         resumeSeconds = int.tryParse(episode['progress_seconds'].toString());
         DebugLogger.info(
             '📹 YouTube: Found direct progress_seconds: ${resumeSeconds}s');
@@ -4141,63 +4158,6 @@ class _VideoScreenState extends State<VideoScreen>
         flex: _allEpisodes.length > 1 ? 4 : 6,
         child: Consumer<TutorialFlowProvider>(
           builder: (context, tutorial, _) {
-            final bool isQuizCompleted = episode['watched'] ?? false;
-
-            if (isQuizCompleted) {
-              return InkWell(
-                onTap: () {
-                  // Navigate to next episode instead of replaying
-                  if (_currentEpisodeIndex < _allEpisodes.length - 1) {
-                    _navigateToEpisode(1);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            'You have completed all episodes in this season!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
-                },
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF0DFF00), Color(0xFF0D9900)],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(50),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
-                      )
-                    ],
-                  ),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.white, size: 20),
-                        SizedBox(width: 6),
-                        Text(
-                          'Completed ✓',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }
-
             final durationSkipsBought =
                 episode['duration_skips_bought'] as int? ?? 0;
             final maxDurationSkips = episode['max_duration_skips'] as int? ?? 0;
@@ -4222,8 +4182,10 @@ class _VideoScreenState extends State<VideoScreen>
               onTap: _countdownCompleted && !episode.isEmpty
                   ? () {
                       final id = episode['id'];
-                      if (id != null && id is int) {
-                        _showGameModeSelector(id);
+                      final episodeId =
+                          id is int ? id : int.tryParse(id?.toString() ?? '');
+                      if (episodeId != null) {
+                        _showGameModeSelector(episodeId);
                       }
                     }
                   : null,

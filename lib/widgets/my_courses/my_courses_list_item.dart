@@ -7,7 +7,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
-import 'package:baakhapaa/screens/story/episode_screen.dart';
 import 'package:baakhapaa/screens/story/video_screen.dart';
 import 'package:baakhapaa/utils/debug_logger.dart' as debug;
 
@@ -67,6 +66,130 @@ class _MyCourseListItemState extends State<MyCourseListItem>
     return '$minutes:${secs.toString().padLeft(2, '0')}';
   }
 
+  int? _asInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+
+  Map<String, dynamic>? _asMap(dynamic value) {
+    if (value is Map) return Map<String, dynamic>.from(value);
+    return null;
+  }
+
+  bool _isEpisodeWatched(dynamic episode) {
+    if (episode is! Map) return false;
+    final watched = episode['watched'];
+    return watched == true ||
+        watched == 1 ||
+        watched == '1' ||
+        watched == 'true';
+  }
+
+  int? _episodeIdFrom(dynamic episode) {
+    if (episode is! Map) return null;
+    return _asInt(episode['id']) ?? _asInt(episode['episode_id']);
+  }
+
+  int _resumeSecondsFrom(dynamic source, int fallback) {
+    if (source is! Map) return fallback;
+    return _asInt(source['watched_duration_seconds']) ??
+        _asInt(source['progress_seconds']) ??
+        _asInt(source['resume_at_seconds']) ??
+        fallback;
+  }
+
+  Future<void> _openResumeVideo({
+    required BuildContext context,
+    required Map<String, dynamic>? season,
+    required int? initialEpisodeId,
+    required int initialResumeSeconds,
+  }) async {
+    try {
+      final story = Provider.of<Story>(context, listen: false);
+      int? episodeId = initialEpisodeId;
+      int resumeSeconds = initialResumeSeconds;
+      List<dynamic> episodes = [];
+
+      final seasonId =
+          _asInt(season?['id']) ?? _asInt(widget.course['season_id']);
+
+      if (episodeId == null) {
+        final seasonEpisodes = season?['episodes'];
+        if (seasonEpisodes is List) {
+          episodes = seasonEpisodes;
+        }
+
+        if (episodes.isEmpty && seasonId != null) {
+          final seasonDetails = await story.fetchSeasonDetails(seasonId);
+          final detailsEpisodes = seasonDetails?['episodes'];
+          if (detailsEpisodes is List) {
+            episodes = detailsEpisodes;
+          } else {
+            episodes = await story.fetchSeasonEpisodes(seasonId);
+          }
+        }
+
+        if (episodes.isNotEmpty) {
+          dynamic episodeToPlay;
+          try {
+            episodeToPlay = episodes.firstWhere((ep) => !_isEpisodeWatched(ep));
+          } catch (_) {
+            episodeToPlay = episodes.first;
+          }
+          episodeId = _episodeIdFrom(episodeToPlay);
+          resumeSeconds = _resumeSecondsFrom(episodeToPlay, resumeSeconds);
+        }
+      }
+
+      if (episodeId == null) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Unable to open this course. Please try again.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+
+      if (season != null) {
+        await story.setSelectedSeason({
+          ...season,
+          if (seasonId != null) 'id': seasonId,
+          if (episodes.isNotEmpty) 'episodes': episodes,
+          'isCreatorSeason': false,
+        });
+      }
+
+      if (!context.mounted) return;
+      Navigator.push(
+        context,
+        PageTransition(
+          child: const VideoScreen(),
+          type: PageTransitionType.rightToLeftWithFade,
+          settings: RouteSettings(
+            name: VideoScreen.routeName,
+            arguments: {
+              'id': episodeId,
+              'resumeAtSeconds': resumeSeconds,
+            },
+          ),
+        ),
+      );
+    } catch (error) {
+      debug.DebugLogger.error('My Courses resume failed: $error');
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to open this course. Please try again.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -76,11 +199,10 @@ class _MyCourseListItemState extends State<MyCourseListItem>
     final secondaryColor = AppColors.getSecondary(context);
 
     // Extract data from continue watching item structure
-    final season = widget.course['season'] as Map<String, dynamic>?;
+    final season = _asMap(widget.course['season']);
     final completionPercentage =
-        widget.course['completion_percentage'] as int? ?? 0;
-    final lastWatchedEpisode =
-        widget.course['last_watched_episode'] as Map<String, dynamic>?;
+        _asInt(widget.course['completion_percentage']) ?? 0;
+    final lastWatchedEpisode = _asMap(widget.course['last_watched_episode']);
 
     // Get course data from season
     final courseTitle = season?['title'] ?? 'Untitled Course';
@@ -91,23 +213,18 @@ class _MyCourseListItemState extends State<MyCourseListItem>
     int lastWatchedSeconds = 0;
     int? lastWatchedEpisodeId;
     if (lastWatchedEpisode != null) {
-      lastWatchedSeconds =
-          (lastWatchedEpisode['watched_duration_seconds'] ?? 0) as int;
-      lastWatchedEpisodeId = lastWatchedEpisode['id'] as int?;
+      lastWatchedSeconds = _resumeSecondsFrom(lastWatchedEpisode, 0);
+      lastWatchedEpisodeId = _episodeIdFrom(lastWatchedEpisode);
     }
 
-    final fallbackEpisodeId = widget.course['episode_id'] is int
-        ? widget.course['episode_id'] as int
-        : int.tryParse(widget.course['episode_id']?.toString() ?? '') ??
-            (widget.course['id'] is int
-                ? widget.course['id'] as int
-                : int.tryParse(widget.course['id']?.toString() ?? ''));
+    final fallbackEpisodeId = _asInt(widget.course['episode_id']) ??
+        _asInt(widget.course['last_watched_episode_id']) ??
+        _asInt(widget.course['current_episode_id']);
 
     if (lastWatchedEpisodeId == null && fallbackEpisodeId != null) {
       lastWatchedEpisodeId = fallbackEpisodeId;
-      lastWatchedSeconds = (widget.course['watched_duration_seconds'] ??
-          widget.course['resume_at_seconds'] ??
-          lastWatchedSeconds) as int;
+      lastWatchedSeconds =
+          _resumeSecondsFrom(widget.course, lastWatchedSeconds);
     }
 
     // Calculate watched episodes
@@ -120,45 +237,12 @@ class _MyCourseListItemState extends State<MyCourseListItem>
         opacity: _fadeAnimation,
         child: GestureDetector(
           onTap: () async {
-            final story = Provider.of<Story>(context, listen: false);
-            if (lastWatchedEpisodeId != null) {
-              final args = {
-                'id': lastWatchedEpisodeId,
-                'resumeAtSeconds': lastWatchedSeconds,
-              };
-              Navigator.push(
-                context,
-                PageTransition(
-                  child: const VideoScreen(),
-                  type: PageTransitionType.rightToLeftWithFade,
-                  settings: RouteSettings(
-                    name: VideoScreen.routeName,
-                    arguments: args,
-                  ),
-                ),
-              );
-            } else if (season != null &&
-                (season['id'] is int ||
-                    int.tryParse(season['id']?.toString() ?? '') != null)) {
-              final seasonId = season['id'] is int
-                  ? season['id'] as int
-                  : int.parse(season['id'].toString());
-              await story.setSelectedSeason({
-                'id': seasonId,
-                ...season,
-                'isCreatorSeason': false,
-              });
-              Navigator.of(context).pushNamed(EpisodeScreen.routeName);
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text(
-                    'Unable to open this course. Please try again.',
-                  ),
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
-            }
+            await _openResumeVideo(
+              context: context,
+              season: season,
+              initialEpisodeId: lastWatchedEpisodeId,
+              initialResumeSeconds: lastWatchedSeconds,
+            );
           },
           child: Container(
             decoration: BoxDecoration(

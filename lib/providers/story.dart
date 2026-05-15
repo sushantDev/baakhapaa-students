@@ -874,6 +874,32 @@ class Story with ChangeNotifier {
     }
   }
 
+  Future<bool> hasCompletedEpisodeQuiz(int episodeId) async {
+    try {
+      final response = await http.get(
+        Uri.parse(Url.baakhapaaApi('/episode/$episodeId/watched')),
+        headers: Url.baakhapaaAuthHeaders(authToken),
+      );
+      final responseData = json.decode(utf8.decode(response.bodyBytes));
+      final message = (responseData['message'] ?? '').toString().toLowerCase();
+      final code = responseData['code']?.toString();
+      final completed = responseData['success'] == true &&
+          (message.contains('completed') ||
+              message.contains('congratulations') ||
+              code == '0');
+
+      if (completed) {
+        _episode['watched'] = true;
+        updateEpisodeWatchedStatusLocally(episodeId);
+      }
+
+      return completed;
+    } catch (error) {
+      DebugLogger.error('Error checking episode watched status: $error');
+      return false;
+    }
+  }
+
   /// Updates the watched status of an episode locally in the selectedSeason's episodes list
   /// This provides immediate UI feedback before the next API refresh
   void updateEpisodeWatchedStatusLocally(int episodeId) {

@@ -4922,7 +4922,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     }
 
     return _buildCreateContentTile(
-      label: 'Create',
+      label: 'Create Shorts',
       width: width,
       onPressed: () {
         if (!isProfileEmailVerified()) {
@@ -4999,7 +4999,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
     }
 
     return _buildCreateContentTile(
-      label: 'Create',
+      label: 'Create Courses',
       width: width,
       onPressed: () {
         if (!isProfileEmailVerified()) {

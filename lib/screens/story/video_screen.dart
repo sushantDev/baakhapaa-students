@@ -1517,6 +1517,12 @@ class _VideoScreenState extends State<VideoScreen>
   }
 
   void _showGameModeSelector(int episodeId) async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    if (auth.isGuest || !auth.isAuth) {
+      await GuestAuthHelper.showGuestLoginDialog(context, 'take quizzes');
+      return;
+    }
+
     final story = Provider.of<Story>(context, listen: false);
     final currentEpisode = story.episode;
     final quizAvailable = !_isQuizCompleted(currentEpisode);

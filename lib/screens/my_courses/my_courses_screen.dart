@@ -63,7 +63,7 @@ class _MyCoursesState extends State<MyCourses> with TickerProviderStateMixin {
         'my courses',
       );
       if (!didLogin && mounted) {
-        Navigator.of(context).maybePop();
+        Navigator.of(context).pushReplacementNamed('/story-screen');
       }
     }
   }

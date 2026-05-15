@@ -107,7 +107,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
           'user profile',
         );
         if (!didLogin && mounted) {
-          Navigator.of(context).maybePop();
+          Navigator.of(context).pushReplacementNamed('/story-screen');
         }
         return;
       }

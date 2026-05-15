@@ -228,6 +228,8 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       GlobalKey<ScaffoldState>();
   late AnimationController _animationController;
 
+  BuildContext get _dialogContext => widget.navigator?.context ?? context;
+
   @override
   void initState() {
     super.initState();
@@ -253,7 +255,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     }
 
     if (auth.isGuest) {
-      GuestAuthHelper.showGuestLoginDialog(context, "create content");
+      GuestAuthHelper.showGuestLoginDialog(_dialogContext, "create content");
       return;
     }
 
@@ -323,18 +325,21 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
   }
 
   void _onItemTapped(int index) async {
-    if (widget.index == index) return;
-
     final auth = Provider.of<Auth>(context, listen: false);
+    final isUnauthenticated = auth.isGuest ||
+        !auth.isAuth ||
+        (auth.user.isEmpty && !auth.isLoadingUser);
 
     // Protect My Courses/Profile for all unauthenticated states.
-    if ((index == 2 || index == 4) && (auth.isGuest || !auth.isAuth)) {
+    if ((index == 2 || index == 4) && isUnauthenticated) {
       await GuestAuthHelper.showGuestLoginDialog(
-        context,
+        _dialogContext,
         index == 2 ? 'my courses' : 'user profile',
       );
       return;
     }
+
+    if (widget.index == index) return;
 
     // If user data is still loading during initial authentication, don't allow navigation
     if (auth.isLoadingUser &&

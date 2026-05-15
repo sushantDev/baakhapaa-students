@@ -1508,15 +1508,35 @@ class _VideoScreenState extends State<VideoScreen>
     );
   }
 
+  bool _isQuizCompleted(Map<String, dynamic> episodeData) {
+    final watched = episodeData['watched'];
+    return watched == true ||
+        watched == 1 ||
+        watched == '1' ||
+        watched == 'true';
+  }
+
   void _showGameModeSelector(int episodeId) async {
-    final selectedMode = await GameModeSelector.show(context);
+    final story = Provider.of<Story>(context, listen: false);
+    final currentEpisode = story.episode;
+    final quizAvailable = !_isQuizCompleted(currentEpisode);
+
+    final selectedMode = await GameModeSelector.show(
+      context,
+      allowedModes:
+          quizAvailable ? null : [GameMode.crossword, GameMode.imagePuzzle],
+    );
     if (selectedMode == null || !mounted) return;
 
-    final story = Provider.of<Story>(context, listen: false);
     story.selectedGameMode = selectedMode;
 
     switch (selectedMode) {
       case GameMode.quiz:
+        if (!quizAvailable) {
+          _showErrorDialog(
+              'You have already completed the quiz for this episode. Please choose another challenge.');
+          return;
+        }
         goToQuestionScreen(episodeId);
         break;
       case GameMode.crossword:
@@ -1576,14 +1596,14 @@ class _VideoScreenState extends State<VideoScreen>
       final episodeData = Provider.of<Story>(context, listen: false);
       await episodeData.fetchEpisode(episodeId);
       final episode = episodeData.episode;
+      if (_isQuizCompleted(episode)) {
+        _showErrorDialog(
+            'You have already completed the quiz for this episode. Please choose another challenge.');
+        return;
+      }
       List questions = episode['questions'] as List? ?? [];
 
-      // REMOVED: Don't block users from retaking quiz if they lost previously
-      // Users should be able to retry the quiz even if they attempted it before
-      // Only WinScreen should mark episode as truly "watched"
-      // The 'watched' field can be true if they lost, but they should still be able to retry
-
-      if (questions.length < 1) {
+      if (questions.isEmpty) {
         _showErrorDialog('Sorry no questions are available.');
         _isOk = false;
       }

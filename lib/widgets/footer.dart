@@ -23,7 +23,10 @@ class Footer extends StatefulWidget {
   int index;
   Footer(this.index, {this.navigator});
 
-  static const Set<String> _routesWithOwnFooter = {};
+  static const Set<String> _routesWithOwnFooter = {
+    '/single-product-screen',
+    '/single-gift-screen',
+  };
 
   static const Set<String> _quizRoutes = {
     '/question-screen',
@@ -67,33 +70,16 @@ class Footer extends StatefulWidget {
     return patterns.any((pattern) => normalized.contains(pattern));
   }
 
-  static bool _containsFooterWidget(Widget? widget) {
-    if (widget == null) return false;
-    if (widget is Footer) return true;
-
-    if (widget is SingleChildRenderObjectWidget) {
-      return _containsFooterWidget(widget.child);
-    }
-
-    if (widget is MultiChildRenderObjectWidget) {
-      for (final child in widget.children) {
-        if (_containsFooterWidget(child)) return true;
-      }
-    }
-
-    return false;
-  }
-
   static bool _hasBottomNavigationBar(Widget? widget) {
     if (widget == null) return false;
     if (widget is Scaffold && widget.bottomNavigationBar != null) {
-      return _containsFooterWidget(widget.bottomNavigationBar);
+      return true;
     }
     if (widget is PageTransition) {
       final dynamic dynamicWidget = widget;
       final childWidget = dynamicWidget.child;
       if (childWidget is Scaffold && childWidget.bottomNavigationBar != null) {
-        return _containsFooterWidget(childWidget.bottomNavigationBar);
+        return true;
       }
     }
     return false;

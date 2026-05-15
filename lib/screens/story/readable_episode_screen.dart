@@ -143,7 +143,9 @@ class _ReadableEpisodeScreenState extends State<ReadableEpisodeScreen> {
         // Track book read event
         final seasonId = _episode['season_id'] ?? _episode['story_id'] ?? 0;
         AnalyticsService.logBookRead(
-          seasonId: seasonId is int ? seasonId : int.tryParse(seasonId.toString()) ?? 0,
+          seasonId: seasonId is int
+              ? seasonId
+              : int.tryParse(seasonId.toString()) ?? 0,
           episodeId: episodeId,
           title: _episode['title'] ?? 'Unknown',
           language: _language,
@@ -191,8 +193,11 @@ class _ReadableEpisodeScreenState extends State<ReadableEpisodeScreen> {
     // Track book chapter completed
     final seasonId = _episode['season_id'] ?? _episode['story_id'] ?? 0;
     AnalyticsService.logBookCompleted(
-      seasonId: seasonId is int ? seasonId : int.tryParse(seasonId.toString()) ?? 0,
-      episodeId: episodeId is int ? episodeId : int.tryParse(episodeId.toString()) ?? 0,
+      seasonId:
+          seasonId is int ? seasonId : int.tryParse(seasonId.toString()) ?? 0,
+      episodeId: episodeId is int
+          ? episodeId
+          : int.tryParse(episodeId.toString()) ?? 0,
       title: _episode['title'] ?? 'Unknown',
     );
 
@@ -204,6 +209,27 @@ class _ReadableEpisodeScreenState extends State<ReadableEpisodeScreen> {
     final auth = Provider.of<Auth>(context, listen: false);
     if (auth.isGuest) {
       GuestAuthHelper.showGuestLoginDialog(context, 'take quizzes');
+      return;
+    }
+    final watched = _episode['watched'];
+    final quizCompleted =
+        watched == true || watched == 1 || watched == '1' || watched == 'true';
+    if (quizCompleted) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Challenge Completed'),
+          content: Text(
+            'You have already completed the quiz for this episode. Please choose another challenge.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Okay'),
+            ),
+          ],
+        ),
+      );
       return;
     }
     Navigator.of(context).pushNamed(

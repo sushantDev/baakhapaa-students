@@ -1,6 +1,7 @@
 // ignore_for_file: unused_local_variable
 
 import 'package:baakhapaa/theme/app_colors.dart';
+import 'package:baakhapaa/screens/story/story_screen.dart';
 import 'package:flutter/material.dart';
 
 class MyCourseEmptyState extends StatefulWidget {
@@ -137,10 +138,10 @@ class _MyCourseEmptyStateState extends State<MyCourseEmptyState>
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () {
-                          Navigator.of(context).popUntil(
-                            (route) => route.settings.name == '/stories',
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            StoryScreen.routeName,
+                            (route) => false,
                           );
-                          Navigator.of(context).pushNamed('/stories');
                         },
                         borderRadius: BorderRadius.circular(24),
                         child: Padding(

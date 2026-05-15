@@ -199,7 +199,6 @@ class _FooterRouteObserver extends NavigatorObserver {
       _routeStack.removeLast();
     }
     if (previousRoute != null) {
-      _routeStack.add(previousRoute.settings.name);
       _updateCurrentRoute(previousRoute.settings.name);
     } else {
       _updateCurrentRoute(_routeStack.isNotEmpty ? _routeStack.last : null);

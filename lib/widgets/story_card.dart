@@ -362,18 +362,36 @@ class _StoryCardState extends State<StoryCard> {
                   ),
                   padding: EdgeInsets.fromLTRB(12, 10, 12, 12),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.center, // Center align content
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Genres row - centered
+                      Text(
+                        widget.season['title']?.toString() ?? 'Untitled Course',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          height: 1.1,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.65),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: 8),
+
                       _buildGenresRow(),
 
-                      SizedBox(height: 8), // Reduced spacing
+                      SizedBox(height: 10),
 
-                      // Bottom buttons row - center aligned
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           // Points button - only show if available
                           if (_buildPointsButton() != null) ...[
@@ -500,37 +518,38 @@ class _StoryCardState extends State<StoryCard> {
             'High reward'
           ];
 
-    return Center(
-      // Center the entire row
-      child: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        alignment: WrapAlignment.center, // Center align items
-        spacing: 8, // Reduced spacing
-        runSpacing: 4,
-        children: [
-          for (int i = 0; i < items.length && i < 5; i++) ...[
-            Text(
-              items[i],
-              style: GoogleFonts.inter(
-                fontSize: 9,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withValues(alpha: 0.9)
-                    : Colors.black87,
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      alignment: WrapAlignment.start,
+      spacing: 8,
+      runSpacing: 4,
+      children: [
+        for (int i = 0; i < items.length && i < 5; i++) ...[
+          Text(
+            items[i],
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.9),
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+          ),
+          if (i != items.length - 1 && i < 4)
+            Container(
+              width: 3,
+              height: 3,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.6),
+                shape: BoxShape.circle,
               ),
             ),
-            if (i != items.length - 1 && i < 4)
-              Container(
-                width: 3,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  shape: BoxShape.circle,
-                ),
-              ),
-          ],
         ],
-      ),
+      ],
     );
   }
 

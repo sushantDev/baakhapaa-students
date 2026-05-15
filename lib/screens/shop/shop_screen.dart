@@ -21,6 +21,7 @@ import 'package:baakhapaa/widgets/skeleton_loading.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_slideshow/flutter_image_slideshow.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:upgrader/upgrader.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -1102,7 +1103,7 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row: Title, Search Bar, Cart Icon
+          // Header Row: Title, Search Icon, Cart Icon
           Row(
             children: [
               // "All Vendors" Title
@@ -1122,48 +1123,34 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
               ),
               SizedBox(width: 12),
 
-              // Search Bar
-              Expanded(
-                flex: 3,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(
-                      SearchProductScreen.routeName,
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.grey[900]
-                          : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(20),
+              // Search button
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageTransition(
+                      child: SearchProductScreen(),
+                      type: PageTransitionType.fade,
+                      duration: Duration(milliseconds: 250),
                     ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.search,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey[400]
-                              : Colors.grey[600],
-                          size: 20,
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Search',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[900]
+                        : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Icon(
+                    Icons.search,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[400]
+                        : Colors.grey[600],
+                    size: 22,
                   ),
                 ),
               ),

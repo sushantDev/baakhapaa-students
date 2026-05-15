@@ -873,83 +873,48 @@ class _StoryScreenState extends State<StoryScreen>
     return AnimatedContainer(
       duration: Duration(milliseconds: 600),
       curve: Curves.easeInOut,
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).brightness == Brightness.dark
-                ? Color(0xFF2A2A2A)
-                : Colors.white,
-            Theme.of(context).brightness == Brightness.dark
-                ? Color(0xFF1E1E1E)
-                : Colors.grey.shade50,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.black.withValues(alpha: 0.3)
-                : Colors.grey.withValues(alpha: 0.15),
-            blurRadius: 20,
-            spreadRadius: 0,
-            offset: Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.white.withValues(alpha: 0.8),
-            blurRadius: 1,
-            spreadRadius: 0,
-            offset: Offset(0, 1),
-          ),
-        ],
-        border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.zero,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                context.l10n.giftRewards,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const Spacer(),
-              InkWell(
-                onTap: () {
-                  Navigator.of(context).pushNamed(GiftScreen.routeName);
-                },
-                child: Text(
-                  'See More',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    context.l10n.giftRewards,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-            ],
+                InkWell(
+                  onTap: () {
+                    Navigator.of(context).pushNamed(GiftScreen.routeName);
+                  },
+                  child: Text(
+                    'See More',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           if (_gifts.isNotEmpty)
             Container(
-              height: 60,
+              height: 72,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: _gifts.length,
                 itemBuilder: (context, index) {
                   return Container(
@@ -1474,15 +1439,15 @@ class _StoryScreenState extends State<StoryScreen>
           );
         }
       },
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 6,
-              offset: Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.45),
+              blurRadius: 14,
+              offset: Offset(0, 8),
             ),
             // Add difficulty-based glow only for difficult seasons
             if (showDifficulty) ...[
@@ -1502,7 +1467,7 @@ class _StoryScreenState extends State<StoryScreen>
               : null,
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           child: Stack(
             children: [
               // Thumbnail Image
@@ -1541,7 +1506,18 @@ class _StoryScreenState extends State<StoryScreen>
               // Gradient overlay for the specified filter effect
               Positioned.fill(
                 child: Container(
-                  color: Colors.black.withValues(alpha: 0.2),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.06),
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.88),
+                      ],
+                      stops: [0.0, 0.45, 1.0],
+                    ),
+                  ),
                 ),
               ),
 
@@ -1598,7 +1574,7 @@ class _StoryScreenState extends State<StoryScreen>
                 left: 0,
                 right: 0,
                 child: Container(
-                  padding: EdgeInsets.all(8),
+                  padding: EdgeInsets.fromLTRB(9, 28, 9, 9),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -1613,6 +1589,19 @@ class _StoryScreenState extends State<StoryScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Text(
+                        season['title']?.toString() ?? 'Untitled Course',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          height: 1.15,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
                       // Difficulty level display (only for difficult seasons)
                       if (showDifficulty) ...[
                         Flexible(
@@ -1994,129 +1983,85 @@ class _StoryScreenState extends State<StoryScreen>
     String?
         seeMoreQuery, // override search query for See More (null = use title)
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    return _buildSectionSurface(
       child: AnimatedContainer(
         duration: Duration(milliseconds: 600),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).brightness == Brightness.dark
-                  ? Color(0xFF2A2A2A)
-                  : Colors.white,
-              Theme.of(context).brightness == Brightness.dark
-                  ? Color(0xFF1E1E1E)
-                  : Colors.grey.shade50,
-            ],
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.black.withValues(alpha: 0.3)
-                  : Colors.grey.withValues(alpha: 0.15),
-              blurRadius: 20,
-              spreadRadius: 0,
-              offset: Offset(0, 8),
-            ),
-            BoxShadow(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.white.withValues(alpha: 0.8),
-              blurRadius: 1,
-              spreadRadius: 0,
-              offset: Offset(0, 1),
-            ),
-          ],
-          border: Border.all(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white.withValues(alpha: 0.1)
-                : Colors.grey.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
+        padding: EdgeInsets.zero,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Section Title
-            Row(
-              children: [
-                Text(
-                  isWatchTitle ? '$title Courses' : title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const Spacer(),
-                if (showSeeMore)
-                  InkWell(
-                    onTap: () {
-                      if (seeMoreQuery == 'content_type:readable') {
-                        // Show all readable books via search screen with pre-loaded results
-                        final storyProvider =
-                            Provider.of<Story>(context, listen: false);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => SearchScreen(
-                              initialQuery: null,
-                              preloadedResults: storyProvider.readableSeasons,
-                              preloadedTitle: 'All Books',
-                            ),
-                          ),
-                        );
-                      } else {
-                        Navigator.of(context).pushNamed(
-                          '/search-screen',
-                          arguments: seeMoreQuery ?? title,
-                        );
-                      }
-                    },
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
                     child: Text(
-                      'See More',
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w400,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black87,
+                      isWatchTitle ? '$title Courses' : title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: _sectionTitleColor(),
                       ),
                     ),
                   ),
-              ],
+                  if (showSeeMore)
+                    InkWell(
+                      onTap: () {
+                        if (seeMoreQuery == 'content_type:readable') {
+                          // Show all readable books via search screen with pre-loaded results
+                          final storyProvider =
+                              Provider.of<Story>(context, listen: false);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => SearchScreen(
+                                initialQuery: null,
+                                preloadedResults: storyProvider.readableSeasons,
+                                preloadedTitle: 'All Books',
+                              ),
+                            ),
+                          );
+                        } else {
+                          Navigator.of(context).pushNamed(
+                            '/search-screen',
+                            arguments: seeMoreQuery ?? title,
+                          );
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Text(
+                          'See More',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _sectionActionColor(),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
             // Horizontal scrolling seasons list
             Container(
-              height: 180,
+              height: 210,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: seasons.length,
                 itemBuilder: (context, index) {
                   final season = seasons[index];
 
-                  // Calculate width to show 3 items with last one 80% visible
                   double screenWidth = MediaQuery.of(context).size.width;
-                  double cardWidth;
-                  // Available width = screen width - container padding and margins
-                  double availableWidth = screenWidth - 44;
-
-                  if (index < 3) {
-                    // First 3 cards - equal width
-                    cardWidth = availableWidth / 3;
-                  } else if (index == 3) {
-                    // 4th card - 80% visible to indicate scrolling
-                    cardWidth = (availableWidth / 3) * 1;
-                  } else {
-                    // Rest of the cards - normal width
-                    cardWidth = availableWidth / 3;
-                  }
+                  double cardWidth = screenWidth <= 380 ? 126 : 138;
 
                   return Container(
                     width: cardWidth,
@@ -2158,91 +2103,53 @@ class _StoryScreenState extends State<StoryScreen>
     return Consumer<Challenge>(
       builder: (context, challengeProvider, child) {
         try {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          return _buildSectionSurface(
             child: AnimatedContainer(
               duration: Duration(milliseconds: 600),
               curve: Curves.easeInOut,
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Color(0xFF2A2A2A)
-                        : Colors.white,
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Color(0xFF1E1E1E)
-                        : Colors.grey.shade50,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.black.withValues(alpha: 0.3)
-                        : Colors.grey.withValues(alpha: 0.15),
-                    blurRadius: 20,
-                    spreadRadius: 0,
-                    offset: Offset(0, 8),
-                  ),
-                  BoxShadow(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.white.withValues(alpha: 0.8),
-                    blurRadius: 1,
-                    spreadRadius: 0,
-                    offset: Offset(0, 1),
-                  ),
-                ],
-                border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.grey.withValues(alpha: 0.1),
-                  width: 1,
-                ),
-              ),
+              padding: EdgeInsets.zero,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        context.l10n.challenges,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const Spacer(),
-                      InkWell(
-                        onTap: () {
-                          final auth =
-                              Provider.of<Auth>(context, listen: false);
-                          if (auth.isGuest) {
-                            GuestAuthHelper.showGuestLoginDialog(
-                                context, 'view all challenges');
-                            return;
-                          }
-                          Navigator.of(context)
-                              .pushNamed(AllChallengesScreen.routeName);
-                        },
-                        child: Text(
-                          'See More',
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w400,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black87,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            context.l10n.challenges,
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: _sectionTitleColor(),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        InkWell(
+                          onTap: () {
+                            final auth =
+                                Provider.of<Auth>(context, listen: false);
+                            if (auth.isGuest) {
+                              GuestAuthHelper.showGuestLoginDialog(
+                                  context, 'view all challenges');
+                              return;
+                            }
+                            Navigator.of(context)
+                                .pushNamed(AllChallengesScreen.routeName);
+                          },
+                          child: Text(
+                            'See More',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: _sectionActionColor(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   if (challengeProvider.challenges.isEmpty)
                     Container(
                       height: 60,
@@ -2253,9 +2160,10 @@ class _StoryScreenState extends State<StoryScreen>
                     )
                   else
                     Container(
-                      height: 60,
+                      height: 72,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: challengeProvider.challenges.length,
                         itemBuilder: (context, index) {
                           return Container(
@@ -2683,22 +2591,7 @@ class _StoryScreenState extends State<StoryScreen>
                               child: AnimatedContainer(
                                 duration: Duration(milliseconds: 600),
                                 curve: Curves.easeInOut,
-                                padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Color(0xFF2A2A2A)
-                                          : Colors.white,
-                                      Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Color(0xFF1E1E1E)
-                                          : Colors.grey.shade50,
-                                    ],
-                                  ),
                                   borderRadius: BorderRadius.circular(24),
                                   boxShadow: [
                                     BoxShadow(
@@ -2728,22 +2621,26 @@ class _StoryScreenState extends State<StoryScreen>
                                     width: 1,
                                   ),
                                 ),
-                                child: Stack(
-                                  children: [
-                                    StoryCard(
-                                      index,
-                                      featuredSeasonsToShow[index],
-                                      _authProvider.user,
-                                      'storyScreen',
-                                      [],
-                                    ),
-                                    if (tutorial.currentStep == 5 &&
-                                        tutorial.isActive)
-                                      Positioned(
-                                        right: 30,
-                                        child: TutorialIndicator(),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      StoryCard(
+                                        index,
+                                        featuredSeasonsToShow[index],
+                                        _authProvider.user,
+                                        'storyScreen',
+                                        [],
                                       ),
-                                  ],
+                                      if (tutorial.currentStep == 5 &&
+                                          tutorial.isActive)
+                                        Positioned(
+                                          right: 30,
+                                          child: TutorialIndicator(),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -2833,7 +2730,7 @@ class _StoryScreenState extends State<StoryScreen>
         children: [
           // "For You" text on the left
           Text(
-            'Featured Course',
+            'Featured Courses',
             style: GoogleFonts.poppins(
               textStyle: Theme.of(context).textTheme.displayLarge,
               fontSize: 18,
@@ -2844,82 +2741,38 @@ class _StoryScreenState extends State<StoryScreen>
 
           const Spacer(),
 
-          // Search bar and user points on the right
+          // Search and user points on the right
           Row(
             children: [
-              // Search bar
-              Container(
-                width: 120,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Color(0xFF2A2A2A)
-                      : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.search,
-                      size: 14,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white.withValues(alpha: 0.7)
-                          : Colors.grey.shade600,
+              // Search button
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageTransition(
+                      child: SearchScreen(),
+                      type: PageTransitionType.fade,
+                      duration: Duration(milliseconds: 250),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black87,
-                        ),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          errorBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          hintText: 'Search',
-                          hintStyle: TextStyle(
-                            fontSize: 12,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white.withValues(alpha: 0.5)
-                                    : Colors.grey.shade500,
-                          ),
-                          contentPadding: EdgeInsets.zero,
-                          isDense: true,
-                        ),
-                        textAlignVertical: TextAlignVertical.center,
-                        onTap: () {
-                          // Navigate to search screen when tapped
-                          Navigator.of(context).pushNamed('/search-screen');
-                        },
-                        onChanged: (value) {
-                          // Navigate to search screen when user starts typing
-                          if (value.isNotEmpty) {
-                            Navigator.of(context).pushNamed(
-                              '/search-screen',
-                              arguments: value,
-                            );
-                          }
-                        },
-                        onSubmitted: (value) {
-                          // Navigate to search screen with query
-                          if (value.trim().isNotEmpty) {
-                            Navigator.of(context).pushNamed(
-                              '/search-screen',
-                              arguments: value.trim(),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
+                  );
+                },
+                borderRadius: BorderRadius.circular(18),
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Color(0xFF2A2A2A)
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(
+                    Icons.search,
+                    size: 18,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withValues(alpha: 0.7)
+                        : Colors.grey.shade600,
+                  ),
                 ),
               ),
 
@@ -2999,67 +2852,53 @@ class _StoryScreenState extends State<StoryScreen>
   }
 
   Widget _buildStorytellersSection() {
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 300),
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      padding: const EdgeInsets.symmetric(
-          horizontal: 12, vertical: 8), // Reduced padding
-      decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Color(0xFF2A2A2A)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.black.withValues(alpha: 0.2)
-                : Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 8,
-            spreadRadius: 0,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
+    return _buildSectionSurface(
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Header Row
-          Row(
-            children: [
-              Text(
-                context.l10n.teachers,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const Spacer(),
-              InkWell(
-                onTap: () async {
-                  final auth = Provider.of<Auth>(context, listen: false);
-                  if (auth.isGuest) {
-                    await GuestAuthHelper.showGuestLoginDialog(
-                      context,
-                      'browse tutors',
-                    );
-                    return;
-                  }
-                  Navigator.of(context).pushNamed(CreatorsScreen.routeName);
-                },
-                child: Text(
-                  'See More',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    context.l10n.teachers,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: _sectionTitleColor(),
+                    ),
                   ),
                 ),
-              ),
-            ],
+                InkWell(
+                  onTap: () async {
+                    final auth = Provider.of<Auth>(context, listen: false);
+                    if (auth.isGuest) {
+                      await GuestAuthHelper.showGuestLoginDialog(
+                        context,
+                        'browse tutors',
+                      );
+                      return;
+                    }
+                    Navigator.of(context).pushNamed(CreatorsScreen.routeName);
+                  },
+                  child: Text(
+                    'See More',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: _sectionActionColor(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
 
           // Storytellers List
           Consumer<Auth>(
@@ -3079,7 +2918,7 @@ class _StoryScreenState extends State<StoryScreen>
                 height: 80,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.zero,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount:
                       auth.creators.length > 10 ? 10 : auth.creators.length,
                   itemBuilder: (_, index) {
@@ -3089,7 +2928,8 @@ class _StoryScreenState extends State<StoryScreen>
               );
             },
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -3124,6 +2964,52 @@ class _StoryScreenState extends State<StoryScreen>
     );
   }
 
+  Color _sectionTitleColor() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? Colors.white : const Color(0xFF171717);
+  }
+
+  Color _sectionActionColor() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark
+        ? Colors.white.withValues(alpha: 0.72)
+        : const Color(0xFF4B5563);
+  }
+
+  Widget _buildSectionSurface({
+    required Widget child,
+    EdgeInsetsGeometry margin = const EdgeInsets.symmetric(
+      horizontal: 10,
+      vertical: 8,
+    ),
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      margin: margin,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF151515) : const Color(0xFFF5F6F8),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.04),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.18)
+                : Colors.black.withValues(alpha: 0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
   // Performance optimized main content without global Consumer
   Widget _buildMainContent() {
     // Calculate positioning if not done yet or if data has changed
@@ -3135,51 +3021,56 @@ class _StoryScreenState extends State<StoryScreen>
       });
     }
 
-    return Column(
-      children: [
-        const SizedBox(height: 8),
+    return Container(
+      color: Theme.of(context).brightness == Brightness.dark
+          ? Color(0xFF070707)
+          : const Color(0xFFEDEFF3),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
 
-        // For You Header with Search and Points
-        _buildForYouHeader(),
+          // For You Header with Search and Points
+          _buildForYouHeader(),
 
-        // 1. Stories Section
-        _buildStoriesSection(),
+          // 1. Stories Section
+          _buildStoriesSection(),
 
-        // 2. Storytellers Section
-        _buildStorytellersSection(),
+          // 2. Storytellers Section
+          _buildStorytellersSection(),
 
-        // 3. Continue Watching Section
-        // _buildContinueWatchingSection(),
+          // 3. Continue Watching Section
+          // _buildContinueWatchingSection(),
 
-        // 3.5. Books Section (Readable Seasons)
-        _buildBooksSection(),
+          // 3.5. Books Section (Readable Seasons)
+          _buildBooksSection(),
 
-        // 4. My List Section
-        _buildMyListSection(),
+          // 4. My List Section
+          _buildMyListSection(),
 
-        // 5. Conditional Difficult Seasons Section (early position)
-        _buildConditionalDifficultSeasonsSection(),
+          // 5. Conditional Difficult Seasons Section (early position)
+          _buildConditionalDifficultSeasonsSection(),
 
-        // 6. Challenges Section
-        _buildChallengesSection(),
+          // 6. Challenges Section
+          _buildChallengesSection(),
 
-        // 7. Suggested Seasons Section (Netflix-style)
-        _buildSuggestedSeasonsSection(),
+          // 7. Suggested Seasons Section (Netflix-style)
+          _buildSuggestedSeasonsSection(),
 
-        // AdMob Banner Ad
-        const BaakhaBannerAd(),
+          // AdMob Banner Ad
+          const BaakhaBannerAd(),
 
-        // 8. Banner Ads
-        _buildBannerAds(),
+          // 8. Banner Ads
+          _buildBannerAds(),
 
-        // 9. Difficult Seasons Section (default position)
-        _buildDefaultDifficultSeasonsSection(),
+          // 9. Difficult Seasons Section (default position)
+          _buildDefaultDifficultSeasonsSection(),
 
-        // AdMob Banner Ad
-        const BaakhaBannerAd(),
+          // AdMob Banner Ad
+          const BaakhaBannerAd(),
 
-        const SizedBox(height: 100),
-      ],
+          const SizedBox(height: 100),
+        ],
+      ),
     );
   }
 

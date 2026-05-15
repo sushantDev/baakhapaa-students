@@ -6,16 +6,24 @@ import '../models/game_mode.dart';
 /// Bottom sheet that presents the 3 game mode options
 class GameModeSelector extends StatefulWidget {
   final void Function(GameMode mode) onModeSelected;
+  final List<GameMode>? allowedModes;
 
-  const GameModeSelector({Key? key, required this.onModeSelected})
-      : super(key: key);
+  const GameModeSelector({
+    Key? key,
+    required this.onModeSelected,
+    this.allowedModes,
+  }) : super(key: key);
 
-  static Future<GameMode?> show(BuildContext context) {
+  static Future<GameMode?> show(
+    BuildContext context, {
+    List<GameMode>? allowedModes,
+  }) {
     return showModalBottomSheet<GameMode>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => GameModeSelector(
+        allowedModes: allowedModes,
         onModeSelected: (mode) => Navigator.of(context).pop(mode),
       ),
     );
@@ -122,32 +130,7 @@ class _GameModeSelectorState extends State<GameModeSelector>
                 ),
               ),
               const SizedBox(height: 24),
-              _buildModeCard(
-                index: 0,
-                mode: GameMode.quiz,
-                icon: Icons.quiz_outlined,
-                title: 'Quiz',
-                description: 'Answer multiple choice questions',
-                gradient: const [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-              ),
-              const SizedBox(height: 12),
-              _buildModeCard(
-                index: 1,
-                mode: GameMode.crossword,
-                icon: Icons.grid_on_rounded,
-                title: 'Crossword',
-                description: 'Fill in the crossword grid with answers',
-                gradient: const [Color(0xFF2196F3), Color(0xFF1565C0)],
-              ),
-              const SizedBox(height: 12),
-              _buildModeCard(
-                index: 2,
-                mode: GameMode.imagePuzzle,
-                icon: Icons.extension_rounded,
-                title: 'Image Puzzle',
-                description: 'Reassemble the scrambled image',
-                gradient: const [Color(0xFFFF9800), Color(0xFFE65100)],
-              ),
+              ..._buildModeCards(isDark),
             ],
           ),
         );
@@ -242,5 +225,68 @@ class _GameModeSelectorState extends State<GameModeSelector>
         ),
       ),
     );
+  }
+
+  List<Widget> _buildModeCards(bool isDark) {
+    final allModes = <Map<String, dynamic>>[
+      {
+        'mode': GameMode.quiz,
+        'icon': Icons.quiz_outlined,
+        'title': 'Quiz',
+        'description': 'Answer multiple choice questions',
+        'gradient': const [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+      },
+      {
+        'mode': GameMode.crossword,
+        'icon': Icons.grid_on_rounded,
+        'title': 'Crossword',
+        'description': 'Fill in the crossword grid with answers',
+        'gradient': const [Color(0xFF2196F3), Color(0xFF1565C0)],
+      },
+      {
+        'mode': GameMode.imagePuzzle,
+        'icon': Icons.extension_rounded,
+        'title': 'Image Puzzle',
+        'description': 'Reassemble the scrambled image',
+        'gradient': const [Color(0xFFFF9800), Color(0xFFE65100)],
+      },
+    ];
+
+    final modes = widget.allowedModes == null
+        ? allModes
+        : allModes
+            .where((entry) => widget.allowedModes!.contains(entry['mode']))
+            .toList();
+
+    if (modes.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Text(
+            'No challenges are currently available.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: isDark ? Colors.white70 : Colors.black54,
+            ),
+          ),
+        ),
+      ];
+    }
+
+    return List<Widget>.generate(modes.length * 2 - 1, (index) {
+      if (index.isOdd) {
+        return const SizedBox(height: 12);
+      }
+      final item = modes[index ~/ 2];
+      return _buildModeCard(
+        index: index ~/ 2,
+        mode: item['mode'] as GameMode,
+        icon: item['icon'] as IconData,
+        title: item['title'] as String,
+        description: item['description'] as String,
+        gradient: item['gradient'] as List<Color>,
+      );
+    });
   }
 }

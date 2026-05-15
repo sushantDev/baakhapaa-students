@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../models/shipping.dart';
+import '../providers/auth.dart';
 import '../providers/delivery_provider.dart';
 import '../screens/shop/shipping_address_screen.dart';
 
@@ -103,6 +106,26 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
   }
 
   bool get _canProceedFromPayment => _selectedPayment != null;
+
+  bool get _isNepalCustomer {
+    final auth = Provider.of<Auth>(context, listen: false);
+    final country =
+        (auth.user['country'] ?? '').toString().trim().toLowerCase();
+    final countryCode =
+        (auth.user['country_code'] ?? '').toString().trim().toLowerCase();
+    return country == 'nepal' || countryCode == 'np';
+  }
+
+  bool get _showKhaltiOption {
+    if (Platform.isAndroid) return false;
+    return _isNepalCustomer;
+  }
+
+  bool get _showStripeOption {
+    if (Platform.isAndroid) return true;
+    if (Platform.isIOS && _isNepalCustomer) return false;
+    return true;
+  }
 
   bool get _canConfirm {
     // Digital products don't need shipping address
@@ -335,16 +358,17 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
         children: [
           _sectionTitle('Choose how you\'d like to pay', isDark),
           const SizedBox(height: 16),
-          _paymentOption(
-            value: 'khalti',
-            title: 'Digital Wallet',
-            subtitle: 'Pay securely with Khalti',
-            icon: Icons.account_balance_wallet_rounded,
-            color: const Color(0xFF7C3AED),
-            imagePath: 'assets/images/logo-khalti.png',
-            isDark: isDark,
-          ),
-          const SizedBox(height: 12),
+          if (_showKhaltiOption)
+            _paymentOption(
+              value: 'khalti',
+              title: 'Digital Wallet',
+              subtitle: 'Pay securely with Khalti',
+              icon: Icons.account_balance_wallet_rounded,
+              color: const Color(0xFF7C3AED),
+              imagePath: 'assets/images/logo-khalti.png',
+              isDark: isDark,
+            ),
+          if (_showKhaltiOption) const SizedBox(height: 12),
           _paymentOption(
             value: 'cod',
             title: 'Cash on Delivery',
@@ -354,15 +378,16 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
             imagePath: 'assets/images/cod.png',
             isDark: isDark,
           ),
-          const SizedBox(height: 12),
-          _paymentOption(
-            value: 'stripe',
-            title: 'Credit / Debit Card',
-            subtitle: 'Visa, Mastercard — charged in USD',
-            icon: Icons.credit_card_rounded,
-            color: const Color(0xFF635BFF),
-            isDark: isDark,
-          ),
+          if (_showStripeOption) const SizedBox(height: 12),
+          if (_showStripeOption)
+            _paymentOption(
+              value: 'stripe',
+              title: 'Credit / Debit Card',
+              subtitle: 'Visa, Mastercard — charged in USD',
+              icon: Icons.credit_card_rounded,
+              color: const Color(0xFF635BFF),
+              isDark: isDark,
+            ),
         ],
       ),
     );

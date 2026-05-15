@@ -1106,6 +1106,7 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
                             listen: false);
                         final isDigitalOnly =
                             widget.cart.hasOnlyDigitalProducts;
+
                         final result = await showCheckoutSheet(
                           context,
                           totalNpr: widget.cart.totalAmount,

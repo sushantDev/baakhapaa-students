@@ -3,6 +3,7 @@ import 'package:baakhapaa/providers/auth.dart';
 import 'package:baakhapaa/providers/currency_provider.dart';
 import 'package:baakhapaa/services/subscription_service.dart';
 import 'package:baakhapaa/services/stripe_service.dart';
+import 'package:baakhapaa/services/payment_route_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,7 +60,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   void dispose() {
     DebugLogger.info(
         'SubscriptionScreen: Disposing screen and clearing payment state');
-    // Clear any active payment state when the screen is closed
     app_khalti.KhaltiService.clearPaymentState();
     super.dispose();
   }
@@ -1404,6 +1404,26 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     }
     if (_selectedPackage == null) return;
 
+    final route = await PaymentRouteService.resolve(auth.token);
+    final isNepalUser = route.isNepal;
+
+    // iOS: Nepal users use Khalti; international users use Stripe.
+    if (Platform.isIOS) {
+      if (isNepalUser) {
+        await _processPurchase();
+        return;
+      }
+      await _processStripePurchase();
+      return;
+    }
+
+    // Android: keep Stripe-based subscription payments.
+    if (Platform.isAndroid) {
+      await _processStripePurchase();
+      return;
+    }
+
+    // Other platforms: fallback to existing checkout sheet flow.
     final currency = Provider.of<CurrencyProvider>(context, listen: false);
     final pricing =
         _subscriptionService.calculatePricing(_selectedPackage!.pricePerDay);

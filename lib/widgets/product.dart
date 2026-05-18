@@ -1,7 +1,8 @@
 import 'dart:convert';
 // import 'dart:math' as math;
 
-// import 'package:baakhapaa/helpers/helpers.dart';
+// ignore: unused_import
+import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:baakhapaa/utils/guest_auth_helper.dart';
 import 'package:baakhapaa/services/rating_service.dart';
 import 'package:baakhapaa/models/rating_model.dart';
@@ -14,6 +15,7 @@ import 'package:khalti_checkout_flutter/khalti_checkout_flutter.dart';
 
 import '../screens/shop/single_product_screen.dart';
 import '../screens/shop/cart_screen.dart';
+import '../utils/order_success_dialog.dart';
 import '../../providers/cart.dart';
 import '../providers/auth.dart';
 import '../providers/orders.dart';
@@ -990,7 +992,11 @@ class _QuickBuyDialogState extends State<QuickBuyDialog> {
                 Navigator.of(context, rootNavigator: true).pop();
               }
             } catch (e) {}
-            _showQuickBuySuccessDialog();
+            presentOrderSuccessDialog(
+              detailMessage:
+                  '${widget.item['title']?.toString() ?? 'Product'} has been ordered successfully. We will get back to you soon with order details.',
+              popRouteUnderDialog: true,
+            );
             app_khalti.KhaltiService.clearPaymentState();
           }
         });
@@ -1131,6 +1137,8 @@ class _QuickBuyDialogState extends State<QuickBuyDialog> {
 
       DebugLogger.success('Quick buy COD order placed successfully');
 
+      final productTitle = widget.item['title']?.toString() ?? 'Product';
+
       if (!mounted) return;
 
       // Close the QuickBuyDialog using the stored context
@@ -1139,14 +1147,12 @@ class _QuickBuyDialogState extends State<QuickBuyDialog> {
       // Wait for the dialog to close completely
       await Future.delayed(Duration(milliseconds: 5));
 
-      // Verify context is still valid before showing success dialog
-      if (!mounted) return;
-
-      // Schedule success dialog to show after frame
+      // Schedule success dialog to show after frame (no [mounted] — state may dispose)
       Future.delayed(Duration(milliseconds: 10), () {
-        if (mounted) {
-          _showQuickBuySuccessDialog();
-        }
+        presentOrderSuccessDialog(
+          detailMessage:
+              '$productTitle has been ordered successfully. We will get back to you soon with order details.',
+        );
       });
     } catch (e) {
       DebugLogger.error('Error processing quick buy COD order: $e');
@@ -1230,13 +1236,16 @@ class _QuickBuyDialogState extends State<QuickBuyDialog> {
 
       DebugLogger.success('Quick buy Stripe payment completed');
 
+      final productTitle = widget.item['title']?.toString() ?? 'Product';
+
       if (!mounted) return;
       Navigator.of(dialogContext).pop();
 
       await Future.delayed(const Duration(milliseconds: 10));
-      if (mounted) {
-        _showQuickBuySuccessDialog();
-      }
+      presentOrderSuccessDialog(
+        detailMessage:
+            '$productTitle has been ordered successfully. We will get back to you soon with order details.',
+      );
     } on StripeException catch (e) {
       DebugLogger.error('Stripe quick buy exception: $e');
       if (!mounted) return;
@@ -1290,83 +1299,6 @@ class _QuickBuyDialogState extends State<QuickBuyDialog> {
         });
       }
     }
-  }
-
-  void _showQuickBuySuccessDialog() {
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.green.shade400, Colors.teal.shade400],
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                Icons.check_circle_rounded,
-                size: 64,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Order Successful!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-            SizedBox(height: 12),
-            Text(
-              '${widget.item['title']} has been ordered successfully. We will get back to you soon with order details.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                height: 1.5,
-              ),
-            ),
-            SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop(); // Close success dialog
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Continue Shopping',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override

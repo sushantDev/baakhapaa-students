@@ -561,6 +561,9 @@ class AppLocalizationsNe extends AppLocalizations {
   String get orderHistory => 'अर्डर इतिहास';
 
   @override
+  String get yourOrderHistory => 'तपाईंको अर्डर इतिहास';
+
+  @override
   String get dateTime => 'मिति र समय';
 
   @override

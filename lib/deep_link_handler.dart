@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_links/app_links.dart';
 import 'package:baakhapaa/utils/wallet_launcher.dart';
-import 'package:baakhapaa/main.dart' show mainNavigatorKey, globalAuth;
+import 'package:baakhapaa/main.dart' show globalAuth;
+import 'package:baakhapaa/navigation/root_navigator_key.dart' show mainNavigatorKey;
 
 import '../screens/story/story_screen.dart';
 import '../screens/story/episode_screen.dart';

@@ -558,6 +558,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get orderHistory => '订单历史';
 
   @override
+  String get yourOrderHistory => '您的订单历史';
+
+  @override
   String get dateTime => '日期和时间';
 
   @override

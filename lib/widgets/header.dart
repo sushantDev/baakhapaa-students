@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../main.dart' show mainNavigatorKey;
+import '../navigation/root_navigator_key.dart' show mainNavigatorKey;
 import '../models/url.dart';
 import '../providers/story.dart';
 import '../screens/others/notification_screen.dart';

@@ -1205,6 +1205,12 @@ abstract class AppLocalizations {
   /// **'Order History'**
   String get orderHistory;
 
+  /// Opens order history in the transaction log after checkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Order History'**
+  String get yourOrderHistory;
+
   /// A label for date and time.
   ///
   /// In en, this message translates to:

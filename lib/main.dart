@@ -161,11 +161,10 @@ import './models/url.dart';
 import './config/app_credentials.dart';
 import '../utils/debug_logger.dart';
 import './deep_link_handler.dart';
+import 'package:baakhapaa/navigation/root_navigator_key.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
-
-final GlobalKey<NavigatorState> mainNavigatorKey = GlobalKey<NavigatorState>();
 
 class _FooterRouteObserver extends NavigatorObserver {
   final ValueNotifier<String?> currentRouteName = ValueNotifier(null);

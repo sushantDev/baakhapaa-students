@@ -560,6 +560,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get orderHistory => 'Historial de pedidos';
 
   @override
+  String get yourOrderHistory => 'Tu historial de pedidos';
+
+  @override
   String get dateTime => 'Fecha y Hora';
 
   @override

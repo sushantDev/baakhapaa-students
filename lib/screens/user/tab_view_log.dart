@@ -14,7 +14,13 @@ class TabViewOrder extends StatefulWidget {
 
   final GlobalKey<ScaffoldState> scaffoldKey;
 
-  TabViewOrder({required this.scaffoldKey});
+  /// Tab index for [DefaultTabController]: 0 = point log, 1 = order history.
+  final int initialTabIndex;
+
+  TabViewOrder({
+    required this.scaffoldKey,
+    this.initialTabIndex = 0,
+  }) : assert(initialTabIndex >= 0 && initialTabIndex < 2);
 
   @override
   _TabViewOrderState createState() => _TabViewOrderState();
@@ -47,6 +53,7 @@ class _TabViewOrderState extends State<TabViewOrder>
       body: Container(
         child: DefaultTabController(
           length: 2,
+          initialIndex: widget.initialTabIndex,
           child: Column(
             children: [
               // Modern Tab Header

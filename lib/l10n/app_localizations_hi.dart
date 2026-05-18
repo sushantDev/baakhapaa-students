@@ -560,6 +560,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get orderHistory => 'ऑर्डर इतिहास';
 
   @override
+  String get yourOrderHistory => 'आपका ऑर्डर इतिहास';
+
+  @override
   String get dateTime => 'तिथि और समय';
 
   @override

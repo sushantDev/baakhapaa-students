@@ -1,6 +1,6 @@
 import 'package:baakhapaa/screens/challenges/all_challenges_screen.dart';
 import 'package:flutter/material.dart';
-import '../main.dart'; // Import for mainNavigatorKey
+import '../navigation/root_navigator_key.dart'; // mainNavigatorKey
 import '../screens/auth/welcome_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';

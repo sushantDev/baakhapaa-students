@@ -15,6 +15,7 @@ import '../../models/url.dart';
 import '../../providers/cart.dart';
 import '../../providers/favorites.dart';
 import 'package:baakhapaa/widgets/header.dart';
+// ignore: unused_import
 import 'package:baakhapaa/widgets/nav_bar.dart';
 import 'package:baakhapaa/widgets/refresh_indicator.dart';
 import 'package:baakhapaa/widgets/skeleton_loading.dart';
@@ -377,7 +378,6 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
         titleText: context.l10n.store,
         scaffoldKey: _scaffoldKey,
       ),
-      drawer: NavBar(),
       body: UpgradeAlert(
         showLater: false,
         barrierDismissible: false,

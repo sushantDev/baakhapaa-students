@@ -280,7 +280,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       onTap: () => _onTabSelected(2)),
                   const SizedBox(width: 20),
                   AnalyticsTabChip(
-                      label: "Point log",
+                      label: "Sikka log",
                       isActive: _selectedTab == 3,
                       onTap: () => _onTabSelected(3)),
                   const SizedBox(width: 20),

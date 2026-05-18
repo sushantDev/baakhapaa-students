@@ -12,6 +12,7 @@ import 'package:baakhapaa/screens/story/video_screen.dart';
 import 'package:baakhapaa/screens/subscription/subscription_screen.dart';
 import 'package:baakhapaa/screens/user/points_screen.dart';
 import 'package:baakhapaa/widgets/header.dart';
+// ignore: unused_import
 import 'package:baakhapaa/widgets/nav_bar.dart';
 import 'package:baakhapaa/widgets/refresh_indicator.dart';
 import 'package:baakhapaa/widgets/skeleton_loading.dart';
@@ -402,7 +403,6 @@ class _GiftScreenState extends State<GiftScreen> with PuppetInteractionMixin {
         titleText: context.l10n.gift,
         scaffoldKey: Navigator.canPop(context) ? null : _scaffoldKey,
       ),
-      drawer: Navigator.canPop(context) ? null : NavBar(),
       body: UpgradeAlert(
         showLater: false,
         barrierDismissible: false,

@@ -5224,7 +5224,6 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
           titleText: AppLocalizations.of(context)!.profile,
           scaffoldKey: _scaffoldKey,
         ),
-        drawer: NavBar(),
         body: _isLoading
             ? const ProfileSkeleton()
             : RefreshIndicator(

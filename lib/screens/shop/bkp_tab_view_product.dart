@@ -113,9 +113,6 @@ class _TabViewProductState extends State<TabViewProduct>
           titleText: AppLocalizations.of(context)!.store,
           scaffoldKey: widget.scaffoldKey,
         ),
-        drawer: Drawer(
-          child: NavBar(),
-        ),
         body: DefaultTabController(
           length: 2,
           initialIndex: widget.initialIndex,

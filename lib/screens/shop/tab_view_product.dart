@@ -106,9 +106,6 @@ class _TabViewProductState extends State<TabViewProduct>
       context: context,
       child: Scaffold(
         key: widget.scaffoldKey,
-        drawer: Drawer(
-          child: NavBar(),
-        ),
         body: DefaultTabController(
           length: 2,
           initialIndex: widget.initialIndex,

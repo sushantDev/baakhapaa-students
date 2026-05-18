@@ -9,7 +9,6 @@ import 'package:baakhapaa/screens/user/tab_view_log.dart';
 import 'package:baakhapaa/screens/user/weekly_rewards_screen.dart';
 import 'package:baakhapaa/screens/user/achievements_screen.dart';
 // import 'package:baakhapaa/widgets/subscriptionBanner.dart';
-import 'package:baakhapaa/widgets/wallet_widget.dart';
 import 'package:baakhapaa/screens/story/story_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -558,6 +557,7 @@ class _PointsScreenState extends State<PointsScreen>
     );
   }
 
+  // ignore: unused_element
   void _showWithdrawalDialog() {
     final auth = Provider.of<Auth>(context, listen: false);
     final hasBadge = auth.hasPointsToNrsConversionBadgeId;
@@ -1769,19 +1769,19 @@ class _PointsScreenState extends State<PointsScreen>
                         // ),
                         // _buildPointsHeader(),
                         // _buildCreatorMonetization(),
-                        MonetizationWidget(
-                          onTap: _showWithdrawalDialog,
-                          title: 'Available Points',
-                          subtitle:
-                              'Convert to Cash\nPoints Expires at: ${_userInformation['coin_expires_at'] != null ? DateFormat.yMMMd('en_US').format(DateTime.parse(_userInformation['coin_expires_at'].toString())) : 'Never'}',
-                          availableCoins:
-                              _userInformation['available_coins'] ?? 0,
-                          nrsPerPoint: Provider.of<Auth>(context, listen: false)
-                              .nrsPerBaakhapaaPoints,
-                          color: Colors.amber,
-                          showTotalValue: true,
-                          currency: 'NPR',
-                        ),
+                        // MonetizationWidget(
+                        //   onTap: _showWithdrawalDialog,
+                        //   title: 'Available Points',
+                        //   subtitle:
+                        //       'Convert to Cash\nPoints Expires at: ${_userInformation['coin_expires_at'] != null ? DateFormat.yMMMd('en_US').format(DateTime.parse(_userInformation['coin_expires_at'].toString())) : 'Never'}',
+                        //   availableCoins:
+                        //       _userInformation['available_coins'] ?? 0,
+                        //   nrsPerPoint: Provider.of<Auth>(context, listen: false)
+                        //       .nrsPerBaakhapaaPoints,
+                        //   color: Colors.amber,
+                        //   showTotalValue: true,
+                        //   currency: 'NPR',
+                        // ),
                         _buildActionButtons(),
                         _buildPointsChart(),
                         // _buildDailyRewards(),

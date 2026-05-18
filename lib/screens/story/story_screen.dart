@@ -2780,6 +2780,15 @@ class _StoryScreenState extends State<StoryScreen>
               // User points
               InkWell(
                 onTap: () {
+                  final auth = Provider.of<Auth>(context, listen: false);
+
+                  // If guest, show login required dialog
+                  if (auth.isGuest) {
+                    GuestAuthHelper.showGuestLoginDialog(
+                        context, 'view points');
+                    return;
+                  }
+
                   Navigator.push(
                     context,
                     PageTransition(

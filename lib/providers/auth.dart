@@ -207,11 +207,10 @@ class Auth with ChangeNotifier {
   }
 
   bool get isEmailVerified {
-    final value =
-        _user['email_verified_at'] ??
+    final value = _user['email_verified_at'] ??
         (_user['information'] is Map<String, dynamic>
             ? (_user['information']
-                  as Map<String, dynamic>)['email_verified_at']
+                as Map<String, dynamic>)['email_verified_at']
             : null);
 
     if (value == null) return false;
@@ -931,6 +930,7 @@ class Auth with ChangeNotifier {
 
   Future<void> signout() async {
     _token = '';
+    _user = {}; // Clear all user data including coins
     _isLoadingUser = false; // Reset loading state on signout
 
     // Clear Firebase Analytics user identity
@@ -1298,8 +1298,7 @@ class Auth with ChangeNotifier {
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       final success = responseData['success'];
-      final isSuccess =
-          success == true ||
+      final isSuccess = success == true ||
           success == 1 ||
           success == '1' ||
           success == 'true';
@@ -1359,9 +1358,8 @@ class Auth with ChangeNotifier {
       );
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success']) {
-        _mlbbRegistered = responseData['message'] == 'REGISTERED'
-            ? true
-            : false;
+        _mlbbRegistered =
+            responseData['message'] == 'REGISTERED' ? true : false;
         notifyListeners();
       }
     } catch (error) {
@@ -1487,9 +1485,8 @@ class Auth with ChangeNotifier {
       );
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success']) {
-        _mlbbTicketPurchased = responseData['message'] == 'PURCHASED'
-            ? true
-            : false;
+        _mlbbTicketPurchased =
+            responseData['message'] == 'PURCHASED' ? true : false;
         notifyListeners();
       }
     } catch (error) {
@@ -1587,8 +1584,7 @@ class Auth with ChangeNotifier {
         );
         return normalized;
       } else {
-        final msg =
-            responseData['message']?.toString() ??
+        final msg = responseData['message']?.toString() ??
             'Failed to fetch achievements';
         // For rate-limit (429) or server errors, return empty gracefully instead of crashing.
         if (response.statusCode == 429 ||
@@ -1876,9 +1872,8 @@ class Auth with ChangeNotifier {
       );
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success']) {
-        _challengeTicketPurchased = responseData['message'] == 'PURCHASED'
-            ? true
-            : false;
+        _challengeTicketPurchased =
+            responseData['message'] == 'PURCHASED' ? true : false;
         notifyListeners();
       }
     } catch (error) {
@@ -1974,8 +1969,7 @@ class Auth with ChangeNotifier {
           .timeout(const Duration(seconds: 15));
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      final success =
-          responseData['success'] == true ||
+      final success = responseData['success'] == true ||
           responseData['success'] == 1 ||
           responseData['success']?.toString().toLowerCase() == 'true';
 

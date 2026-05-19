@@ -1383,6 +1383,142 @@ class _StoryScreenState extends State<StoryScreen>
     }
   }
 
+  Map<String, dynamic> _mergeSeasonState(
+    Map<String, dynamic> original,
+    Map<String, dynamic> updates,
+  ) {
+    final merged = Map<String, dynamic>.from(original);
+    for (final entry in updates.entries) {
+      merged[entry.key] = entry.value;
+    }
+    return merged;
+  }
+
+  bool _syncSeasonInDirectCache(
+    List<dynamic> list,
+    String seasonId,
+    Map<String, dynamic> updates,
+  ) {
+    bool changed = false;
+    for (int i = 0; i < list.length; i++) {
+      final item = list[i];
+      if (item is Map && item['id']?.toString() == seasonId) {
+        list[i] = _mergeSeasonState(Map<String, dynamic>.from(item), updates);
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  bool _syncSeasonInWrappedCache(
+    List<dynamic> list,
+    String seasonId,
+    Map<String, dynamic> updates,
+  ) {
+    bool changed = false;
+    for (int i = 0; i < list.length; i++) {
+      final item = list[i];
+      if (item is! Map) continue;
+      final season = item['season'];
+      if (season is Map && season['id']?.toString() == seasonId) {
+        final updatedItem = Map<String, dynamic>.from(item);
+        updatedItem['season'] =
+            _mergeSeasonState(Map<String, dynamic>.from(season), updates);
+        list[i] = updatedItem;
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  bool _syncSeasonInCategoryCache(
+    List<dynamic> categories,
+    String seasonId,
+    Map<String, dynamic> updates,
+  ) {
+    bool changed = false;
+    for (int i = 0; i < categories.length; i++) {
+      final category = categories[i];
+      if (category is! Map) continue;
+      final seasons = category['seasons'];
+      if (seasons is! List) continue;
+
+      bool categoryChanged = false;
+      final updatedSeasons = List<dynamic>.from(seasons);
+      for (int j = 0; j < updatedSeasons.length; j++) {
+        final season = updatedSeasons[j];
+        if (season is Map && season['id']?.toString() == seasonId) {
+          updatedSeasons[j] =
+              _mergeSeasonState(Map<String, dynamic>.from(season), updates);
+          categoryChanged = true;
+        }
+      }
+
+      if (categoryChanged) {
+        final updatedCategory = Map<String, dynamic>.from(category);
+        updatedCategory['seasons'] = updatedSeasons;
+        categories[i] = updatedCategory;
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  Future<void> _syncCachedSeasonStateAfterEpisode(int seasonId) async {
+    if (!mounted) return;
+
+    final storyProvider = Provider.of<Story>(context, listen: false);
+    final selectedSeason = storyProvider.selectedSeason;
+    if (selectedSeason['id']?.toString() != seasonId.toString()) return;
+
+    final updates = <String, dynamic>{
+      'is_locked': selectedSeason['is_locked'],
+      'watched': selectedSeason['watched'],
+    };
+    if (selectedSeason.containsKey('thumbnail')) {
+      updates['thumbnail'] = selectedSeason['thumbnail'];
+    }
+    if (selectedSeason.containsKey('title')) {
+      updates['title'] = selectedSeason['title'];
+    }
+
+    bool hasChanges = false;
+    hasChanges = _syncSeasonInDirectCache(
+          _cachedFeaturedSeasons,
+          seasonId.toString(),
+          updates,
+        ) ||
+        hasChanges;
+    hasChanges = _syncSeasonInDirectCache(
+          _cachedReadableSeasons,
+          seasonId.toString(),
+          updates,
+        ) ||
+        hasChanges;
+    hasChanges = _syncSeasonInWrappedCache(
+          _cachedMyListItems,
+          seasonId.toString(),
+          updates,
+        ) ||
+        hasChanges;
+    hasChanges = _syncSeasonInWrappedCache(
+          _cachedContinueWatchingItems,
+          seasonId.toString(),
+          updates,
+        ) ||
+        hasChanges;
+    hasChanges = _syncSeasonInCategoryCache(
+          _cachedDifficultSeasons,
+          seasonId.toString(),
+          updates,
+        ) ||
+        hasChanges;
+
+    if (hasChanges && mounted) {
+      setState(() {});
+    }
+  }
+
   // Unified season card widget for both suggested and difficult seasons
   Widget _buildUnifiedSeasonCard(dynamic seasonData, bool showDifficulty) {
     // Safely cast to Map<String, dynamic>
@@ -1426,7 +1562,8 @@ class _StoryScreenState extends State<StoryScreen>
             'isCreatorSeason': false,
             ...season,
           });
-          Navigator.of(context).pushNamed(EpisodeScreen.routeName);
+          await Navigator.of(context).pushNamed(EpisodeScreen.routeName);
+          await _syncCachedSeasonStateAfterEpisode(seasonId);
         } catch (e) {
           final seasonType =
               showDifficulty ? 'difficult season' : 'suggested season';

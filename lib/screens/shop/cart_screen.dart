@@ -743,7 +743,10 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
           _isLoading = false;
           _isProcessingOrder = false;
         });
-        orderSuccessDialogue();
+        presentOrderSuccessDialog(
+          detailMessage:
+              'Your order has been placed successfully. We will get back to you soon with order details.',
+        );
       }
       return;
     }

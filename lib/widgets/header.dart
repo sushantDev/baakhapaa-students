@@ -13,6 +13,8 @@ import '../screens/others/notification_screen.dart';
 import '../screens/story/reading_streak_screen.dart';
 import '../providers/auth.dart';
 
+const bool _disablePuppetDrawerPanel = true;
+
 // Helper function to calculate adaptive font size based on text length
 double _getAdaptiveFontSize(String text) {
   if (text.length <= 8) {
@@ -44,6 +46,10 @@ AppBar header({
             child: GestureDetector(
               onTap: () {
                 final auth = Provider.of<Auth>(context, listen: false);
+
+                if (_disablePuppetDrawerPanel) {
+                  return;
+                }
 
                 // If guest, show login dialog and stop
                 if (auth.isGuest) {
@@ -239,7 +245,7 @@ AppBar header({
                             // Check if NotificationScreen is already in the navigation stack
                             bool isNotificationScreenAlreadyOpen =
                                 ModalRoute.of(context)?.settings.name ==
-                                NotificationScreen.routeName;
+                                    NotificationScreen.routeName;
 
                             if (!isNotificationScreenAlreadyOpen) {
                               Navigator.pushNamed(

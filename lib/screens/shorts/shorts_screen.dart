@@ -21,7 +21,6 @@ import '../../widgets/footer.dart';
 import '../../widgets/shorts_side_bar.dart';
 import '../../widgets/shorts_detail.dart';
 import '../../widgets/shorts_video_tile.dart';
-import '../../widgets/puppet_dashboard.dart';
 import '../../helpers/helpers.dart';
 import '../../widgets/my_upgrader_messages.dart';
 import '../../widgets/skeleton_loading.dart';
@@ -31,7 +30,6 @@ import '../../utils/debug_logger.dart';
 import '../../services/ad_service.dart';
 import '../../services/analytics_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../navigation/root_navigator_key.dart' show mainNavigatorKey;
 import './challenges_screen.dart';
 
 class ShortsScreen extends StatefulWidget {
@@ -1036,7 +1034,9 @@ class _ShortsScreenState extends State<ShortsScreen>
                     GuestAuthHelper.showGuestLoginDialog(context, 'open menu');
                     return;
                   }
-                  PuppetDashboard.show(context, navigatorKey: mainNavigatorKey);
+
+                  // Disabled intentionally to stop drawer-like panel opening.
+                  return;
                 },
                 child: Container(
                   width: 42,

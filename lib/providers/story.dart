@@ -404,7 +404,118 @@ class Story with ChangeNotifier {
       _selectedSeason['my_list'] = inList;
     }
 
+    // Keep card sources in sync when season details are refreshed from episode screen.
+    _syncSeasonStateAcrossCollections(_selectedSeason, notify: false);
+
     notifyListeners();
+  }
+
+  Map<String, dynamic> _mergeSeasonState(
+    Map<String, dynamic> original,
+    Map<String, dynamic> updates,
+  ) {
+    final merged = Map<String, dynamic>.from(original);
+    for (final entry in updates.entries) {
+      merged[entry.key] = entry.value;
+    }
+    return merged;
+  }
+
+  void _syncSeasonInDirectList(
+    List<dynamic> list,
+    String seasonId,
+    Map<String, dynamic> updates,
+  ) {
+    for (int i = 0; i < list.length; i++) {
+      final item = list[i];
+      if (item is Map && item['id']?.toString() == seasonId) {
+        list[i] = _mergeSeasonState(Map<String, dynamic>.from(item), updates);
+      }
+    }
+  }
+
+  void _syncSeasonInWrappedList(
+    List<dynamic> list,
+    String seasonId,
+    Map<String, dynamic> updates,
+  ) {
+    for (int i = 0; i < list.length; i++) {
+      final item = list[i];
+      if (item is! Map) continue;
+      final season = item['season'];
+      if (season is Map && season['id']?.toString() == seasonId) {
+        final updatedItem = Map<String, dynamic>.from(item);
+        updatedItem['season'] =
+            _mergeSeasonState(Map<String, dynamic>.from(season), updates);
+        list[i] = updatedItem;
+      }
+    }
+  }
+
+  void _syncSeasonInCategoryList(
+    List<dynamic> categories,
+    String seasonId,
+    Map<String, dynamic> updates,
+  ) {
+    for (int i = 0; i < categories.length; i++) {
+      final category = categories[i];
+      if (category is! Map) continue;
+      final seasons = category['seasons'];
+      if (seasons is! List) continue;
+
+      bool changed = false;
+      final updatedSeasons = List<dynamic>.from(seasons);
+      for (int j = 0; j < updatedSeasons.length; j++) {
+        final season = updatedSeasons[j];
+        if (season is Map && season['id']?.toString() == seasonId) {
+          updatedSeasons[j] =
+              _mergeSeasonState(Map<String, dynamic>.from(season), updates);
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        final updatedCategory = Map<String, dynamic>.from(category);
+        updatedCategory['seasons'] = updatedSeasons;
+        categories[i] = updatedCategory;
+      }
+    }
+  }
+
+  void _syncSeasonStateAcrossCollections(
+    Map<String, dynamic> season, {
+    bool notify = true,
+  }) {
+    final seasonId = season['id']?.toString();
+    if (seasonId == null || seasonId.isEmpty) return;
+
+    final updates = <String, dynamic>{
+      'is_locked': season['is_locked'],
+      'watched': season['watched'],
+    };
+
+    // Keep any richer fields in sync when available.
+    if (season.containsKey('thumbnail'))
+      updates['thumbnail'] = season['thumbnail'];
+    if (season.containsKey('title')) updates['title'] = season['title'];
+    if (season.containsKey('content_type')) {
+      updates['content_type'] = season['content_type'];
+    }
+
+    _syncSeasonInDirectList(_featuredSeasons, seasonId, updates);
+    _syncSeasonInDirectList(_readableSeasons, seasonId, updates);
+    _syncSeasonInWrappedList(_myListItems, seasonId, updates);
+    _syncSeasonInWrappedList(_continueWatchingItems, seasonId, updates);
+    _syncSeasonInCategoryList(_suggestedSeasons, seasonId, updates);
+    _syncSeasonInCategoryList(_difficultSeasons, seasonId, updates);
+
+    if (_selectedSeason['id']?.toString() == seasonId) {
+      _selectedSeason = _mergeSeasonState(_selectedSeason, updates);
+    }
+
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   // New method to fetch episodes for a specific season
@@ -762,56 +873,14 @@ class Story with ChangeNotifier {
           headers: Url.baakhapaaAuthHeaders(authToken),
         );
 
-        // Update local lists so returning to story_screen shows unlocked state
-        final sid = seasonId.toString();
-        for (int i = 0; i < _readableSeasons.length; i++) {
-          if (_readableSeasons[i]['id'].toString() == sid) {
-            _readableSeasons[i] =
-                Map<String, dynamic>.from(_readableSeasons[i]);
-            _readableSeasons[i]['watched'] = true;
-            break;
-          }
-        }
-        for (int i = 0; i < _featuredSeasons.length; i++) {
-          if (_featuredSeasons[i]['id'].toString() == sid) {
-            _featuredSeasons[i] =
-                Map<String, dynamic>.from(_featuredSeasons[i]);
-            _featuredSeasons[i]['watched'] = true;
-            break;
-          }
-        }
-        for (int i = 0; i < _suggestedSeasons.length; i++) {
-          if (_suggestedSeasons[i]['id'].toString() == sid) {
-            _suggestedSeasons[i] =
-                Map<String, dynamic>.from(_suggestedSeasons[i]);
-            _suggestedSeasons[i]['watched'] = true;
-            break;
-          }
-        }
-        // Update nested seasons inside each difficult-seasons category
-        for (int i = 0; i < _difficultSeasons.length; i++) {
-          final List<dynamic> catSeasons =
-              (_difficultSeasons[i]['seasons'] as List?) ?? [];
-          bool found = false;
-          for (int j = 0; j < catSeasons.length; j++) {
-            if (catSeasons[j]['id'].toString() == sid) {
-              final updated = Map<String, dynamic>.from(catSeasons[j] as Map);
-              updated['watched'] = true;
-              catSeasons[j] = updated;
-              found = true;
-              break;
-            }
-          }
-          if (found) {
-            // Replace category map so listeners see a new reference
-            final updatedCat = Map<String, dynamic>.from(_difficultSeasons[i]);
-            updatedCat['seasons'] = catSeasons;
-            _difficultSeasons[i] = updatedCat;
-            break;
-          }
-        }
-
-        notifyListeners();
+        _syncSeasonStateAcrossCollections(
+          {
+            'id': seasonId,
+            'is_locked': false,
+            'watched': true,
+          },
+          notify: true,
+        );
       }
     } catch (error) {
       throw error;

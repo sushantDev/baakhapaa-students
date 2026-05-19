@@ -12,7 +12,7 @@ import '../screens/shop/shipping_address_screen.dart';
 
 /// Result returned after the user completes (or cancels) the checkout sheet.
 class CheckoutResult {
-  final String paymentMethod; // 'khalti' | 'cod' | 'stripe'
+  final String paymentMethod; // 'khalti' | 'cod' | 'stripe' | 'apple_iap'
   final ShippingAddress? shippingAddress;
   final ShippingProvider? shippingProvider; // only relevant for Stripe
 
@@ -31,6 +31,7 @@ Future<CheckoutResult?> showCheckoutSheet(
   required String totalUsdDisplay, // e.g. "$17.85"
   bool showShippingProvider = true, // false for subscriptions
   bool requiresShipping = true, // false for digital products
+  bool allowAppleIap = false,
 }) {
   return showModalBottomSheet<CheckoutResult>(
     context: context,
@@ -42,6 +43,7 @@ Future<CheckoutResult?> showCheckoutSheet(
       totalUsdDisplay: totalUsdDisplay,
       showShippingProvider: showShippingProvider,
       requiresShipping: requiresShipping,
+      allowAppleIap: allowAppleIap,
     ),
   );
 }
@@ -53,12 +55,14 @@ class _CheckoutSheet extends StatefulWidget {
   final String totalUsdDisplay;
   final bool showShippingProvider;
   final bool requiresShipping;
+  final bool allowAppleIap;
 
   const _CheckoutSheet({
     required this.totalNpr,
     required this.totalUsdDisplay,
     required this.showShippingProvider,
     this.requiresShipping = true,
+    this.allowAppleIap = false,
   });
 
   @override
@@ -69,7 +73,7 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
     with SingleTickerProviderStateMixin {
   // ── Stepper state ────────────────────────────────────────────────────────
   int _step = 0; // 0 = payment, 1 = shipping
-  String? _selectedPayment; // 'khalti' | 'cod' | 'stripe'
+  String? _selectedPayment; // 'khalti' | 'cod' | 'stripe' | 'apple_iap'
   ShippingAddress? _selectedAddress;
   ShippingProvider? _selectedProvider;
 
@@ -118,13 +122,23 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
 
   bool get _showKhaltiOption {
     if (Platform.isAndroid) return false;
+    if (widget.allowAppleIap) return false;
     return _isNepalCustomer;
   }
 
   bool get _showStripeOption {
     if (Platform.isAndroid) return true;
-    if (Platform.isIOS && _isNepalCustomer) return false;
+    if (Platform.isIOS) return !_isNepalCustomer && !widget.allowAppleIap;
     return true;
+  }
+
+  bool get _showAppleIapOption {
+    if (!Platform.isIOS) return false;
+    return widget.allowAppleIap;
+  }
+
+  bool get _showCodOption {
+    return widget.requiresShipping && !widget.allowAppleIap;
   }
 
   bool get _canConfirm {
@@ -369,15 +383,17 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
               isDark: isDark,
             ),
           if (_showKhaltiOption) const SizedBox(height: 12),
-          _paymentOption(
-            value: 'cod',
-            title: 'Cash on Delivery',
-            subtitle: 'Pay when your order arrives',
-            icon: Icons.local_shipping_rounded,
-            color: const Color(0xFF059669),
-            imagePath: 'assets/images/cod.png',
-            isDark: isDark,
-          ),
+          if (_showCodOption)
+            _paymentOption(
+              value: 'cod',
+              title: 'Cash on Delivery',
+              subtitle: 'Pay when your order arrives',
+              icon: Icons.local_shipping_rounded,
+              color: const Color(0xFF059669),
+              imagePath: 'assets/images/cod.png',
+              isDark: isDark,
+            ),
+          if (_showCodOption) const SizedBox(height: 12),
           if (_showStripeOption) const SizedBox(height: 12),
           if (_showStripeOption)
             _paymentOption(
@@ -386,6 +402,16 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
               subtitle: 'Visa, Mastercard — charged in USD',
               icon: Icons.credit_card_rounded,
               color: const Color(0xFF635BFF),
+              isDark: isDark,
+            ),
+          if (_showAppleIapOption) const SizedBox(height: 12),
+          if (_showAppleIapOption)
+            _paymentOption(
+              value: 'apple_iap',
+              title: 'Apple In-App Purchase',
+              subtitle: 'Complete this digital purchase through the App Store',
+              icon: Icons.apple_rounded,
+              color: isDark ? Colors.white : Colors.black,
               isDark: isDark,
             ),
         ],

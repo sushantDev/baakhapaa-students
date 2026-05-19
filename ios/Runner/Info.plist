@@ -125,6 +125,8 @@
 		<string>This app needs access to your photo library to save downloaded videos.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Uploading existing photos: BAAKHAPAA allows users to upload profile pictures, share photos with friends or in groups, or use them for various in-app activities.</string>
+		<key>NSSpeechRecognitionUsageDescription</key>
+		<string>BAAKHAPAA uses speech recognition to let you answer quiz questions and interact with the app using your voice.</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<key>UIBackgroundTaskIdentifier</key>

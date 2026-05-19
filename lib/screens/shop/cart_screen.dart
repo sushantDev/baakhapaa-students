@@ -18,6 +18,7 @@ import '../../widgets/checkout_bottom_sheet.dart';
 // Fix the ambiguous import by using an alias
 import '../../services/khalti_service.dart' as app_khalti;
 import '../../services/stripe_service.dart';
+import '../../services/apple_iap_service.dart';
 import '../../utils/debug_logger.dart';
 import '../../providers/currency_provider.dart';
 import '../../providers/delivery_provider.dart';
@@ -528,10 +529,17 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
   // Shipping address collected before payment; used by the Khalti success callback
   ShippingAddress? _pendingShippingAddress;
 
+  // Apple IAP state
+  final List<int> _pendingAppleIapUnitProductIds = [];
+  bool _isAppleIapFlowActive = false;
+  bool _appleIapListenerReady = false;
+  ShippingAddress? _pendingAppleIapShippingAddress;
+
   @override
   void dispose() {
     // Clear any active payment state when the cart screen is closed
     app_khalti.KhaltiService.clearPaymentState();
+    AppleIapService.instance.dispose();
 
     // Clear puppet interactions when leaving screen
     clearPuppetInteractions();
@@ -648,6 +656,168 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
               _isLoading = false;
             });
           }
+        });
+      }
+    }
+  }
+
+  // ── Apple IAP helpers ────────────────────────────────────────────────────
+
+  String _appCountryCode() {
+    final auth = Provider.of<Auth>(context, listen: false);
+    final userCode = (auth.user['country'] ?? '').toString().toUpperCase();
+    if (userCode.isNotEmpty) return userCode;
+    final localeCode =
+        (Localizations.localeOf(context).countryCode ?? '').toUpperCase();
+    if (localeCode.isNotEmpty) return localeCode;
+    return 'UNKNOWN';
+  }
+
+  Future<void> _ensureAppleIapInitialized() async {
+    if (_appleIapListenerReady) return;
+    final ok = await AppleIapService.instance.initialize(
+      onSuccess: _onAppleIapProductSuccess,
+      onError: _onAppleIapProductError,
+    );
+    _appleIapListenerReady = ok;
+    if (!ok) {
+      throw Exception('App Store is unavailable on this device.');
+    }
+  }
+
+  Future<void> _startAppleIapCartFlow(ShippingAddress? shippingAddress) async {
+    final invalidQuantityProducts = widget.cart.items.entries
+        .where((entry) {
+          final productId = int.tryParse(entry.key) ?? 0;
+          final type = AppleIapProducts.catalogProductType(productId);
+          return type != null &&
+              !type.allowsMultipleQuantity &&
+              entry.value.quantity > 1;
+        })
+        .map((entry) => entry.value.title)
+        .toList(growable: false);
+
+    if (invalidQuantityProducts.isNotEmpty) {
+      throw Exception(
+        'These iOS digital items can only be purchased one at a time: ${invalidQuantityProducts.join(', ')}.',
+      );
+    }
+
+    _pendingAppleIapShippingAddress = shippingAddress;
+    _pendingAppleIapUnitProductIds
+      ..clear()
+      ..addAll(
+        widget.cart.items.entries.expand((entry) {
+          final id = int.tryParse(entry.key) ?? 0;
+          if (id <= 0) return <int>[];
+          return List<int>.filled(entry.value.quantity, id);
+        }),
+      );
+
+    if (_pendingAppleIapUnitProductIds.isEmpty) {
+      throw Exception('No cart items found for Apple IAP.');
+    }
+
+    await _ensureAppleIapInitialized();
+    _isAppleIapFlowActive = true;
+    setState(() {
+      _isLoading = true;
+      _isProcessingOrder = true;
+    });
+
+    await _triggerNextAppleIapPurchase();
+  }
+
+  Future<void> _triggerNextAppleIapPurchase() async {
+    if (!_isAppleIapFlowActive) return;
+
+    if (_pendingAppleIapUnitProductIds.isEmpty) {
+      _isAppleIapFlowActive = false;
+      if (mounted) {
+        widget.cart.reset();
+        setState(() {
+          _isLoading = false;
+          _isProcessingOrder = false;
+        });
+        orderSuccessDialogue();
+      }
+      return;
+    }
+
+    final nextProductId = _pendingAppleIapUnitProductIds.first;
+    final productType = AppleIapProducts.catalogProductType(nextProductId);
+    if (productType == null) {
+      throw Exception(
+        'Product $nextProductId is not configured for Apple In-App Purchase.',
+      );
+    }
+
+    final nextIapId = AppleIapProducts.cartProductId(nextProductId);
+    final product = await AppleIapService.instance.loadProduct(nextIapId);
+    if (product == null) {
+      throw Exception(
+        'This item is not yet available for purchase on the App Store: $nextIapId',
+      );
+    }
+    await AppleIapService.instance.purchase(
+      product,
+      isConsumable: productType.usesConsumablePurchaseApi,
+    );
+  }
+
+  void _onAppleIapProductError(String error) {
+    if (!mounted || !_isAppleIapFlowActive) return;
+    if (error == 'cancelled') {
+      _isAppleIapFlowActive = false;
+      setState(() {
+        _isLoading = false;
+        _isProcessingOrder = false;
+      });
+      return;
+    }
+
+    _isAppleIapFlowActive = false;
+    _showMessage(context, 'Apple Pay failed: $error');
+    setState(() {
+      _isLoading = false;
+      _isProcessingOrder = false;
+    });
+  }
+
+  void _onAppleIapProductSuccess(
+    String iapProductId,
+    String transactionId,
+    String receiptData,
+  ) async {
+    if (!mounted || !_isAppleIapFlowActive) return;
+
+    try {
+      final auth = Provider.of<Auth>(context, listen: false);
+      await AppleIapService.instance.verifyProductPurchaseWithBackend(
+        authToken: auth.token,
+        iapProductId: iapProductId,
+        transactionId: transactionId,
+        receiptData: receiptData,
+        appCountryCode: _appCountryCode(),
+        cartProductId: _pendingAppleIapUnitProductIds.first,
+        shippingAddressId: _pendingAppleIapShippingAddress?.id,
+      );
+
+      if (_pendingAppleIapUnitProductIds.isNotEmpty) {
+        _pendingAppleIapUnitProductIds.removeAt(0);
+      }
+
+      await _triggerNextAppleIapPurchase();
+    } catch (e) {
+      _isAppleIapFlowActive = false;
+      if (mounted) {
+        _showMessage(
+          context,
+          'Payment received but order activation failed. Please contact support. Error: ${e.toString().replaceFirst('Exception: ', '')}',
+        );
+        setState(() {
+          _isLoading = false;
+          _isProcessingOrder = false;
         });
       }
     }
@@ -830,6 +1000,11 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
         DebugLogger.info('Processing Khalti payment...');
         _pendingShippingAddress = shippingAddr;
         await payWithKhaltiInApp(context, widget.cart.totalAmount);
+
+        // ── Apple IAP ────────────────────────────────────────────────────
+      } else if (method == 'apple_iap') {
+        DebugLogger.info('Processing Apple IAP payment...');
+        await _startAppleIapCartFlow(shippingAddr);
 
         // ── Cash on Delivery ─────────────────────────────────────────────
       } else if (method == 'cod') {
@@ -1104,8 +1279,36 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
                       if (profileOk && mounted) {
                         final currency = Provider.of<CurrencyProvider>(context,
                             listen: false);
-                        final isDigitalOnly =
-                            widget.cart.hasOnlyDigitalProducts;
+                        final cartEntries = widget.cart.items.entries.toList();
+                        final hasAppleIapItems = cartEntries.any((entry) {
+                          final productId = int.tryParse(entry.key) ?? 0;
+                          return AppleIapProducts.isCatalogAppleIapProduct(
+                              productId);
+                        });
+                        final hasOnlyAppleIapItems = cartEntries.isNotEmpty &&
+                            cartEntries.every((entry) {
+                              final productId = int.tryParse(entry.key) ?? 0;
+                              return AppleIapProducts.isCatalogAppleIapProduct(
+                                  productId);
+                            });
+                        final hasMixedAppleIapCart =
+                            hasAppleIapItems && !hasOnlyAppleIapItems;
+                        final isDigitalOnly = cartEntries.isNotEmpty &&
+                            cartEntries.every((entry) {
+                              final productId = int.tryParse(entry.key) ?? 0;
+                              return entry.value.isDigital ||
+                                  AppleIapProducts.isDigitalCatalogProduct(
+                                      productId) ||
+                                  widget.cart.hasOnlyDigitalProducts;
+                            });
+
+                        if (Platform.isIOS && hasMixedAppleIapCart) {
+                          _showMessage(
+                            context,
+                            'Digital App Store items must be purchased separately from physical products on iPhone and iPad.',
+                          );
+                          return;
+                        }
 
                         final result = await showCheckoutSheet(
                           context,
@@ -1114,6 +1317,7 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
                               currency.formatNprAsUsd(widget.cart.totalAmount),
                           showShippingProvider: !isDigitalOnly,
                           requiresShipping: !isDigitalOnly,
+                          allowAppleIap: hasOnlyAppleIapItems,
                         );
                         if (result != null && mounted) {
                           await _processOrder(result);

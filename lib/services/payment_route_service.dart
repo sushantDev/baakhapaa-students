@@ -6,7 +6,7 @@ import '../models/url.dart';
 import '../utils/debug_logger.dart';
 
 class PaymentRouteResult {
-  final String paymentRoute; // khalti | stripe
+  final String paymentRoute; // khalti | apple_iap
   final bool isNepal;
   final String countryCode;
   final String countryName;
@@ -37,7 +37,7 @@ class PaymentRouteService {
     final route = (item['payment_route'] ?? '').toString();
 
     final result = PaymentRouteResult(
-      paymentRoute: route.isNotEmpty ? route : 'stripe',
+      paymentRoute: route.isNotEmpty ? route : 'apple_iap',
       isNepal: item['is_nepal'] == true,
       countryCode: (item['country_code'] ?? '').toString(),
       countryName: (item['country_name'] ?? '').toString(),

@@ -558,6 +558,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get orderHistory => '注文履歴';
 
   @override
+  String get yourOrderHistory => 'ご注文履歴';
+
+  @override
   String get dateTime => '日時';
 
   @override

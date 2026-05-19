@@ -5,7 +5,7 @@ import '../providers/assistive_touch_provider.dart';
 import '../providers/puppet_interaction_provider.dart';
 import '../providers/auth.dart';
 import '../models/url.dart';
-import '../main.dart' show mainNavigatorKey;
+import '../navigation/root_navigator_key.dart' show mainNavigatorKey;
 
 // ═══════════════════════════════════════════════════════════════════════
 // QuestHintBubble — header-pinned yellow speech bubble pointing to puppet

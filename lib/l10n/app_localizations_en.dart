@@ -559,6 +559,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderHistory => 'Order History';
 
   @override
+  String get yourOrderHistory => 'Your Order History';
+
+  @override
   String get dateTime => 'Date & Time';
 
   @override

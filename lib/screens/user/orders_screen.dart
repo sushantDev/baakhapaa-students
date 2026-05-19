@@ -30,8 +30,14 @@ class _OrdersScreenState extends State<OrdersScreen>
     if (!_isInit) {
       var ordersProvider = Provider.of<Orders>(context, listen: false);
       ordersProvider.getOrders().then((_) {
+        if (!mounted) return;
         setState(() {
           _orders = ordersProvider.orders.reversed.toList();
+          _isLoading = false;
+        });
+      }).catchError((_) {
+        if (!mounted) return;
+        setState(() {
           _isLoading = false;
         });
       });
@@ -43,6 +49,11 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(context.l10n.orderHistory),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
       body: _isLoading
           ? Loading()
           : Container(

@@ -732,6 +732,10 @@
   "@orderHistory": {
     "description": "A section title for the user's order history."
   },
+  "yourOrderHistory": "Your Order History",
+  "@yourOrderHistory": {
+    "description": "Opens order history in the transaction log after checkout."
+  },
   "dateTime": "Date & Time",
   "@dateTime": {
     "description": "A label for date and time."

@@ -2712,7 +2712,6 @@ class _StoryScreenState extends State<StoryScreen>
           titleText: context.l10n.courses,
           scaffoldKey: _scaffoldKey,
         ),
-        drawer: NavBar(),
         body: (storyPopup['popups']?.isNotEmpty ?? false)
             ? Popup(
                 popupArr: storyPopup['popups'] as List<dynamic>,
@@ -2781,6 +2780,15 @@ class _StoryScreenState extends State<StoryScreen>
               // User points
               InkWell(
                 onTap: () {
+                  final auth = Provider.of<Auth>(context, listen: false);
+
+                  // If guest, show login required dialog
+                  if (auth.isGuest) {
+                    GuestAuthHelper.showGuestLoginDialog(
+                        context, 'view points');
+                    return;
+                  }
+
                   Navigator.push(
                     context,
                     PageTransition(
@@ -2859,75 +2867,75 @@ class _StoryScreenState extends State<StoryScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          // Header Row
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    context.l10n.teachers,
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: _sectionTitleColor(),
+            // Header Row
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      context.l10n.teachers,
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: _sectionTitleColor(),
+                      ),
                     ),
                   ),
-                ),
-                InkWell(
-                  onTap: () async {
-                    final auth = Provider.of<Auth>(context, listen: false);
-                    if (auth.isGuest) {
-                      await GuestAuthHelper.showGuestLoginDialog(
-                        context,
-                        'browse tutors',
-                      );
-                      return;
-                    }
-                    Navigator.of(context).pushNamed(CreatorsScreen.routeName);
-                  },
-                  child: Text(
-                    'See More',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: _sectionActionColor(),
+                  InkWell(
+                    onTap: () async {
+                      final auth = Provider.of<Auth>(context, listen: false);
+                      if (auth.isGuest) {
+                        await GuestAuthHelper.showGuestLoginDialog(
+                          context,
+                          'browse tutors',
+                        );
+                        return;
+                      }
+                      Navigator.of(context).pushNamed(CreatorsScreen.routeName);
+                    },
+                    child: Text(
+                      'See More',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _sectionActionColor(),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-          // Storytellers List
-          Consumer<Auth>(
-            builder: (_, auth, __) {
-              if (auth.creators.isEmpty) {
+            // Storytellers List
+            Consumer<Auth>(
+              builder: (_, auth, __) {
+                if (auth.creators.isEmpty) {
+                  return Container(
+                    height: 80,
+                    child: Center(
+                      child: Text(
+                        'No tutors available',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ),
+                  );
+                }
                 return Container(
                   height: 80,
-                  child: Center(
-                    child: Text(
-                      'No tutors available',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount:
+                        auth.creators.length > 10 ? 10 : auth.creators.length,
+                    itemBuilder: (_, index) {
+                      return _buildStorytellerCard(auth.creators[index]);
+                    },
                   ),
                 );
-              }
-              return Container(
-                height: 80,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount:
-                      auth.creators.length > 10 ? 10 : auth.creators.length,
-                  itemBuilder: (_, index) {
-                    return _buildStorytellerCard(auth.creators[index]);
-                  },
-                ),
-              );
-            },
-          ),
+              },
+            ),
           ],
         ),
       ),

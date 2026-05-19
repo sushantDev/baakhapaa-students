@@ -31,7 +31,7 @@ import '../../utils/debug_logger.dart';
 import '../../services/ad_service.dart';
 import '../../services/analytics_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../main.dart' show mainNavigatorKey;
+import '../../navigation/root_navigator_key.dart' show mainNavigatorKey;
 import './challenges_screen.dart';
 
 class ShortsScreen extends StatefulWidget {

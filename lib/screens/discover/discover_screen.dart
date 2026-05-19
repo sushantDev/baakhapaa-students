@@ -703,7 +703,6 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           context: context,
           titleText: context.l10n.discover,
         ),
-        drawer: NavBar(),
         body: RefreshIndicator(
           onRefresh: _loadData,
           child: Container(

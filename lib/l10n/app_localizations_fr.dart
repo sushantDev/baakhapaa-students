@@ -562,6 +562,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get orderHistory => 'Historique des commandes';
 
   @override
+  String get yourOrderHistory => 'Votre historique de commandes';
+
+  @override
   String get dateTime => 'Date et heure';
 
   @override

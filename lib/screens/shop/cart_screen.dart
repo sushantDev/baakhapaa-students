@@ -14,6 +14,7 @@ import '../../widgets/header.dart';
 import '../../helpers/helpers.dart';
 import '../../utils/puppet_screen_mapping.dart';
 import '../../widgets/checkout_bottom_sheet.dart';
+import '../../utils/order_success_dialog.dart';
 
 // Fix the ambiguous import by using an alias
 import '../../services/khalti_service.dart' as app_khalti;
@@ -610,7 +611,10 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
             } catch (e) {
               // If no dialogs to pop, continue
             }
-            orderSuccessDialogue();
+            presentOrderSuccessDialog(
+              detailMessage:
+                  'Your order has been placed successfully. We will get back to you soon with order details.',
+            );
             // Clear payment state when success dialog is shown
             app_khalti.KhaltiService.clearPaymentState();
           }
@@ -895,89 +899,6 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
     );
   }
 
-  void orderSuccessDialogue() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.green.shade400, Colors.teal.shade400],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    offset: Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.check_circle_rounded,
-                size: 64,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Order Successful!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Your order has been placed successfully. We will get back to you soon with order details.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                height: 1.5,
-              ),
-            ),
-            SizedBox(height: 24),
-            Container(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  widget.cart.reset();
-                  Navigator.of(ctx).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Continue Shopping',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// Dispatches the order after the user completes the checkout sheet.
   /// All payment methods now receive a [ShippingAddress] from the result.
   Future<void> _processOrder(CheckoutResult result) async {
@@ -1020,7 +941,10 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
 
         if (mounted && Navigator.canPop(context)) Navigator.of(context).pop();
         widget.cart.reset();
-        orderSuccessDialogue();
+        presentOrderSuccessDialog(
+          detailMessage:
+              'Your order has been placed successfully. We will get back to you soon with order details.',
+        );
 
         // ── Stripe ───────────────────────────────────────────────────────
       } else if (method == 'stripe') {
@@ -1141,7 +1065,10 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
       if (mounted && Navigator.canPop(context)) Navigator.of(context).pop();
       widget.cart.reset();
       delivery.resetSelection();
-      orderSuccessDialogue();
+      presentOrderSuccessDialog(
+        detailMessage:
+            'Your order has been placed successfully. We will get back to you soon with order details.',
+      );
     } on StripeException catch (e) {
       if (mounted && Navigator.canPop(context)) Navigator.of(context).pop();
       if (e.error.code != FailureCode.Canceled) {

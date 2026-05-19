@@ -4,6 +4,7 @@ import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:baakhapaa/providers/auth.dart';
 import 'package:baakhapaa/screens/shop/search_product_screen.dart';
 import 'package:baakhapaa/screens/story/video_screen.dart';
+// ignore: unused_import
 import 'package:baakhapaa/widgets/nav_bar.dart';
 import 'package:baakhapaa/widgets/refresh_indicator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -91,7 +92,6 @@ class _ShopScreenState extends State<ShopScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavBar(),
       body: UpgradeAlert(
         showLater: false,
         barrierDismissible: false,

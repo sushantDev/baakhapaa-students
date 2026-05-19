@@ -558,6 +558,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get orderHistory => '주문 내역';
 
   @override
+  String get yourOrderHistory => '내 주문 내역';
+
+  @override
   String get dateTime => '날짜 및 시간';
 
   @override

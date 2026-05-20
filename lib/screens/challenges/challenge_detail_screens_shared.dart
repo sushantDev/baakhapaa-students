@@ -1682,7 +1682,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
               ? premiumButton(
                   onTap: widget.onUseUnlockChallengeBenefit,
                   text: 'Unlock with Benefit',
-                  icon: FontAwesomeIcons.bolt,
+                  icon: FontAwesomeIcons.bolt.data,
                 )
               : premiumButton(
                   onTap: () {
@@ -1829,7 +1829,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
               ? premiumButton(
                   onTap: widget.onUseUnlockChallengeBenefit,
                   text: 'Unlock with Benefit',
-                  icon: FontAwesomeIcons.bolt,
+                  icon: FontAwesomeIcons.bolt.data,
                 )
               : premiumButton(
                   onTap: () {

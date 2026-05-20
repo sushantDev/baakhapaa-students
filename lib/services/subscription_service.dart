@@ -250,15 +250,15 @@ class SubscriptionService {
     switch (packageTitle.toLowerCase()) {
       case 'silver':
       case 'silver package':
-        return FontAwesomeIcons.medal;
+        return FontAwesomeIcons.medal.data;
       case 'gold':
       case 'gold package':
-        return FontAwesomeIcons.crown;
+        return FontAwesomeIcons.crown.data;
       case 'platinum':
       case 'platinum package':
-        return FontAwesomeIcons.gem;
+        return FontAwesomeIcons.gem.data;
       default:
-        return FontAwesomeIcons.star;
+        return FontAwesomeIcons.star.data;
     }
   }
 

@@ -947,7 +947,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                       SizedBox(height: 12),
                       Row(
                         children: [
-                          Icon(
+                          FaIcon(
                             FontAwesomeIcons.coins,
                             size: 16,
                             color: canAfford ? Colors.amber : Colors.red,
@@ -975,7 +975,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                           ),
                           child: Row(
                             children: [
-                              Icon(FontAwesomeIcons.crown,
+                              FaIcon(FontAwesomeIcons.crown,
                                   color: Colors.green, size: 16),
                               SizedBox(width: 10),
                               Expanded(
@@ -3522,7 +3522,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                             ),
                             title: Row(
                               children: [
-                                Icon(FontAwesomeIcons.crown,
+                                FaIcon(FontAwesomeIcons.crown,
                                     color: Colors.amber, size: 20),
                                 SizedBox(width: 10),
                                 Text(
@@ -3555,7 +3555,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                                     children: [
                                       Row(
                                         children: [
-                                          Icon(FontAwesomeIcons.gift,
+                                          FaIcon(FontAwesomeIcons.gift,
                                               color: Colors.green, size: 16),
                                           SizedBox(width: 10),
                                           Text(
@@ -4097,7 +4097,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                             ),
                             title: Row(
                               children: [
-                                Icon(FontAwesomeIcons.crown,
+                                FaIcon(FontAwesomeIcons.crown,
                                     color: Colors.amber, size: 20),
                                 SizedBox(width: 10),
                                 Text(
@@ -4130,7 +4130,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                                     children: [
                                       Row(
                                         children: [
-                                          Icon(FontAwesomeIcons.gift,
+                                          FaIcon(FontAwesomeIcons.gift,
                                               color: Colors.green, size: 16),
                                           SizedBox(width: 10),
                                           Text(

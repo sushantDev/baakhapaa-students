@@ -430,7 +430,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         ),
                       ],
                     ),
-                    child: Icon(
+                    child: FaIcon(
                       FontAwesomeIcons.video,
                       color: Colors.white,
                       size: 8,
@@ -575,7 +575,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
                             color: Colors.amber.withValues(alpha: 0.1),
-                            child: const Icon(
+                            child: FaIcon(
                               FontAwesomeIcons.trophy,
                               color: Colors.white,
                               size: 20,
@@ -583,7 +583,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                           ),
                           errorWidget: (context, url, error) => Container(
                             color: Colors.amber.withValues(alpha: 0.1),
-                            child: const Icon(
+                            child: FaIcon(
                               FontAwesomeIcons.trophy,
                               color: Colors.white,
                               size: 20,
@@ -592,7 +592,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         )
                       : Container(
                           color: Colors.amber.withValues(alpha: 0.1),
-                          child: const Icon(
+                          child: FaIcon(
                             FontAwesomeIcons.trophy,
                             color: Colors.white,
                             size: 20,
@@ -735,7 +735,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         _buildSectionHeader(
                           context.l10n.teachers,
                           context.l10n.creators,
-                          FontAwesomeIcons.video,
+                          FontAwesomeIcons.video.data,
                           () {
                             Navigator.pushNamed(
                                 context, CreatorsScreen.routeName);
@@ -816,7 +816,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         _buildSectionHeader(
                           '${context.l10n.available} ${context.l10n.challenge}',
                           '${context.l10n.challengesDescription}',
-                          FontAwesomeIcons.trophy,
+                          FontAwesomeIcons.trophy.data,
                           () {
                             Navigator.pushNamed(
                                 context, AllChallengesScreen.routeName);
@@ -845,7 +845,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(
+                                      FaIcon(
                                         FontAwesomeIcons.trophy,
                                         size: 48,
                                         color: Colors.grey[400],

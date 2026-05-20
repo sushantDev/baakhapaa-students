@@ -2270,7 +2270,7 @@ class _VideoScreenState extends State<VideoScreen>
                             Column(
                               children: [
                                 IconButton(
-                                  icon: Icon(
+                                  icon: FaIcon(
                                     FontAwesomeIcons.handHoldingHeart,
                                     size: 24,
                                   ),
@@ -2698,7 +2698,7 @@ class _VideoScreenState extends State<VideoScreen>
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
-                                        child: Icon(FontAwesomeIcons.store,
+                                        child: FaIcon(FontAwesomeIcons.store,
                                             color: Colors.white, size: 20),
                                       ),
                                       SizedBox(width: 12),

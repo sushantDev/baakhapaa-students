@@ -362,53 +362,48 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       case 0:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: const StoryScreen(),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: StoryScreen.routeName),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: const StoryScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: StoryScreen.routeName),
+        ));
         break;
       case 1:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: ShortsScreen(),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: ShortsScreen.routeName),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: ShortsScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: ShortsScreen.routeName),
+        ));
         break;
       case 2:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: MyCourses(),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: '/my-courses'),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: MyCourses(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: '/my-courses'),
+        ));
         break;
       case 3:
         // Allow guest users to browse the store
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: TabViewProduct.routeName),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: TabViewProduct.routeName),
+        ));
         break;
       case 4:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: UserScreen(),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: UserScreen.routeName),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: UserScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: UserScreen.routeName),
+        ));
         break;
     }
   }

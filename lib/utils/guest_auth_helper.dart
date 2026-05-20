@@ -124,13 +124,14 @@ class GuestAuthHelper {
     );
 
     if (result == true) {
-      // Pause video if coming from shorts screen
+      // Stop background music and video playback before navigating to login
       final videoStateProvider =
           Provider.of<VideoStateProvider>(context, listen: false);
-      if (videoStateProvider.currentScreen == 'shorts') {
-        videoStateProvider.pauseVideo();
-        videoStateProvider.setScreen('');
-      }
+
+      // Force stop all videos and audio to ensure clean state during login
+      videoStateProvider.forceStopAllRegisteredVideos();
+      videoStateProvider.forceStopAllVideos();
+      videoStateProvider.setScreen('');
 
       // Navigate to login screen
       Navigator.of(context).pushNamed(LoginScreen.routeName);

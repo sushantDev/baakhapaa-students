@@ -1155,7 +1155,7 @@ class _StoryScreenState extends State<StoryScreen>
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: Colors.amber.withValues(alpha: 0.1),
-                    child: const Icon(
+                    child: FaIcon(
                       FontAwesomeIcons.trophy,
                       color: Colors.amber,
                       size: 20,
@@ -1163,7 +1163,7 @@ class _StoryScreenState extends State<StoryScreen>
                   ),
                   errorWidget: (context, url, error) => Container(
                     color: Colors.amber.withValues(alpha: 0.1),
-                    child: const Icon(
+                    child: FaIcon(
                       FontAwesomeIcons.trophy,
                       color: Colors.amber,
                       size: 20,
@@ -1172,7 +1172,7 @@ class _StoryScreenState extends State<StoryScreen>
                 )
               : Container(
                   color: Colors.amber.withValues(alpha: 0.1),
-                  child: const Icon(
+                  child: FaIcon(
                     FontAwesomeIcons.trophy,
                     color: Colors.amber,
                     size: 20,
@@ -1326,10 +1326,10 @@ class _StoryScreenState extends State<StoryScreen>
 
   IconData _getGiftIcon(int index) {
     final icons = [
-      FontAwesomeIcons.coins,
-      FontAwesomeIcons.trophy,
-      FontAwesomeIcons.crown,
-      FontAwesomeIcons.gift,
+      FontAwesomeIcons.coins.data,
+      FontAwesomeIcons.trophy.data,
+      FontAwesomeIcons.crown.data,
+      FontAwesomeIcons.gift.data,
     ];
     return icons[index % icons.length];
   }
@@ -2479,7 +2479,7 @@ class _StoryScreenState extends State<StoryScreen>
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Icon(
+                                        FaIcon(
                                           FontAwesomeIcons.image,
                                           color: Colors.amber,
                                           size: 40,
@@ -2551,7 +2551,7 @@ class _StoryScreenState extends State<StoryScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      FaIcon(
                         FontAwesomeIcons.bullhorn,
                         color: Colors.amber,
                         size: 48,

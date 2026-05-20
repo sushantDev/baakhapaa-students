@@ -590,7 +590,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                             ),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(
+                          child: FaIcon(
                             FontAwesomeIcons.gift,
                             size: 16,
                             color: Colors.white,

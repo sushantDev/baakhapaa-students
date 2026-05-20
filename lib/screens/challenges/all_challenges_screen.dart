@@ -843,7 +843,7 @@ class EmptyState extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: FaIcon(
                 FontAwesomeIcons.trophy,
                 size: 48,
                 color: Colors.white,

@@ -21,7 +21,8 @@ import './content_type_selector_sheet.dart';
 class Footer extends StatefulWidget {
   final NavigatorState? navigator;
   int index;
-  Footer(this.index, {this.navigator});
+  final bool fullBleed;
+  Footer(this.index, {this.navigator, this.fullBleed = false});
 
   static const Set<String> _routesWithOwnFooter = {
     '/single-product-screen',
@@ -187,7 +188,25 @@ class Footer extends StatefulWidget {
     return 0;
   }
 
-  static double estimatedHeight(BuildContext context) {
+  /// Extra space below the nav pill (system nav inset is added separately).
+  static const double extraBottomSpace = 8.0;
+
+  /// Full-screen feeds (shorts) overlay the footer; no extra gap under the nav pill.
+  static bool isFullBleedRoute(String? routeName, Widget? child) {
+    final normalizedRoute = routeName?.toLowerCase() ?? '';
+    final childType = child?.runtimeType.toString().toLowerCase() ?? '';
+    return normalizedRoute == '/shorts-screen' ||
+        // normalizedRoute == '/challenges-screen' ||
+        childType.contains('shortsscreen') ||
+        childType.contains('challengesscreen');
+  }
+
+  /// Bottom spacer for scrollable page content so the last items clear the footer.
+  static Widget scrollBottomSpacer(BuildContext context) =>
+      SizedBox(height: estimatedHeight(context));
+
+  static double estimatedHeight(BuildContext context,
+      {bool fullBleed = false}) {
     final screenWidth = MediaQuery.of(context).size.width;
     final bottomNavBarPadding = MediaQuery.of(context).viewPadding.bottom;
     final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
@@ -213,10 +232,10 @@ class Footer extends StatefulWidget {
     }
 
     final double adjustedHeight = (containerHeight + 15).clamp(60.0, 90.0);
-    final double extraBottomSpace = 24.0;
     final double totalBottomPadding =
         hasThreeButtonNav ? bottomNavBarPadding : 0.0;
-    return adjustedHeight + totalBottomPadding + extraBottomSpace;
+    final double extra = fullBleed ? 0.0 : extraBottomSpace;
+    return adjustedHeight + totalBottomPadding + extra;
   }
 
   @override
@@ -620,123 +639,120 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
     final bool hasThreeButtonNav = isAndroid && bottomNavBarPadding >= 40;
     final totalBottomPadding = hasThreeButtonNav ? bottomNavBarPadding : 0.0;
-    final extraBottomSpace = 16.0;
+    final extra = widget.fullBleed ? 15.0 : 0.0;
 
-    return Container(
-      height: adjustedHeight + totalBottomPadding + extraBottomSpace,
-      padding: EdgeInsets.only(bottom: totalBottomPadding),
-      child: Consumer<TutorialFlowProvider>(
-        builder: (context, tutorial, _) {
-          return SizedBox(
-            height: adjustedHeight + 16,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Modern navigation bar with enhanced neon glow design
-                Container(
-                  height: adjustedHeight + 8,
-                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF0F0F1F),
-                        Color(0xFF1A1A2E),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        blurRadius: 20,
-                        spreadRadius: 4,
-                        offset: Offset(0, -8),
+    return ColoredBox(
+      color: Colors.transparent,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: totalBottomPadding),
+        child: SizedBox(
+          height: adjustedHeight + extra,
+          child: Consumer<TutorialFlowProvider>(
+            builder: (context, tutorial, _) {
+              return Align(
+                alignment: Alignment.bottomCenter,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      height: adjustedHeight + 8,
+                      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF0F0F1F),
+                            Color(0xFF1A1A2E),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 20,
+                            spreadRadius: 4,
+                            offset: Offset(0, -8),
+                          ),
+                          BoxShadow(
+                            color: Color(0xFF5DBBFF).withValues(alpha: 0.1),
+                            blurRadius: 15,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          width: 1,
+                        ),
                       ),
-                      BoxShadow(
-                        color: Color(0xFF5DBBFF).withValues(alpha: 0.1),
-                        blurRadius: 15,
-                        spreadRadius: 2,
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 0,
+                                imageUrl: 'assets/images/sikka.png',
+                                label: AppLocalizations.of(context)!.courses,
+                                isSelected: widget.index == 0,
+                                tutorial: tutorial,
+                                tutorialCondition: tutorial.currentStep == 0 &&
+                                    tutorial.isActive,
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 1,
+                                icon: Icons.play_circle_filled_rounded,
+                                label: AppLocalizations.of(context)!.shorts,
+                                isSelected: widget.index == 1,
+                                tutorial: tutorial,
+                                tutorialCondition: tutorial.currentStep == 4 &&
+                                    tutorial.isActive,
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 3,
+                                icon: Icons.shopping_cart_rounded,
+                                label: AppLocalizations.of(context)!.store,
+                                isSelected: widget.index == 3,
+                                tutorial: tutorial,
+                                tutorialCondition: false,
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 2,
+                                icon: Icons.bookmark_rounded,
+                                label: 'My Courses',
+                                isSelected: widget.index == 2,
+                                tutorial: tutorial,
+                                tutorialCondition: false,
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 4,
+                                icon: Icons.person_rounded,
+                                label: AppLocalizations.of(context)!.profile,
+                                isSelected: widget.index == 4,
+                                tutorial: tutorial,
+                                tutorialCondition: false,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      width: 1,
                     ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Story tab (Courses)
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 0,
-                            imageUrl: 'assets/images/sikka.png',
-                            label: AppLocalizations.of(context)!.courses,
-                            isSelected: widget.index == 0,
-                            tutorial: tutorial,
-                            tutorialCondition:
-                                tutorial.currentStep == 0 && tutorial.isActive,
-                          ),
-                        ),
-
-                        // Shorts tab
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 1,
-                            icon: Icons.play_circle_filled_rounded,
-                            label: AppLocalizations.of(context)!.shorts,
-                            isSelected: widget.index == 1,
-                            tutorial: tutorial,
-                            tutorialCondition:
-                                tutorial.currentStep == 4 && tutorial.isActive,
-                          ),
-                        ),
-
-                        // Store tab
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 3,
-                            icon: Icons.shopping_cart_rounded,
-                            label: AppLocalizations.of(context)!.store,
-                            isSelected: widget.index == 3,
-                            tutorial: tutorial,
-                            tutorialCondition: false,
-                          ),
-                        ),
-                        // My Courses tab
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 2,
-                            icon: Icons.bookmark_rounded,
-                            label: 'My Courses',
-                            isSelected: widget.index == 2,
-                            tutorial: tutorial,
-                            tutorialCondition: false,
-                          ),
-                        ),
-
-                        // Profile tab
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 4,
-                            icon: Icons.person_rounded,
-                            label: AppLocalizations.of(context)!.profile,
-                            isSelected: widget.index == 4,
-                            tutorial: tutorial,
-                            tutorialCondition: false,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

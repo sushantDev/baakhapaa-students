@@ -988,26 +988,23 @@ class _MyAppState extends State<MyApp> {
                     child,
                     routeName,
                   );
-                  final footerHeight = shouldShowFooter
-                      ? Footer.estimatedHeight(builderContext)
-                      : 0.0;
                   final footerIndex = Footer.indexForRoute(child, routeName);
+                  final fullBleedFooter =
+                      Footer.isFullBleedRoute(routeName, child);
 
                   return Scaffold(
+                    extendBody: true,
                     body: ConnectivityAwareWidget(
                       child: Stack(
                         children: [
-                          Padding(
-                            padding: EdgeInsets.only(bottom: footerHeight),
-                            child: child ?? const SizedBox.shrink(),
-                          ),
+                          child ?? const SizedBox.shrink(),
                           // Global event listener for Pusher/FCM (replaces floating AssistiveTouch)
                           _GlobalEventListener(mainNavKey: mainNavigatorKey),
                           // Quest guidance hint — below header, pointing to puppet
                           const QuestHintBubble(),
                           // Bottom-of-screen puppet speech bubble
                           const PuppetSpeechOverlay(),
-                          if (shouldShowFooter)
+                          if (shouldShowFooter && fullBleedFooter)
                             Positioned(
                               left: 0,
                               right: 0,
@@ -1015,11 +1012,18 @@ class _MyAppState extends State<MyApp> {
                               child: Footer(
                                 footerIndex,
                                 navigator: mainNavigatorKey.currentState,
+                                fullBleed: true,
                               ),
                             ),
                         ],
                       ),
                     ),
+                    bottomNavigationBar: shouldShowFooter && !fullBleedFooter
+                        ? Footer(
+                            footerIndex,
+                            navigator: mainNavigatorKey.currentState,
+                          )
+                        : null,
                   );
                 },
               );

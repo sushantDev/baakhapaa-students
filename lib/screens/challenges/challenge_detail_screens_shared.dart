@@ -671,10 +671,55 @@ class UnlockRewardsTabs extends StatefulWidget {
   State<UnlockRewardsTabs> createState() => _UnlockRewardsTabsState();
 }
 
-class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
+class _UnlockRewardsTabsState extends State<UnlockRewardsTabs>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    final data = widget.challengeData;
+    final bool isUnlocked = data != null &&
+        (data['has_unlocked'] == true ||
+            data['has_unlocked'] == 1 ||
+            data['unlocked'] == true);
+    final bool isWatched = data?['watched'] ?? false;
+    final bool isLocked = data != null && !isUnlocked && !isWatched;
+    _tabController = TabController(
+      length: 2,
+      initialIndex: isLocked ? 0 : 1,
+      vsync: this,
+    );
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildStickyPremiumCta() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 8, 6, 4),
+      child: widget.unlockChallengeBenefit != null &&
+              widget.unlockChallengeBenefit.canUse
+          ? premiumButton(
+              onTap: widget.onUseUnlockChallengeBenefit,
+              text: 'Unlock with Benefit',
+              icon: FontAwesomeIcons.bolt.data,
+            )
+          : premiumButton(
+              onTap: () {
+                Navigator.of(context)
+                    .pushNamed(SubscriptionScreen.routeName);
+              },
+            ),
+    );
   }
 
   // Fetch achievement details from Auth provider
@@ -1182,123 +1227,102 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
 
     if (data == null) return const SizedBox.shrink();
 
-    // Check if locked - use has_unlocked and unlocked as source of truth
-    final bool isUnlocked = data['has_unlocked'] == true ||
-        data['has_unlocked'] == 1 ||
-        data['unlocked'] == true;
-    final bool isWatched = data['watched'] ?? false;
-    final bool isLocked = !isUnlocked && !isWatched;
-    final int initialIndex =
-        isLocked ? 0 : 1; // 0 = Unlock tab, 1 = Rewards tab
+    final maxTabBodyHeight =
+        (MediaQuery.sizeOf(context).height * 0.34).clamp(200.0, 340.0);
 
-    // Check if we have badges/products for dynamic height
-    // API returns achievement_id and product_id as single integers, not arrays
-    final int? achievementId = data['achievement_id'];
-    final int? productId = data['product_id'];
-
-    final bool hasContent = achievementId != null || productId != null;
-    final double containerHeight = hasContent ? 320 : 140;
-
-    return DefaultTabController(
-      length: 2,
-      initialIndex: initialIndex,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              isDark ? const Color(0xFF2A2A2A) : Colors.white,
-              isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade50,
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.3)
-                  : Colors.grey.withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-            BoxShadow(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.white.withValues(alpha: 0.8),
-              blurRadius: 1,
-              offset: const Offset(0, 1),
-            ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            isDark ? const Color(0xFF2A2A2A) : Colors.white,
+            isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade50,
           ],
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.1)
-                : Colors.grey.withValues(alpha: 0.1),
-            width: 1,
-          ),
         ),
-        child: Column(
-          children: [
-            // Top Tabs (pill)
-            Container(
-              padding: const EdgeInsets.only(top: 4, bottom: 8),
-              decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.grey.withValues(alpha: 0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white.withValues(alpha: 0.8),
+            blurRadius: 1,
+            offset: const Offset(0, 1),
+          ),
+        ],
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.grey.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.only(top: 4, bottom: 8),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Material(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Material(
-                  color: Colors.transparent,
-                  child: TabBar(
-                    padding: EdgeInsets.only(left: 30, right: 30),
-                    dividerColor: Colors.transparent,
-                    indicator: BoxDecoration(
-                      color: AppColors.actionButtonBg(context),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    labelColor: AppColors.textPrimary(context),
-                    unselectedLabelColor: AppColors.textSecondary(context),
-                    labelStyle: AppTextStyles.interExtraBold(fontSize: 16),
-                    unselectedLabelStyle: AppTextStyles.interMedium(),
-                    indicatorWeight: 4,
-                    tabs: const [
-                      Tab(
-                        text: 'Unlock',
-                        height: 36,
-                      ),
-                      Tab(text: 'Rewards', height: 36),
-                    ],
+                child: TabBar(
+                  controller: _tabController,
+                  padding: const EdgeInsets.only(left: 30, right: 30),
+                  dividerColor: Colors.transparent,
+                  indicator: BoxDecoration(
+                    color: AppColors.actionButtonBg(context),
+                    borderRadius: BorderRadius.circular(50),
                   ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelColor: AppColors.textPrimary(context),
+                  unselectedLabelColor: AppColors.textSecondary(context),
+                  labelStyle: AppTextStyles.interExtraBold(fontSize: 16),
+                  unselectedLabelStyle: AppTextStyles.interMedium(),
+                  indicatorWeight: 4,
+                  tabs: const [
+                    Tab(text: 'Unlock', height: 36),
+                    Tab(text: 'Rewards', height: 36),
+                  ],
                 ),
               ),
             ),
-
-            Divider(
-              color: Color(0x1FFFFFFF),
-              thickness: 1,
-              height: 1,
-              indent: 12,
-              endIndent: 12,
+          ),
+          const Divider(
+            color: Color(0x1FFFFFFF),
+            thickness: 1,
+            height: 1,
+            indent: 12,
+            endIndent: 12,
+          ),
+          const SizedBox(height: 8),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxTabBodyHeight),
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: _buildUnlockTab(),
+                ),
+                SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: _buildRewardsTab(),
+                ),
+              ],
             ),
-            SizedBox(height: 12),
-
-            // Tab Views
-            SizedBox(
-              height: containerHeight,
-              child: TabBarView(
-                children: [
-                  // Unlock tab
-                  _buildUnlockTab(),
-                  // Rewards tab
-                  _buildRewardsTab(),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          _buildStickyPremiumCta(),
+        ],
       ),
     );
   }
@@ -1676,20 +1700,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
               ),
             ),
           ],
-          const SizedBox(height: 16),
-          widget.unlockChallengeBenefit != null &&
-                  widget.unlockChallengeBenefit.canUse
-              ? premiumButton(
-                  onTap: widget.onUseUnlockChallengeBenefit,
-                  text: 'Unlock with Benefit',
-                  icon: FontAwesomeIcons.bolt.data,
-                )
-              : premiumButton(
-                  onTap: () {
-                    Navigator.of(context)
-                        .pushNamed(SubscriptionScreen.routeName);
-                  },
-                ),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -1822,21 +1833,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
               ),
             ),
           ],
-
-          const SizedBox(height: 12),
-          widget.unlockChallengeBenefit != null &&
-                  widget.unlockChallengeBenefit.canUse
-              ? premiumButton(
-                  onTap: widget.onUseUnlockChallengeBenefit,
-                  text: 'Unlock with Benefit',
-                  icon: FontAwesomeIcons.bolt.data,
-                )
-              : premiumButton(
-                  onTap: () {
-                    Navigator.of(context)
-                        .pushNamed(SubscriptionScreen.routeName);
-                  },
-                ),
+          const SizedBox(height: 8),
         ],
       ),
     );

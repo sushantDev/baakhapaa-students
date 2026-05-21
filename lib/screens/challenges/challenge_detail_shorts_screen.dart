@@ -14,6 +14,7 @@ import '../../models/subscription.dart';
 // import 'package:baakhapaa/screens/shorts/single_shorts_screen.dart';
 // import 'package:baakhapaa/screens/user/achievements_screen.dart';
 // import 'package:baakhapaa/theme/theme_constants.dart';
+import 'package:baakhapaa/widgets/footer.dart';
 import 'package:baakhapaa/widgets/header.dart';
 import 'package:baakhapaa/widgets/loading.dart';
 // import 'package:baakhapaa/models/url.dart';
@@ -677,7 +678,7 @@ class _ChallengeDetailShortsScreenState
                             ParticipatedVideos(
                               challengeShorts: sortedChallengeShorts,
                             ),
-                          const SizedBox(height: 10),
+                          Footer.scrollBottomSpacer(context),
                         ],
                       ),
                     ),

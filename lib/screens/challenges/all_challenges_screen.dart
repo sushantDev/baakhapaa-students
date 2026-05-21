@@ -10,6 +10,7 @@ import '../../providers/shorts.dart';
 import '../../providers/auth.dart';
 import '../../providers/puppet_interaction_provider.dart';
 import '../../utils/debug_logger.dart';
+import '../../widgets/footer.dart';
 import '../../widgets/header.dart';
 import '../../widgets/loading.dart';
 
@@ -287,7 +288,9 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
                           physics: const BouncingScrollPhysics(
                             parent: AlwaysScrollableScrollPhysics(),
                           ),
-                          padding: const EdgeInsets.only(bottom: 20),
+                          padding: EdgeInsets.only(
+                            bottom: Footer.estimatedHeight(context) + 16,
+                          ),
                           itemCount: challenges.length,
                           itemBuilder: (_, i) {
                             final c = challenges[i];

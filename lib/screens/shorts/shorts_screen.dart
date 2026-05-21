@@ -1157,6 +1157,9 @@ class _ShortsScreenState extends State<ShortsScreen>
     return ExitConfirmationDialog.wrapWithExitConfirmation(
       context: context,
       child: Scaffold(
+        extendBody: true,
+        backgroundColor: Colors.black,
+        resizeToAvoidBottomInset: false,
         body: !_languageChecked
             ? const ShortsVideoSkeleton()
             : UpgradeAlert(
@@ -1207,6 +1210,9 @@ class _ShortsScreenState extends State<ShortsScreen>
                       );
                     }
 
+                    final footerInset =
+                        Footer.estimatedHeight(context, fullBleed: true);
+
                     return Stack(
                       children: [
                         PageView.builder(
@@ -1238,7 +1244,7 @@ class _ShortsScreenState extends State<ShortsScreen>
                                   isLiked: _shorts[index]['liked'] ?? false,
                                 ),
                                 Positioned(
-                                  bottom: 0,
+                                  bottom: footerInset,
                                   left: 0,
                                   right: 0,
                                   child: Column(
@@ -1499,7 +1505,7 @@ class _ShortsScreenState extends State<ShortsScreen>
 
                         if (_isLoadingMoreShorts)
                           Positioned(
-                            bottom: 80,
+                            bottom: footerInset + 16,
                             left: 0,
                             right: 0,
                             child: Center(

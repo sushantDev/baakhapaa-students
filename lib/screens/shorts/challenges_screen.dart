@@ -724,6 +724,9 @@ class _ChallengesScreenState extends State<ChallengesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
+      backgroundColor: Colors.black,
+      resizeToAvoidBottomInset: false,
       body: UpgradeAlert(
         showLater: false,
         barrierDismissible: false,
@@ -773,6 +776,9 @@ class _ChallengesScreenState extends State<ChallengesScreen>
               );
             }
 
+            final footerInset =
+                Footer.estimatedHeight(context, fullBleed: true);
+
             return Stack(
               children: [
                 PageView.builder(
@@ -800,7 +806,7 @@ class _ChallengesScreenState extends State<ChallengesScreen>
                           isLiked: _challengeShorts[index]['liked'] ?? false,
                         ),
                         Positioned(
-                          bottom: 0,
+                          bottom: footerInset,
                           left: 0,
                           right: 0,
                           child: Row(
@@ -878,7 +884,7 @@ class _ChallengesScreenState extends State<ChallengesScreen>
 
                 if (_isLoadingMoreShorts)
                   Positioned(
-                    bottom: 80,
+                    bottom: footerInset + 16,
                     left: 0,
                     right: 0,
                     child: Center(

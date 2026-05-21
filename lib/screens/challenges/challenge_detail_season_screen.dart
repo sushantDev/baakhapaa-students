@@ -80,6 +80,7 @@ class _ChallengeDetailSeasonScreenState
     }
   }
 
+  // ignore: unused_element
   Future<void> _useUnlockChallengeBenefit() async {
     if (_unlockChallengeBenefit == null || challenge == null) return;
 
@@ -584,12 +585,7 @@ class _ChallengeDetailSeasonScreenState
                               });
                             },
                           ),
-                          UnlockRewardsTabs(
-                            challengeData: challenge,
-                            unlockChallengeBenefit: _unlockChallengeBenefit,
-                            onUseUnlockChallengeBenefit:
-                                _useUnlockChallengeBenefit,
-                          ),
+                          UnlockRewardsTabs(challengeData: challenge),
                           Builder(
                             builder: (context) {
                               bool isExpired = false;
@@ -700,11 +696,7 @@ class _ChallengeDetailSeasonScreenState
                                         }
 
                                         if (!unlocked) {
-                                          return unlockChallengeButton(
-                                            onTap: () => handleChallengeTap(
-                                                context, challenge),
-                                            text: 'Unlock Challenge',
-                                          );
+                                          return const SizedBox.shrink();
                                         } else if (seasonProgress.step2 ==
                                             ChallengeStepStatus.active) {
                                           return GestureDetector(
@@ -881,6 +873,11 @@ class _ChallengeDetailSeasonScreenState
                             ParticipatedSeasons(
                               challengeSeasons: sortedChallengeSeasons,
                             ),
+                          ChallengeBottomUnlockButton(
+                            challenge: challenge,
+                            onUnlock: () =>
+                                handleChallengeTap(context, challenge),
+                          ),
                           Footer.scrollBottomSpacer(context),
                         ],
                       ),

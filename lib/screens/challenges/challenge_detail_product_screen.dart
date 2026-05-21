@@ -101,6 +101,7 @@ class _ChallengeDetailProductScreenState
     }
   }
 
+  // ignore: unused_element
   Future<void> _useUnlockChallengeBenefit() async {
     if (_unlockChallengeBenefit == null || challenge == null) return;
 
@@ -460,10 +461,10 @@ class _ChallengeDetailProductScreenState
         step2Status = ChallengeStepStatus.locked;
         step3Status = ChallengeStepStatus.locked;
 
-        buttonText = 'Unlock Challenge';
+        buttonText = '';
         buttonColor = const Color(0xFFE50914);
         buttonIcon = Icons.lock_open;
-        buttonAction = () => handleChallengeTap(context, challenge);
+        buttonAction = null;
       } else {
         // Step 2 active (create product)
         step1Status = ChallengeStepStatus.completed;
@@ -766,12 +767,7 @@ class _ChallengeDetailProductScreenState
                           ),
 
                           // Unlock/Rewards Tabs
-                          UnlockRewardsTabs(
-                            challengeData: challenge,
-                            unlockChallengeBenefit: _unlockChallengeBenefit,
-                            onUseUnlockChallengeBenefit:
-                                _useUnlockChallengeBenefit,
-                          ),
+                          UnlockRewardsTabs(challengeData: challenge),
 
                           // Challenge Progress Card (3-step UI)
                           Builder(
@@ -897,6 +893,11 @@ class _ChallengeDetailProductScreenState
                               ),
                             ),
 
+                          ChallengeBottomUnlockButton(
+                            challenge: challenge,
+                            onUnlock: () =>
+                                handleChallengeTap(context, challenge),
+                          ),
                           Footer.scrollBottomSpacer(context),
                         ],
                       ),

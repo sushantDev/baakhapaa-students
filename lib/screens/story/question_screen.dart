@@ -16,6 +16,7 @@ import '../../providers/auth.dart';
 import '../../providers/language_provider.dart';
 import 'loose_screen.dart';
 import 'win_screen.dart';
+// import '../../models/game_mode.dart';
 import '../../providers/story.dart';
 import '../../providers/puppet_interaction_provider.dart';
 import '../../utils/puppet_screen_mapping.dart';
@@ -201,7 +202,7 @@ class _QuestionScreenState extends State<QuestionScreen>
   }
 
   @override
-  void didChangeDependencies() {
+  Future<void> didChangeDependencies() async {
     if (!_isInit) {
       DebugLogger.info('❓ QuestionScreen: didChangeDependencies called');
       _navArgs = ModalRoute.of(context)?.settings.arguments;
@@ -219,36 +220,12 @@ class _QuestionScreenState extends State<QuestionScreen>
             '❓ QuestionScreen: Language from system: ${languageProvider.currentLocale.languageCode}');
       }
 
-      episode = Provider.of<Story>(context).episode;
-      final watched = episode['watched'];
-      final quizCompleted = watched == true ||
-          watched == 1 ||
-          watched == '1' ||
-          watched == 'true';
-      if (quizCompleted) {
+      final storyProvider = Provider.of<Story>(context, listen: false);
+      episode = storyProvider.episode;
+      if (storyProvider.isQuizCompletedFromEpisode(episode)) {
         _isInit = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('Challenge Completed'),
-              content: const Text(
-                'You have already completed the quiz for this episode. Please choose another challenge.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                    if (mounted) {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: const Text('Okay'),
-                ),
-              ],
-            ),
-          );
+          if (mounted) Navigator.of(context).pop();
         });
         return;
       }

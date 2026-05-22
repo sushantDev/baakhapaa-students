@@ -22,9 +22,15 @@ class GameModeSelector extends StatefulWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => GameModeSelector(
-        allowedModes: allowedModes,
-        onModeSelected: (mode) => Navigator.of(context).pop(mode),
+      useSafeArea: true,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewPadding.bottom,
+        ),
+        child: GameModeSelector(
+          allowedModes: allowedModes,
+          onModeSelected: (mode) => Navigator.of(sheetContext).pop(mode),
+        ),
       ),
     );
   }
@@ -99,10 +105,11 @@ class _GameModeSelectorState extends State<GameModeSelector>
             color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               // Handle bar
               Container(
                 width: 40,
@@ -131,7 +138,8 @@ class _GameModeSelectorState extends State<GameModeSelector>
               ),
               const SizedBox(height: 24),
               ..._buildModeCards(isDark),
-            ],
+              ],
+            ),
           ),
         );
       },

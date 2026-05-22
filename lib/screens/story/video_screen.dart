@@ -1529,6 +1529,7 @@ class _VideoScreenState extends State<VideoScreen>
     final selectedMode = await GameModeSelector.show(
       context,
       allowedModes: availableModes,
+      bottomLift: 120,
     );
     if (selectedMode == null || !mounted) return;
 

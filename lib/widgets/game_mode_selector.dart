@@ -14,24 +14,30 @@ class GameModeSelector extends StatefulWidget {
     this.allowedModes,
   }) : super(key: key);
 
+  /// [bottomLift] raises the sheet above video controls / nav bars (px).
   static Future<GameMode?> show(
     BuildContext context, {
     List<GameMode>? allowedModes,
+    double bottomLift = 0,
   }) {
     return showModalBottomSheet<GameMode>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      useSafeArea: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(sheetContext).viewPadding.bottom,
-        ),
-        child: GameModeSelector(
-          allowedModes: allowedModes,
-          onModeSelected: (mode) => Navigator.of(sheetContext).pop(mode),
-        ),
-      ),
+      builder: (sheetContext) {
+        final mq = MediaQuery.of(sheetContext);
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 12,
+            right: 12,
+            bottom: mq.viewPadding.bottom + bottomLift,
+          ),
+          child: GameModeSelector(
+            allowedModes: allowedModes,
+            onModeSelected: (mode) => Navigator.of(sheetContext).pop(mode),
+          ),
+        );
+      },
     );
   }
 
@@ -56,7 +62,7 @@ class _GameModeSelectorState extends State<GameModeSelector>
     );
 
     _cardSlideAnimations = List.generate(3, (i) {
-      return Tween<double>(begin: 40, end: 0).animate(
+      return Tween<double>(begin: 16, end: 0).animate(
         CurvedAnimation(
           parent: _entryController,
           curve: Interval(i * 0.15, 0.6 + i * 0.15, curve: Curves.easeOutBack),
@@ -100,44 +106,50 @@ class _GameModeSelectorState extends State<GameModeSelector>
     return AnimatedBuilder(
       animation: _entryController,
       builder: (context, _) {
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        final modeCards = _buildModeCards(isDark);
+
+        return Material(
+          color: Colors.transparent,
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-              // Handle bar
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Choose Your Challenge',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                const SizedBox(height: 16),
+                Text(
+                  'Choose Your Challenge',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Select a game mode to earn points',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.white54 : Colors.black45,
+                const SizedBox(height: 6),
+                Text(
+                  'Select a game mode to earn points',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.white54 : Colors.black45,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              ..._buildModeCards(isDark),
+                const SizedBox(height: 16),
+                ...modeCards,
               ],
             ),
           ),
@@ -157,7 +169,8 @@ class _GameModeSelectorState extends State<GameModeSelector>
     final isSelected = _selectedMode == mode;
     final isOther = _selectedMode != null && !isSelected;
 
-    return Transform.translate(
+    return ClipRect(
+      child: Transform.translate(
       offset: Offset(0, _cardSlideAnimations[index].value),
       child: Opacity(
         opacity: isOther ? 0.3 : _cardFadeAnimations[index].value,
@@ -232,6 +245,7 @@ class _GameModeSelectorState extends State<GameModeSelector>
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -284,11 +298,12 @@ class _GameModeSelectorState extends State<GameModeSelector>
 
     return List<Widget>.generate(modes.length * 2 - 1, (index) {
       if (index.isOdd) {
-        return const SizedBox(height: 12);
+        return const SizedBox(height: 10);
       }
       final item = modes[index ~/ 2];
+      final cardIndex = index ~/ 2;
       return _buildModeCard(
-        index: index ~/ 2,
+        index: cardIndex.clamp(0, _cardSlideAnimations.length - 1),
         mode: item['mode'] as GameMode,
         icon: item['icon'] as IconData,
         title: item['title'] as String,

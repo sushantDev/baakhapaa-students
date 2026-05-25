@@ -5,6 +5,7 @@ import 'package:baakhapaa/providers/story.dart';
 import 'package:baakhapaa/theme/app_colors.dart';
 import 'package:baakhapaa/utils/guest_auth_helper.dart';
 import 'package:baakhapaa/widgets/footer.dart';
+import 'package:baakhapaa/widgets/header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
@@ -21,6 +22,7 @@ class MyCourses extends StatefulWidget {
 }
 
 class _MyCoursesState extends State<MyCourses> with TickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late AnimationController _floatingActionController;
   var _isInit = true;
   bool _hasCheckedGuestAccess = false;
@@ -55,8 +57,9 @@ class _MyCoursesState extends State<MyCourses> with TickerProviderStateMixin {
     _hasCheckedGuestAccess = true;
 
     final auth = Provider.of<Auth>(context, listen: false);
-    final isUnauthenticated =
-        auth.isGuest || !auth.isAuth || (auth.user.isEmpty && !auth.isLoadingUser);
+    final isUnauthenticated = auth.isGuest ||
+        !auth.isAuth ||
+        (auth.user.isEmpty && !auth.isLoadingUser);
     if (isUnauthenticated) {
       final didLogin = await GuestAuthHelper.showGuestLoginDialog(
         context,
@@ -76,50 +79,16 @@ class _MyCoursesState extends State<MyCourses> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = AppColors.getBackground(context);
-    final surfaceColor = AppColors.getSurface(context);
     final primaryColor = AppColors.getPrimary(context);
-    final textColor = AppColors.getOnBackground(context);
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: backgroundColor,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(84),
-        child: AppBar(
-          backgroundColor: backgroundColor,
-          elevation: 0,
-          automaticallyImplyLeading: false,
-          flexibleSpace: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'My Learning Journey',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                          letterSpacing: 0.5,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Continue where you left off',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: textColor.withValues(alpha: 0.7),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.2,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+      appBar: header(
+        context: context,
+        titleText: 'My Courses',
+        scaffoldKey: _scaffoldKey,
       ),
       body: SafeArea(
         top: false,

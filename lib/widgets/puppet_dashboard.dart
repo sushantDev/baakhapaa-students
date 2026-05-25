@@ -11,6 +11,7 @@ import 'package:baakhapaa/screens/gift/gift_screen.dart';
 import 'package:baakhapaa/screens/leaderboard/leaderboard_screen.dart';
 import 'package:baakhapaa/screens/messages/conversations_screen.dart';
 import 'package:baakhapaa/screens/level_map/level_map_screen.dart';
+import 'package:baakhapaa/screens/my_courses/my_courses_screen.dart';
 import 'package:baakhapaa/screens/user/points_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -21,6 +22,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/video_state_provider.dart';
 import '../utils/debug_logger.dart';
+import '../utils/guest_auth_helper.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Design tokens
@@ -182,6 +184,20 @@ class _PuppetDashboardState extends State<PuppetDashboard>
     );
   }
 
+  Future<void> _openMyCourses() async {
+    final auth = Provider.of<Auth>(context, listen: false);
+    final isUnauthenticated = auth.isGuest ||
+        !auth.isAuth ||
+        (auth.user.isEmpty && !auth.isLoadingUser);
+
+    if (isUnauthenticated) {
+      await GuestAuthHelper.showGuestLoginDialog(context, 'my courses');
+      return;
+    }
+
+    _pushNamed(MyCourses.routeName);
+  }
+
   // ─────────────────────────────────────────────────────────────────────
   // BUILD
   // ─────────────────────────────────────────────────────────────────────
@@ -309,155 +325,198 @@ class _PuppetDashboardState extends State<PuppetDashboard>
     return Container(
       width: 140,
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-      child: Column(
-        children: [
-          // Puppet image — circular with golden border matching header style
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: Colors.black87,
-              shape: BoxShape.circle,
-              border: Border.all(color: _kAccent, width: 2.5),
-              boxShadow: [
-                BoxShadow(
-                  color: _kAccent.withOpacity(0.3),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: puppetUrl,
-                fit: BoxFit.contain,
-                placeholder: (_, __) => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                errorWidget: (_, __, ___) =>
-                    const Icon(Icons.smart_toy, size: 50, color: _kAccent),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // Level badge
-          Consumer<Levels>(
-            builder: (_, levels, __) {
-              final lvl = levels.currentLevel;
-              final lvlName = lvl?['name'] ?? 'Level 1';
-              return GestureDetector(
-                onTap: () => _pushNamed(LevelMapScreen.routeName),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF2A1F00), Color(0xFF1A1A1A)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    lvlName,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: _kAccent,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-
-          // Points button
-          GestureDetector(
-            onTap: () => _navigateTo(PointsScreen()),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Puppet image — circular with golden border matching header style
+            Container(
+              width: 120,
+              height: 120,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2A2000), Color(0xFF1A1400)],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _kAccent.withOpacity(0.3)),
+                color: Colors.black87,
+                shape: BoxShape.circle,
+                border: Border.all(color: _kAccent, width: 2.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: _kAccent.withOpacity(0.3),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+                ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset('assets/images/coins.png', width: 18, height: 18),
-                  const SizedBox(width: 5),
-                  Flexible(
+              child: ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: puppetUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (_, __) => const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  errorWidget: (_, __, ___) =>
+                      const Icon(Icons.smart_toy, size: 50, color: _kAccent),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Level badge
+            Consumer<Levels>(
+              builder: (_, levels, __) {
+                final lvl = levels.currentLevel;
+                final lvlName = lvl?['name'] ?? 'Level 1';
+                return GestureDetector(
+                  onTap: () => _pushNamed(LevelMapScreen.routeName),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2A1F00), Color(0xFF1A1A1A)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Text(
-                      '$coins pts',
-                      overflow: TextOverflow.ellipsis,
+                      lvlName,
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: _kWhite,
-                        fontSize: 13,
+                        color: _kAccent,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          // Compact stats radar chart
-          const _CompactRadarChart(),
-          const SizedBox(height: 8),
-
-          // Watch ads button
-          GestureDetector(
-            onTap: _playRewardedAd,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    _kAccent.withOpacity(0.15),
-                    _kAccent.withOpacity(0.05),
+            // Points button
+            GestureDetector(
+              onTap: () => _navigateTo(PointsScreen()),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2A2000), Color(0xFF1A1400)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _kAccent.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset('assets/images/coins.png',
+                        width: 18, height: 18),
+                    const SizedBox(width: 5),
+                    Flexible(
+                      child: Text(
+                        '$coins pts',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: _kWhite,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _kAccent.withOpacity(0.3)),
-              ),
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.play_circle_fill_rounded,
-                    size: 22,
-                    color: _kAccent,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Watch Ad',
-                    style: TextStyle(
-                      color: _kWhite.withOpacity(0.9),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    '+Bonus pts',
-                    style: TextStyle(
-                      color: _kAccent.withOpacity(0.7),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-        ],
+            const SizedBox(height: 8),
+
+            // Compact stats radar chart
+            const _CompactRadarChart(),
+            const SizedBox(height: 8),
+
+            // Watch ads button
+            GestureDetector(
+              onTap: _playRewardedAd,
+              child: Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _kAccent.withOpacity(0.15),
+                      _kAccent.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _kAccent.withOpacity(0.3)),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.play_circle_fill_rounded,
+                      size: 22,
+                      color: _kAccent,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Watch Ad',
+                      style: TextStyle(
+                        color: _kWhite.withOpacity(0.9),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      '+Bonus pts',
+                      style: TextStyle(
+                        color: _kAccent.withOpacity(0.7),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            GestureDetector(
+              onTap: _openMyCourses,
+              child: Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF261B33), Color(0xFF17121F)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFFD084FF).withOpacity(0.35),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.bookmark_rounded,
+                      size: 20,
+                      color: Color(0xFFD084FF),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'My Courses',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: _kWhite.withOpacity(0.92),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }

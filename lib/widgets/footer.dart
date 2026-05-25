@@ -12,7 +12,7 @@ import '../providers/auth.dart';
 import '../screens/shop/tab_view_product.dart';
 import '../screens/story/story_screen.dart';
 import '../screens/shorts/shorts_screen.dart';
-import '../screens/my_courses/my_courses_screen.dart';
+import '../screens/challenges/all_challenges_screen.dart';
 import '../screens/others/creator_request_screen.dart';
 import '../utils/guest_auth_helper.dart';
 import './content_type_selector_sheet.dart';
@@ -124,13 +124,12 @@ class Footer extends StatefulWidget {
     final normalizedRoute = routeName?.toLowerCase() ?? '';
     final childType = child?.runtimeType.toString().toLowerCase() ?? '';
 
+    if (normalizedRoute.contains('challenge') ||
+        childType.contains('challenge')) {
+      return 2;
+    }
     if (normalizedRoute.contains('shorts') || childType.contains('shorts')) {
       return 1;
-    }
-    if (normalizedRoute.contains('my-courses') ||
-        normalizedRoute.contains('mycourses') ||
-        childType.contains('mycourses')) {
-      return 2;
     }
     if (normalizedRoute.contains('shop') ||
         normalizedRoute.contains('product') ||
@@ -349,11 +348,11 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         !auth.isAuth ||
         (auth.user.isEmpty && !auth.isLoadingUser);
 
-    // Protect My Courses/Profile for all unauthenticated states.
+    // Protect Challenges/Profile for all unauthenticated states.
     if ((index == 2 || index == 4) && isUnauthenticated) {
       await GuestAuthHelper.showGuestLoginDialog(
         _dialogContext,
-        index == 2 ? 'my courses' : 'user profile',
+        index == 2 ? 'challenges' : 'user profile',
       );
       return;
     }
@@ -400,9 +399,9 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
         navigator.pushReplacement(PageTransition(
-          child: MyCourses(),
+          child: const AllChallengesScreen(),
           type: PageTransitionType.fade,
-          settings: const RouteSettings(name: '/my-courses'),
+          settings: const RouteSettings(name: AllChallengesScreen.routeName),
         ));
         break;
       case 3:
@@ -433,7 +432,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         return Color(0xFF5DBBFF);
       case 1: // Shorts - Purple/Magenta
         return Color(0xFFD084FF);
-      case 2: // My Courses - Warm Orange/Coral
+      case 2: // Challenges - Warm Orange/Coral
         return Color(0xFFFF9A56);
       case 3: // Store - Pink
         return Color(0xFFFF6B9D);
@@ -450,7 +449,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         return Color(0xFF5DBBFF).withValues(alpha: 0.5);
       case 1: // Shorts - Purple/Magenta
         return Color(0xFFD084FF).withValues(alpha: 0.5);
-      case 2: // My Courses - Warm Orange/Coral
+      case 2: // Challenges - Warm Orange/Coral
         return Color(0xFFFF9A56).withValues(alpha: 0.5);
       case 3: // Store - Pink
         return Color(0xFFFF6B9D).withValues(alpha: 0.5);
@@ -571,22 +570,28 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                     if (!isSelected) ...[
                       SizedBox(height: 6),
                       Flexible(
-                        child: AnimatedDefaultTextStyle(
-                          duration: Duration(milliseconds: 200),
-                          style: TextStyle(
-                            fontSize: isSelected ? 11 : 9,
-                            fontWeight:
-                                isSelected ? FontWeight.w700 : FontWeight.w600,
-                            color: iconColor,
-                            height: 1.2,
-                            letterSpacing: 0.3,
-                          ),
-                          child: Text(
-                            label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            textScaler: TextScaler.linear(1.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.center,
+                            child: AnimatedDefaultTextStyle(
+                              duration: Duration(milliseconds: 200),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: iconColor,
+                                height: 1.15,
+                                letterSpacing: 0,
+                              ),
+                              child: Text(
+                                label,
+                                maxLines: 1,
+                                overflow: TextOverflow.visible,
+                                textAlign: TextAlign.center,
+                                textScaler: TextScaler.linear(1.0),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -726,8 +731,8 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                             Expanded(
                               child: _buildNavItem(
                                 index: 2,
-                                icon: Icons.bookmark_rounded,
-                                label: 'My Courses',
+                                icon: Icons.emoji_events_rounded,
+                                label: AppLocalizations.of(context)!.challenges,
                                 isSelected: widget.index == 2,
                                 tutorial: tutorial,
                                 tutorialCondition: false,

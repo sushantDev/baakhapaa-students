@@ -2099,7 +2099,7 @@ class _StoryScreenState extends State<StoryScreen>
 
           // Add challenges section after the first category
           if (i == 0 && suggestedSeasons.length > 1) {
-            sections.add(_buildRewardsSection());
+            // sections.add(_buildRewardsSection());
           }
         }
 
@@ -3196,7 +3196,7 @@ class _StoryScreenState extends State<StoryScreen>
           _buildConditionalDifficultSeasonsSection(),
 
           // 6. Challenges Section
-          _buildChallengesSection(),
+          // _buildChallengesSection(),
 
           // 7. Suggested Seasons Section (Netflix-style)
           _buildSuggestedSeasonsSection(),
@@ -3204,10 +3204,13 @@ class _StoryScreenState extends State<StoryScreen>
           // AdMob Banner Ad
           const BaakhaBannerAd(),
 
-          // 8. Banner Ads
+          // 8. Gift Rewards Section
+          // _buildRewardsSection(),
+
+          // 9. Banner Ads
           _buildBannerAds(),
 
-          // 9. Difficult Seasons Section (default position)
+          // 10. Difficult Seasons Section (default position)
           _buildDefaultDifficultSeasonsSection(),
 
           // AdMob Banner Ad

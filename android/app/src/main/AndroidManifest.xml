@@ -120,7 +120,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".ReadingStreakWidget"
+        <receiver android:name="com.baakhapaa.com.ReadingStreakWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

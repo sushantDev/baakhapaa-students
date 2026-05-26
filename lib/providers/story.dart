@@ -34,6 +34,7 @@ class Story with ChangeNotifier {
   late List<Map<String, dynamic>> _suggestedSeasons = [];
   late List<Map<String, dynamic>> _difficultSeasons = [];
   late List<dynamic> _myListItems = [];
+  bool _hasFetchedMyList = false;
   late List<dynamic> _continueWatchingItems = [];
   late List<dynamic> _premiumCreatorSeasons = [];
   late List<dynamic> _readableSeasons = [];
@@ -175,6 +176,10 @@ class Story with ChangeNotifier {
 
   List<dynamic> get myListItems {
     return _myListItems;
+  }
+
+  bool get hasFetchedMyList {
+    return _hasFetchedMyList;
   }
 
   List<dynamic> get continueWatchingItems {
@@ -482,6 +487,66 @@ class Story with ChangeNotifier {
     }
   }
 
+  void _syncMyListStatusInDirectList(List<dynamic> list) {
+    for (int i = 0; i < list.length; i++) {
+      final item = list[i];
+      if (item is! Map) continue;
+      final rawSeasonId = item['id'];
+      final seasonId = rawSeasonId is int
+          ? rawSeasonId
+          : int.tryParse(rawSeasonId?.toString() ?? '');
+      if (seasonId == null) continue;
+
+      final updatedItem = Map<String, dynamic>.from(item);
+      updatedItem['my_list'] = _myListContainsSeason(seasonId);
+      list[i] = updatedItem;
+    }
+  }
+
+  void _syncMyListStatusInCategoryList(List<dynamic> categories) {
+    for (int i = 0; i < categories.length; i++) {
+      final category = categories[i];
+      if (category is! Map) continue;
+      final seasons = category['seasons'];
+      if (seasons is! List) continue;
+
+      final updatedSeasons = List<dynamic>.from(seasons);
+      bool changed = false;
+      for (int j = 0; j < updatedSeasons.length; j++) {
+        final season = updatedSeasons[j];
+        if (season is! Map) continue;
+        final rawSeasonId = season['id'];
+        final seasonId = rawSeasonId is int
+            ? rawSeasonId
+            : int.tryParse(rawSeasonId?.toString() ?? '');
+        if (seasonId == null) continue;
+
+        final updatedSeason = Map<String, dynamic>.from(season);
+        updatedSeason['my_list'] = _myListContainsSeason(seasonId);
+        updatedSeasons[j] = updatedSeason;
+        changed = true;
+      }
+
+      if (changed) {
+        final updatedCategory = Map<String, dynamic>.from(category);
+        updatedCategory['seasons'] = updatedSeasons;
+        categories[i] = updatedCategory;
+      }
+    }
+  }
+
+  void _syncMyListStatusAcrossCollections() {
+    _syncMyListStatusInDirectList(_featuredSeasons);
+    _syncMyListStatusInDirectList(_readableSeasons);
+    _syncMyListStatusInDirectList(_premiumCreatorSeasons);
+    _syncMyListStatusInCategoryList(_suggestedSeasons);
+    _syncMyListStatusInCategoryList(_difficultSeasons);
+
+    if (_selectedSeason.isNotEmpty) {
+      _syncSelectedSeasonMyListStatus();
+    }
+  }
+
   void _syncSeasonStateAcrossCollections(
     Map<String, dynamic> season, {
     bool notify = true,
@@ -489,10 +554,13 @@ class Story with ChangeNotifier {
     final seasonId = season['id']?.toString();
     if (seasonId == null || seasonId.isEmpty) return;
 
-    final updates = <String, dynamic>{
-      'is_locked': season['is_locked'],
-      'watched': season['watched'],
-    };
+    final updates = <String, dynamic>{};
+    if (season.containsKey('is_locked')) {
+      updates['is_locked'] = season['is_locked'];
+    }
+    if (season.containsKey('watched')) {
+      updates['watched'] = season['watched'];
+    }
 
     // Keep any richer fields in sync when available.
     if (season.containsKey('thumbnail'))
@@ -500,6 +568,9 @@ class Story with ChangeNotifier {
     if (season.containsKey('title')) updates['title'] = season['title'];
     if (season.containsKey('content_type')) {
       updates['content_type'] = season['content_type'];
+    }
+    if (season.containsKey('my_list')) {
+      updates['my_list'] = season['my_list'];
     }
 
     _syncSeasonInDirectList(_featuredSeasons, seasonId, updates);
@@ -516,6 +587,24 @@ class Story with ChangeNotifier {
     if (notify) {
       notifyListeners();
     }
+  }
+
+  bool _myListContainsSeason(int seasonId) {
+    return _myListItems.any((item) {
+      final season = item is Map ? item['season'] : null;
+      return season is Map && season['id']?.toString() == seasonId.toString();
+    });
+  }
+
+  void _syncSelectedSeasonMyListStatus() {
+    final rawSeasonId = _selectedSeason['id'];
+    final seasonId = rawSeasonId is int
+        ? rawSeasonId
+        : int.tryParse(rawSeasonId?.toString() ?? '');
+    if (seasonId == null) return;
+
+    _selectedSeason['my_list'] = _myListContainsSeason(seasonId);
+    _syncSeasonStateAcrossCollections(_selectedSeason, notify: false);
   }
 
   // New method to fetch episodes for a specific season
@@ -1349,6 +1438,8 @@ class Story with ChangeNotifier {
             responseData['data'] != null &&
             responseData['data']['items'] != null) {
           _myListItems = responseData['data']['items'];
+          _hasFetchedMyList = true;
+          _syncMyListStatusAcrossCollections();
           DebugLogger.api('?? Loaded ${_myListItems.length} my list items');
           notifyListeners();
         } else {
@@ -1356,6 +1447,8 @@ class Story with ChangeNotifier {
             '?? My List API Error: ${responseData['message'] ?? 'Unknown error'}',
           );
           _myListItems = [];
+          _hasFetchedMyList = true;
+          _syncMyListStatusAcrossCollections();
           notifyListeners();
         }
       } else {
@@ -1363,11 +1456,15 @@ class Story with ChangeNotifier {
           '?? My List API Error: ${response.statusCode} - ${response.body}',
         );
         _myListItems = [];
+        _hasFetchedMyList = true;
+        _syncMyListStatusAcrossCollections();
         notifyListeners();
       }
     } catch (e) {
       DebugLogger.api('?? Error fetching my list: $e');
       _myListItems = [];
+      _hasFetchedMyList = true;
+      _syncMyListStatusAcrossCollections();
       notifyListeners();
     }
   }
@@ -1377,61 +1474,16 @@ class Story with ChangeNotifier {
     try {
       DebugLogger.api('?? STARTING toggleMyListItem - Season ID: $seasonId');
 
-      // Check if item is already in My List - prioritize selected season data
-      bool isInMyList = false;
-      bool usedSelectedSeasonData = false;
-
-      // First, check if this is the selected season and has my_list field (most accurate)
-      if (_selectedSeason.isNotEmpty && _selectedSeason['id'] == seasonId) {
-        if (_selectedSeason.containsKey('my_list')) {
-          isInMyList = _selectedSeason['my_list'] == true;
-          usedSelectedSeasonData = true;
-          DebugLogger.api(
-            '?? Provider: Using selectedSeason my_list field: $isInMyList',
-          );
-        }
-      }
-
-      // Only fall back to _myListItems array if we haven't already used selected season data
-      if (!usedSelectedSeasonData) {
-        if (_selectedSeason.isNotEmpty && _selectedSeason['id'] == seasonId) {
-          // For selected season without my_list field, use _myListItems array
-          isInMyList = _myListItems.any((item) {
-            final season = item['season'];
-            return season != null && season['id'] == seasonId;
-          });
-          DebugLogger.api(
-            '?? Provider: Using _myListItems array check: $isInMyList',
-          );
-        } else {
-          // For non-selected seasons, always use _myListItems array
-          isInMyList = _myListItems.any((item) {
-            final season = item['season'];
-            return season != null && season['id'] == seasonId;
-          });
-          DebugLogger.api(
-            '?? Provider: Using _myListItems for non-selected season: $isInMyList',
-          );
-        }
-      }
-
-      // If we still have no data from selectedSeason and _myListItems is empty,
-      // make sure to fetch My List data first
-      if (!usedSelectedSeasonData && _myListItems.isEmpty) {
+      // Check against fetched My List first so stale season detail data cannot
+      // accidentally turn a remove into a duplicate add.
+      if (!_hasFetchedMyList) {
         DebugLogger.api(
           '?? Provider: My List items empty, ensuring fresh data',
         );
         await fetchMyList();
-
-        // Re-check with fresh data
-        isInMyList = _myListItems.any((item) {
-          final season = item['season'];
-          return season != null && season['id'] == seasonId;
-        });
-        DebugLogger.api(
-          '?? Provider: Re-checked with fresh My List data: $isInMyList',
-        );
       }
+
+      final bool isInMyList = isSeasonInMyList(seasonId);
 
       DebugLogger.api(
         '?? Provider: Determined My List status for season $seasonId: $isInMyList',
@@ -1482,12 +1534,17 @@ class Story with ChangeNotifier {
           DebugLogger.api('?? My List item toggled successfully');
 
           // Update the selected season's my_list field if it's the same season
-          if (_selectedSeason.isNotEmpty && _selectedSeason['id'] == seasonId) {
+          if (_selectedSeason.isNotEmpty &&
+              _selectedSeason['id']?.toString() == seasonId.toString()) {
             _selectedSeason['my_list'] = !isInMyList; // Toggle the value
             DebugLogger.api(
               '?? Updated selectedSeason my_list field to: ${_selectedSeason['my_list']}',
             );
           }
+          _syncSeasonStateAcrossCollections(
+            {'id': seasonId, 'my_list': !isInMyList},
+            notify: false,
+          );
 
           // Refresh My List to get updated data
           await fetchMyList();
@@ -1513,18 +1570,19 @@ class Story with ChangeNotifier {
 
   // Check if a season is in My List
   bool isSeasonInMyList(int seasonId) {
-    // Prioritize selectedSeason data if available (most accurate)
-    if (_selectedSeason.isNotEmpty && _selectedSeason['id'] == seasonId) {
-      if (_selectedSeason.containsKey('my_list')) {
-        return _selectedSeason['my_list'] == true;
-      }
+    if (_myListContainsSeason(seasonId)) {
+      return true;
     }
 
-    // Fall back to checking _myListItems array
-    return _myListItems.any((item) {
-      final season = item['season'];
-      return season != null && season['id'] == seasonId;
-    });
+    // Fall back to selectedSeason only after checking the fetched list. This
+    // keeps old API detail payloads from showing "+" for an existing list item.
+    if (_selectedSeason.isNotEmpty &&
+        _selectedSeason['id']?.toString() == seasonId.toString() &&
+        _selectedSeason.containsKey('my_list')) {
+      return _selectedSeason['my_list'] == true;
+    }
+
+    return false;
   }
 
   /// Helper method to normalize season data
@@ -1841,6 +1899,13 @@ class Story with ChangeNotifier {
               safeSeason['image_url'] != null &&
               safeSeason['image_url'].toString().isNotEmpty) {
             safeSeason['thumbnail'] = safeSeason['image_url'];
+          }
+          final rawSeasonId = safeSeason['id'];
+          final seasonId = rawSeasonId is int
+              ? rawSeasonId
+              : int.tryParse(rawSeasonId?.toString() ?? '');
+          if (seasonId != null) {
+            safeSeason['my_list'] = _myListContainsSeason(seasonId);
           }
           return _normalizeSeasonData(safeSeason);
         }).toList();

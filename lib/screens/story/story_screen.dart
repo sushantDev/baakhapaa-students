@@ -2584,17 +2584,18 @@ class _StoryScreenState extends State<StoryScreen>
   }
 
   Widget _buildMyListSection() {
-    return Selector<Story, List<dynamic>>(
-      selector: (context, story) => story.myListItems,
-      builder: (context, myListItems, child) {
+    return Consumer<Story>(
+      builder: (context, story, child) {
+        final myListItems = story.myListItems;
         // Check if user is authenticated
         if (_authProvider.isGuest) {
           return SizedBox.shrink();
         }
 
         // Use cached data if provider data is empty but cache has data
-        List<dynamic> myListItemsToShow =
-            myListItems.isNotEmpty ? myListItems : _cachedMyListItems;
+        List<dynamic> myListItemsToShow = myListItems.isNotEmpty
+            ? myListItems
+            : (story.hasFetchedMyList ? [] : _cachedMyListItems);
 
         // Update cache if provider has newer data
         if (myListItems.isNotEmpty && myListItems != _cachedMyListItems) {
@@ -2613,6 +2614,7 @@ class _StoryScreenState extends State<StoryScreen>
           final season = Map<String, dynamic>.from(item['season'] ?? {});
           return {
             ...season,
+            'my_list': true,
             'watched': item['watched'] ?? false,
             'rewards': item['reward_details'] != null
                 ? Map<String, dynamic>.from(item['reward_details'])
@@ -3223,9 +3225,9 @@ class _StoryScreenState extends State<StoryScreen>
   }
 
   Widget _buildBooksSection() {
-    return Selector<Story, List<dynamic>>(
-      selector: (context, story) => story.readableSeasons,
-      builder: (context, readableSeasons, child) {
+    return Consumer<Story>(
+      builder: (context, story, child) {
+        final readableSeasons = story.readableSeasons;
         // Use cached data if provider data is empty but cache has data
         List<dynamic> readableSeasonsToShow = readableSeasons.isNotEmpty
             ? readableSeasons
@@ -3272,7 +3274,20 @@ class _StoryScreenState extends State<StoryScreen>
             if (_showInterestPrompt) _buildInterestPromptBanner(),
             _buildUnifiedSeasonCategory(
               title: 'Books 📖',
-              seasons: readableSeasonsToShow,
+              seasons: readableSeasonsToShow.map((item) {
+                final season = item is Map<String, dynamic>
+                    ? Map<String, dynamic>.from(item)
+                    : Map<String, dynamic>.from(item as Map);
+                final rawSeasonId = season['id'];
+                final seasonId = rawSeasonId is int
+                    ? rawSeasonId
+                    : int.tryParse(rawSeasonId?.toString() ?? '');
+                if (seasonId != null) {
+                  season['my_list'] = story.isSeasonInMyList(seasonId) ||
+                      season['my_list'] == true;
+                }
+                return season;
+              }).toList(),
               isWatchTitle: false,
               showDifficulty: false,
               showSeeMore: true,

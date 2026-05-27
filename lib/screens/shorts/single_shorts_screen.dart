@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../widgets/shorts_detail.dart';
 import '../../widgets/shorts_side_bar.dart';
 import '../../widgets/shorts_video_tile.dart';
+import '../../widgets/footer.dart';
 import '../../providers/shorts.dart';
 import '../../providers/video_state_provider.dart';
 import '../../widgets/header.dart';
@@ -97,7 +98,10 @@ class _SingleShortsScreenState extends State<SingleShortsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final footerInset = Footer.estimatedHeight(context, fullBleed: true);
+
     return Scaffold(
+      extendBody: true,
       appBar: header(
           context: context,
           titleText: _shorts['title'] != null ? _shorts['title'] : ''),
@@ -118,34 +122,37 @@ class _SingleShortsScreenState extends State<SingleShortsScreen>
                     isLiked: _shorts['liked'] ?? false,
                     fastForwardNotifier: _fastForwardNotifier,
                   ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          constraints: BoxConstraints(
-                            maxHeight: MediaQuery.of(context).size.height / 3,
-                          ),
-                          child: SingleChildScrollView(
-                            child: ShortsDetail(
-                              _shorts['title'],
-                              _shorts['description'],
-                              _shorts['user_id'],
-                              _shorts['username'],
-                              _shorts['shorts_topic'],
-                              _shorts['created_at'],
-                              _shorts['challenge_details'],
-                              _pauseVideo,
-                              linkedContent: _shorts['linked_content'],
-                              collaborators: _shorts['collaborators'],
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: footerInset,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.of(context).size.height / 3,
+                            ),
+                            child: SingleChildScrollView(
+                              child: ShortsDetail(
+                                _shorts['title'],
+                                _shorts['description'],
+                                _shorts['user_id'],
+                                _shorts['username'],
+                                _shorts['shorts_topic'],
+                                _shorts['created_at'],
+                                _shorts['challenge_details'],
+                                _pauseVideo,
+                                linkedContent: _shorts['linked_content'],
+                                collaborators: _shorts['collaborators'],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: MediaQuery.of(context).size.height,
+                        Expanded(
                           child: ShortsSideBar(
                             index: 2,
                             shortsId: _shorts['id'],
@@ -172,8 +179,8 @@ class _SingleShortsScreenState extends State<SingleShortsScreen>
                             onPlayPause: _pauseVideo,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   // Transparent edge overlays placed on top of the sidebar so
                   // long-press on the right/left edges always reaches us.

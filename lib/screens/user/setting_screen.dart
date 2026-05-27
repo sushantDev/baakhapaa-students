@@ -41,10 +41,16 @@ class _SettingScreenState extends State<SettingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor =
+        isDark ? const Color(0xFF121212) : Colors.grey.shade100;
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: header(
           context: context, titleText: AppLocalizations.of(context)!.settings),
       body: Container(
+        color: backgroundColor,
         padding: const EdgeInsets.all(10),
         child: Column(
           children: <Widget>[

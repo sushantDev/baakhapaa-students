@@ -11,6 +11,7 @@ import 'package:khalti_checkout_flutter/khalti_checkout_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/loading.dart';
 import '../../services/khalti_service.dart' as app_khalti;
+import '../shop/single_product_screen.dart';
 import '../../../utils/debug_logger.dart';
 import '../../widgets/checkout_bottom_sheet.dart';
 
@@ -24,6 +25,7 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
+  static const int _pointsPackProductId = 20;
   bool _isLoading = false;
   bool _isPurchasing = false;
   String _selectedDuration = 'Monthly';
@@ -51,9 +53,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   @override
   void initState() {
     super.initState();
-    DebugLogger.info('SubscriptionScreen: Initializing screen');
+    DebugLogger.info(
+        'SubscriptionScreen: Subscription module disabled, redirecting to points pack product');
     _subscriptionService = SubscriptionService(context: context);
-    _loadPackages();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(
+        SingleProductScreen.routeName,
+        arguments: _pointsPackProductId,
+      );
+    });
   }
 
   @override

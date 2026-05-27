@@ -17,7 +17,7 @@ import 'package:share_plus/share_plus.dart';
 import './video_screen.dart';
 import './readable_episode_screen.dart';
 import './search_screen.dart';
-import '../subscription/subscription_screen.dart';
+import '../shop/single_product_screen.dart';
 import '../../providers/story.dart';
 import '../../providers/puppet_interaction_provider.dart';
 import '../../providers/auth.dart';
@@ -33,6 +33,15 @@ import '../../services/subscription_service.dart';
 import '../../services/ad_service.dart';
 import '../../models/subscription.dart';
 import '../../models/url.dart';
+
+const int _pointsPackProductId = 20;
+
+void _openPointsPackProduct(BuildContext context) {
+  Navigator.of(context).pushNamed(
+    SingleProductScreen.routeName,
+    arguments: _pointsPackProductId,
+  );
+}
 
 //**
 // Bugs Fixes:
@@ -1128,8 +1137,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                       ElevatedButton(
                         onPressed: () {
                           Navigator.of(context).pop();
-                          Navigator.of(context)
-                              .pushNamed(SubscriptionScreen.routeName);
+                          _openPointsPackProduct(context);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
@@ -3683,10 +3691,9 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                       }
                     }
                   } else {
-                    // No benefit available or not found, navigate to subscription
+                    // No benefit available or not found, redirect to points pack
                     if (mounted) {
-                      Navigator.of(context)
-                          .pushNamed(SubscriptionScreen.routeName);
+                      _openPointsPackProduct(context);
                     }
                   }
                 } catch (e) {
@@ -3703,8 +3710,8 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                   }
                 }
               } else {
-                // Navigate to subscription screen
-                Navigator.of(context).pushNamed(SubscriptionScreen.routeName);
+                // Not subscribed yet, redirect to points pack
+                _openPointsPackProduct(context);
               }
             },
             child: Container(
@@ -4258,10 +4265,9 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                       }
                     }
                   } else {
-                    // No benefit available or not found, navigate to subscription
+                    // No benefit available or not found, redirect to points pack
                     if (mounted) {
-                      Navigator.of(context)
-                          .pushNamed(SubscriptionScreen.routeName);
+                      _openPointsPackProduct(context);
                     }
                   }
                 } catch (e) {
@@ -4282,13 +4288,13 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                 if (auth.isGuest) {
                   await GuestAuthHelper.showGuestLoginDialog(
                     context,
-                    'view subscription',
+                    'get more points',
                   );
                   return;
                 }
 
-                // Navigate to subscription screen
-                Navigator.of(context).pushNamed(SubscriptionScreen.routeName);
+                // Not subscribed yet, redirect to points pack
+                _openPointsPackProduct(context);
               }
             },
             child: Container(

@@ -1061,6 +1061,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
     return PopScope(
       canPop: !_isLoading,
       child: Scaffold(
+        extendBody: true,
         appBar: _isLoading
             ? null // Hide app bar during loading
             : header(context: context, titleText: creatorName),
@@ -1088,15 +1089,13 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                       // _buildActivitySection(_authProvider),
                       _buildAchievementsChallengesSection(),
                       _buildCreationsSection(),
-                      SizedBox(height: 20),
+                      Footer.scrollBottomSpacer(context),
                     ],
                   ),
                 ),
               ),
           ],
         ),
-        bottomNavigationBar:
-            _isLoading ? null : null, // Hide footer during loading
       ),
     );
   }

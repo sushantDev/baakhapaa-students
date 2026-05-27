@@ -393,34 +393,81 @@ class ChallengeProgressCard extends StatelessWidget {
             title: 'Result of the challenge',
             status: step3,
           ),
-          const SizedBox(height: 14),
-          GestureDetector(
-            onTap: primaryAction,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: primaryButtonColor,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(primaryIcon, color: Colors.white, size: 18),
-                  const SizedBox(width: 10),
-                  Text(
-                    primaryButtonText,
-                    style: AppTextStyles.interBold(
-                      color: Colors.white,
-                      fontSize: 14,
+          if (primaryAction != null) ...[
+            const SizedBox(height: 14),
+            GestureDetector(
+              onTap: primaryAction,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: primaryButtonColor,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(primaryIcon, color: Colors.white, size: 18),
+                    const SizedBox(width: 10),
+                    Text(
+                      primaryButtonText,
+                      style: AppTextStyles.interBold(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
+    );
+  }
+}
+
+/// Single unlock CTA for challenge detail screens (placed at bottom of scroll).
+class ChallengeBottomUnlockButton extends StatelessWidget {
+  final Map<String, dynamic>? challenge;
+  final VoidCallback? onUnlock;
+
+  const ChallengeBottomUnlockButton({
+    super.key,
+    required this.challenge,
+    this.onUnlock,
+  });
+
+  static int unlockPoints(Map<String, dynamic>? data) {
+    if (data == null) return 0;
+    final dynamic raw = data['unlock_points'] ?? data['coin_to_unlock'];
+    if (raw is int) return raw;
+    if (raw is String) return int.tryParse(raw) ?? 0;
+    if (raw is num) return raw.toInt();
+    return 0;
+  }
+
+  static bool isUnlocked(Map<String, dynamic>? data) {
+    if (data == null) return false;
+    return data['has_unlocked'] == true ||
+        data['has_unlocked'] == 1 ||
+        data['unlocked'] == true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (challenge == null || isUnlocked(challenge)) {
+      return const SizedBox.shrink();
+    }
+
+    final points = unlockPoints(challenge);
+    final text = points > 0
+        ? 'Unlock Challenge for $points points'
+        : 'Unlock Challenge for FREE';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: unlockChallengeButton(onTap: onUnlock, text: text),
     );
   }
 }

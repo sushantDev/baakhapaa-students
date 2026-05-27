@@ -346,7 +346,7 @@ class NavBar extends StatelessWidget {
                     children: [
                       _buildNavItem(
                         context,
-                        icon: FontAwesomeIcons.gift,
+                        icon: FontAwesomeIcons.gift.data,
                         title: AppLocalizations.of(context)!.rewards,
                         onTap: () {
                           // Check if current screen is GiftScreen
@@ -515,7 +515,7 @@ class NavBar extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _buildSocialButton(
-                          icon: FontAwesomeIcons.instagram,
+                          icon: FontAwesomeIcons.instagram.data,
                           color: Colors.purple,
                           onTap: launchInstaApp,
                         ),
@@ -525,17 +525,17 @@ class NavBar extends StatelessWidget {
                           onTap: launchFacebookApp,
                         ),
                         _buildSocialButton(
-                          icon: FontAwesomeIcons.youtube,
+                          icon: FontAwesomeIcons.youtube.data,
                           color: Colors.red,
                           onTap: launchYoutubeApp,
                         ),
                         _buildSocialButton(
-                          icon: FontAwesomeIcons.facebookMessenger,
+                          icon: FontAwesomeIcons.facebookMessenger.data,
                           color: Colors.blueAccent,
                           onTap: launchMessengerApp,
                         ),
                         _buildSocialButton(
-                          icon: FontAwesomeIcons.viber,
+                          icon: FontAwesomeIcons.viber.data,
                           color: Colors.deepPurple,
                           onTap: launchViberGroup,
                         ),

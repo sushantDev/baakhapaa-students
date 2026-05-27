@@ -1508,27 +1508,6 @@ class _VideoScreenState extends State<VideoScreen>
     );
   }
 
-  bool _isQuizCompleted(Map<String, dynamic> episodeData) {
-    final watched = episodeData['watched'];
-    return watched == true ||
-        watched == 1 ||
-        watched == '1' ||
-        watched == 'true';
-  }
-
-  Future<bool> _isQuizCompletedForEpisode(int episodeId) async {
-    if (_isQuizCompleted(episode)) return true;
-
-    final story = Provider.of<Story>(context, listen: false);
-    final completed = await story.hasCompletedEpisodeQuiz(episodeId);
-    if (completed && mounted) {
-      setState(() {
-        episode['watched'] = true;
-      });
-    }
-    return completed;
-  }
-
   void _showGameModeSelector(int episodeId) async {
     final auth = Provider.of<Auth>(context, listen: false);
     if (auth.isGuest || !auth.isAuth) {
@@ -1537,13 +1516,20 @@ class _VideoScreenState extends State<VideoScreen>
     }
 
     final story = Provider.of<Story>(context, listen: false);
-    final quizAvailable = !await _isQuizCompletedForEpisode(episodeId);
+    final availableModes =
+        await story.availableGameModesForEpisode(episodeId);
     if (!mounted) return;
+
+    if (availableModes.isEmpty) {
+      _showErrorDialog(
+          'You have completed all challenges for this episode. Great job!');
+      return;
+    }
 
     final selectedMode = await GameModeSelector.show(
       context,
-      allowedModes:
-          quizAvailable ? null : [GameMode.crossword, GameMode.imagePuzzle],
+      allowedModes: availableModes,
+      bottomLift: 120,
     );
     if (selectedMode == null || !mounted) return;
 
@@ -1551,11 +1537,6 @@ class _VideoScreenState extends State<VideoScreen>
 
     switch (selectedMode) {
       case GameMode.quiz:
-        if (!quizAvailable) {
-          _showErrorDialog(
-              'You have already completed the quiz for this episode. Please choose another challenge.');
-          return;
-        }
         goToQuestionScreen(episodeId);
         break;
       case GameMode.crossword:
@@ -1615,11 +1596,13 @@ class _VideoScreenState extends State<VideoScreen>
       final episodeData = Provider.of<Story>(context, listen: false);
       await episodeData.fetchEpisode(episodeId);
       final episode = episodeData.episode;
-      if (_isQuizCompleted(episode)) {
+
+      if (episodeData.isQuizCompletedFromEpisode(episode)) {
         _showErrorDialog(
             'You have already completed the quiz for this episode. Please choose another challenge.');
         return;
       }
+
       List questions = episode['questions'] as List? ?? [];
 
       if (questions.isEmpty) {
@@ -2270,7 +2253,7 @@ class _VideoScreenState extends State<VideoScreen>
                             Column(
                               children: [
                                 IconButton(
-                                  icon: Icon(
+                                  icon: FaIcon(
                                     FontAwesomeIcons.handHoldingHeart,
                                     size: 24,
                                   ),
@@ -2698,7 +2681,7 @@ class _VideoScreenState extends State<VideoScreen>
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
-                                        child: Icon(FontAwesomeIcons.store,
+                                        child: FaIcon(FontAwesomeIcons.store,
                                             color: Colors.white, size: 20),
                                       ),
                                       SizedBox(width: 12),

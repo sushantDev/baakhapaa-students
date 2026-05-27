@@ -5237,7 +5237,7 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                       _buildProfileHeader(),
                       _buildPublicAchievementsChallengesSection(),
                       _buildPublicCreationsSection(),
-                      SizedBox(height: 20),
+                      Footer.scrollBottomSpacer(context),
                     ],
                   ),
                 ),

@@ -12,6 +12,7 @@ import '../../services/subscription_service.dart';
 import '../../models/subscription.dart';
 // TODO: Import Product provider when available
 // import 'package:baakhapaa/providers/product.dart';
+import 'package:baakhapaa/widgets/footer.dart';
 import 'package:baakhapaa/widgets/header.dart';
 import 'package:baakhapaa/widgets/loading.dart';
 import '../../utils/puppet_screen_mapping.dart';
@@ -100,6 +101,7 @@ class _ChallengeDetailProductScreenState
     }
   }
 
+  // ignore: unused_element
   Future<void> _useUnlockChallengeBenefit() async {
     if (_unlockChallengeBenefit == null || challenge == null) return;
 
@@ -459,10 +461,10 @@ class _ChallengeDetailProductScreenState
         step2Status = ChallengeStepStatus.locked;
         step3Status = ChallengeStepStatus.locked;
 
-        buttonText = 'Unlock Challenge';
+        buttonText = '';
         buttonColor = const Color(0xFFE50914);
         buttonIcon = Icons.lock_open;
-        buttonAction = () => handleChallengeTap(context, challenge);
+        buttonAction = null;
       } else {
         // Step 2 active (create product)
         step1Status = ChallengeStepStatus.completed;
@@ -765,12 +767,7 @@ class _ChallengeDetailProductScreenState
                           ),
 
                           // Unlock/Rewards Tabs
-                          UnlockRewardsTabs(
-                            challengeData: challenge,
-                            unlockChallengeBenefit: _unlockChallengeBenefit,
-                            onUseUnlockChallengeBenefit:
-                                _useUnlockChallengeBenefit,
-                          ),
+                          UnlockRewardsTabs(challengeData: challenge),
 
                           // Challenge Progress Card (3-step UI)
                           Builder(
@@ -896,7 +893,12 @@ class _ChallengeDetailProductScreenState
                               ),
                             ),
 
-                          const SizedBox(height: 10),
+                          ChallengeBottomUnlockButton(
+                            challenge: challenge,
+                            onUnlock: () =>
+                                handleChallengeTap(context, challenge),
+                          ),
+                          Footer.scrollBottomSpacer(context),
                         ],
                       ),
                     ),

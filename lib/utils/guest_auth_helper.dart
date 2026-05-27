@@ -9,6 +9,14 @@ class GuestAuthHelper {
   /// Shows a dialog prompting guest users to log in
   static Future<bool> showGuestLoginDialog(
       BuildContext context, String feature) async {
+    // Always stop any active shorts playback before showing login prompt.
+    final videoStateProvider =
+        Provider.of<VideoStateProvider>(context, listen: false);
+    videoStateProvider.pauseVideo();
+    videoStateProvider.forceStopAllVideos();
+    videoStateProvider.forceStopAllRegisteredVideos();
+    videoStateProvider.clearAllActiveVideos();
+
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
@@ -124,13 +132,11 @@ class GuestAuthHelper {
     );
 
     if (result == true) {
-      // Pause video if coming from shorts screen
-      final videoStateProvider =
-          Provider.of<VideoStateProvider>(context, listen: false);
-      if (videoStateProvider.currentScreen == 'shorts') {
-        videoStateProvider.pauseVideo();
-        videoStateProvider.setScreen('');
-      }
+      // Keep shorts muted/stopped while navigating to login.
+      videoStateProvider.pauseVideo();
+      videoStateProvider.forceStopAllVideos();
+      videoStateProvider.forceStopAllRegisteredVideos();
+      videoStateProvider.clearAllActiveVideos();
 
       // Navigate to login screen
       Navigator.of(context).pushNamed(LoginScreen.routeName);

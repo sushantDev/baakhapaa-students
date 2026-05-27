@@ -187,6 +187,14 @@ class _ShortsVideoTileState extends State<ShortsVideoTile>
       _initializeVideoPlayer = _videoController!.initialize();
       await _initializeVideoPlayer;
 
+      // Ensure playback speed is reset to normal after initialization
+      try {
+        _videoController!.setPlaybackSpeed(1.0);
+      } catch (e) {
+        DebugLogger.error(
+            'Failed to reset playback speed for ${widget.shortsId}: $e');
+      }
+
       if (!_disposed && mounted) {
         setState(() {
           _isInitializing = false;
@@ -541,6 +549,8 @@ class _ShortsVideoTileState extends State<ShortsVideoTile>
 
   void _onExternalFastForwardChange() {
     if (widget.fastForwardNotifier == null) return;
+    DebugLogger.info(
+        'ShortsVideoTile: external fastForwardNotifier=${widget.fastForwardNotifier!.value} for ${widget.shortsId}');
     if (widget.fastForwardNotifier!.value) {
       _startFastForward();
     } else {
@@ -554,6 +564,8 @@ class _ShortsVideoTileState extends State<ShortsVideoTile>
     if (!_videoController!.value.isPlaying) return;
 
     _isLongPressing = true;
+    DebugLogger.info(
+        'ShortsVideoTile: startFastForward for ${widget.shortsId} (playing=${_videoController!.value.isPlaying})');
     _videoController!.setPlaybackSpeed(2.0);
     setState(() {
       _isFastForwarding = true;

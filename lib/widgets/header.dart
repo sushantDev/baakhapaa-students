@@ -13,7 +13,7 @@ import '../screens/others/notification_screen.dart';
 import '../screens/story/reading_streak_screen.dart';
 import '../providers/auth.dart';
 
-const bool _disablePuppetDrawerPanel = true;
+const bool _disablePuppetDrawerPanel = false;
 
 // Helper function to calculate adaptive font size based on text length
 double _getAdaptiveFontSize(String text) {
@@ -44,16 +44,18 @@ AppBar header({
         ? Container(
             margin: EdgeInsets.all(8),
             child: GestureDetector(
-              onTap: () {
+              onTap: () async {
                 final auth = Provider.of<Auth>(context, listen: false);
 
                 if (_disablePuppetDrawerPanel) {
                   return;
                 }
 
-                // If guest, show login dialog and stop
                 if (auth.isGuest) {
-                  GuestAuthHelper.showGuestLoginDialog(context, 'open menu');
+                  await GuestAuthHelper.showGuestLoginDialog(
+                    context,
+                    'open menu',
+                  );
                   return;
                 }
 

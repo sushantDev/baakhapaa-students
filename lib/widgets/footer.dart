@@ -12,7 +12,7 @@ import '../providers/auth.dart';
 import '../screens/shop/tab_view_product.dart';
 import '../screens/story/story_screen.dart';
 import '../screens/shorts/shorts_screen.dart';
-import '../screens/my_courses/my_courses_screen.dart';
+import '../screens/challenges/all_challenges_screen.dart';
 import '../screens/others/creator_request_screen.dart';
 import '../utils/guest_auth_helper.dart';
 import './content_type_selector_sheet.dart';
@@ -21,7 +21,8 @@ import './content_type_selector_sheet.dart';
 class Footer extends StatefulWidget {
   final NavigatorState? navigator;
   int index;
-  Footer(this.index, {this.navigator});
+  final bool fullBleed;
+  Footer(this.index, {this.navigator, this.fullBleed = false});
 
   static const Set<String> _routesWithOwnFooter = {
     '/single-product-screen',
@@ -123,13 +124,12 @@ class Footer extends StatefulWidget {
     final normalizedRoute = routeName?.toLowerCase() ?? '';
     final childType = child?.runtimeType.toString().toLowerCase() ?? '';
 
+    if (normalizedRoute.contains('challenge') ||
+        childType.contains('challenge')) {
+      return 2;
+    }
     if (normalizedRoute.contains('shorts') || childType.contains('shorts')) {
       return 1;
-    }
-    if (normalizedRoute.contains('my-courses') ||
-        normalizedRoute.contains('mycourses') ||
-        childType.contains('mycourses')) {
-      return 2;
     }
     if (normalizedRoute.contains('shop') ||
         normalizedRoute.contains('product') ||
@@ -187,7 +187,25 @@ class Footer extends StatefulWidget {
     return 0;
   }
 
-  static double estimatedHeight(BuildContext context) {
+  /// Extra space below the nav pill (system nav inset is added separately).
+  static const double extraBottomSpace = 8.0;
+
+  /// Full-screen feeds (shorts) overlay the footer; no extra gap under the nav pill.
+  static bool isFullBleedRoute(String? routeName, Widget? child) {
+    final normalizedRoute = routeName?.toLowerCase() ?? '';
+    final childType = child?.runtimeType.toString().toLowerCase() ?? '';
+    return normalizedRoute == '/shorts-screen' ||
+        // normalizedRoute == '/challenges-screen' ||
+        childType.contains('shortsscreen') ||
+        childType.contains('challengesscreen');
+  }
+
+  /// Bottom spacer for scrollable page content so the last items clear the footer.
+  static Widget scrollBottomSpacer(BuildContext context) =>
+      SizedBox(height: estimatedHeight(context));
+
+  static double estimatedHeight(BuildContext context,
+      {bool fullBleed = false}) {
     final screenWidth = MediaQuery.of(context).size.width;
     final bottomNavBarPadding = MediaQuery.of(context).viewPadding.bottom;
     final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
@@ -212,11 +230,11 @@ class Footer extends StatefulWidget {
                   : 0.22 * screenWidth;
     }
 
-    final double adjustedHeight = (containerHeight + 15).clamp(60.0, 90.0);
-    final double extraBottomSpace = 24.0;
+    final double adjustedHeight = (containerHeight + 16).clamp(70.0, 92.0);
     final double totalBottomPadding =
         hasThreeButtonNav ? bottomNavBarPadding : 0.0;
-    return adjustedHeight + totalBottomPadding + extraBottomSpace;
+    final double extra = fullBleed ? 0.0 : extraBottomSpace;
+    return adjustedHeight + totalBottomPadding + extra;
   }
 
   @override
@@ -330,11 +348,11 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         !auth.isAuth ||
         (auth.user.isEmpty && !auth.isLoadingUser);
 
-    // Protect My Courses/Profile for all unauthenticated states.
+    // Protect Challenges/Profile for all unauthenticated states.
     if ((index == 2 || index == 4) && isUnauthenticated) {
       await GuestAuthHelper.showGuestLoginDialog(
         _dialogContext,
-        index == 2 ? 'my courses' : 'user profile',
+        index == 2 ? 'challenges' : 'user profile',
       );
       return;
     }
@@ -362,53 +380,48 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       case 0:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: const StoryScreen(),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: StoryScreen.routeName),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: const StoryScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: StoryScreen.routeName),
+        ));
         break;
       case 1:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: ShortsScreen(),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: ShortsScreen.routeName),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: ShortsScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: ShortsScreen.routeName),
+        ));
         break;
       case 2:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: MyCourses(),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: '/my-courses'),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: const AllChallengesScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: AllChallengesScreen.routeName),
+        ));
         break;
       case 3:
         // Allow guest users to browse the store
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: TabViewProduct.routeName),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: TabViewProduct(scaffoldKey: scaffoldKeyProduct),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: TabViewProduct.routeName),
+        ));
         break;
       case 4:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
-        navigator
-            .pushReplacement(PageTransition(
-              child: UserScreen(),
-              type: PageTransitionType.fade,
-              settings: const RouteSettings(name: UserScreen.routeName),
-            ));
+        navigator.pushReplacement(PageTransition(
+          child: UserScreen(),
+          type: PageTransitionType.fade,
+          settings: const RouteSettings(name: UserScreen.routeName),
+        ));
         break;
     }
   }
@@ -419,7 +432,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         return Color(0xFF5DBBFF);
       case 1: // Shorts - Purple/Magenta
         return Color(0xFFD084FF);
-      case 2: // My Courses - Warm Orange/Coral
+      case 2: // Challenges - Warm Orange/Coral
         return Color(0xFFFF9A56);
       case 3: // Store - Pink
         return Color(0xFFFF6B9D);
@@ -436,7 +449,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         return Color(0xFF5DBBFF).withValues(alpha: 0.5);
       case 1: // Shorts - Purple/Magenta
         return Color(0xFFD084FF).withValues(alpha: 0.5);
-      case 2: // My Courses - Warm Orange/Coral
+      case 2: // Challenges - Warm Orange/Coral
         return Color(0xFFFF9A56).withValues(alpha: 0.5);
       case 3: // Store - Pink
         return Color(0xFFFF6B9D).withValues(alpha: 0.5);
@@ -445,6 +458,76 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
       default:
         return Colors.amber.withValues(alpha: 0.5);
     }
+  }
+
+  List<Color> _getGemGradient(int index) {
+    final color = _getIconColor(index);
+    return [
+      Color.lerp(Colors.white, color, 0.18)!,
+      color,
+      Color.lerp(Colors.black, color, 0.72)!,
+    ];
+  }
+
+  Widget _buildNavIcon({
+    IconData? icon,
+    String? imageUrl,
+    required Color color,
+    required double size,
+    required bool shouldShowLoading,
+  }) {
+    if (shouldShowLoading) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: CircularProgressIndicator(
+          color: color,
+          strokeWidth: 2,
+        ),
+      );
+    }
+
+    if (imageUrl != null) {
+      if (imageUrl.startsWith('assets/')) {
+        return Image.asset(
+          imageUrl,
+          width: size,
+          height: size,
+          color: color,
+          errorBuilder: (_, __, ___) => Icon(
+            Icons.home_rounded,
+            size: size,
+            color: color,
+          ),
+        );
+      }
+
+      return CachedNetworkImage(
+        imageUrl: imageUrl,
+        width: size,
+        height: size,
+        color: color,
+        placeholder: (context, url) => SizedBox(
+          width: size,
+          height: size,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.0,
+            color: color,
+          ),
+        ),
+        errorWidget: (context, url, error) => Icon(
+          Icons.home_rounded,
+          size: size,
+          color: color,
+        ),
+      );
+    }
+
+    return Icon(
+      icon,
+      size: size,
+      color: color,
+    );
   }
 
   Widget _buildNavItem({
@@ -456,10 +539,9 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     required TutorialFlowProvider tutorial,
     required bool tutorialCondition,
   }) {
-    // ignore: unused_local_variable
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final iconColor = _getIconColor(index);
     final glowColor = _getGlowColor(index);
+    final selectedGradient = _getGemGradient(index);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -473,111 +555,137 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                 (index == 0 || index == 2 || index == 3);
 
             return GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () => _onItemTapped(index),
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-                constraints: BoxConstraints(
-                  minHeight: 50,
-                  maxHeight: 70,
-                  minWidth: 50,
-                ),
-                decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            glowColor.withValues(alpha: 0.15),
-                            glowColor.withValues(alpha: 0.08),
-                          ],
-                        )
-                      : null,
-                  borderRadius: BorderRadius.circular(20),
-                  border: isSelected
-                      ? Border.all(
-                          color: glowColor.withValues(alpha: 0.4),
-                          width: 1.5,
-                        )
-                      : null,
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: glowColor,
-                            blurRadius: 12,
-                            spreadRadius: 1,
-                            offset: Offset(0, 2),
+              child: AnimatedSlide(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutBack,
+                offset: isSelected ? const Offset(0, -0.08) : Offset.zero,
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  scale: isSelected ? 1.04 : 1.0,
+                  child: SizedBox(
+                    height: 56,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 240),
+                          curve: Curves.easeOut,
+                          width: isSelected ? 40 : 36,
+                          height: isSelected ? 40 : 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: isSelected
+                                ? LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: selectedGradient,
+                                  )
+                                : LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Colors.white.withValues(alpha: 0.08),
+                                      Colors.white.withValues(alpha: 0.02),
+                                    ],
+                                  ),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.white.withValues(alpha: 0.75)
+                                  : iconColor.withValues(alpha: 0.24),
+                              width: isSelected ? 2 : 1,
+                            ),
+                            boxShadow: [
+                              if (isSelected) ...[
+                                BoxShadow(
+                                  color: glowColor.withValues(alpha: 0.85),
+                                  blurRadius: 22,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 6),
+                                ),
+                                const BoxShadow(
+                                  color: Colors.black54,
+                                  blurRadius: 12,
+                                  offset: Offset(0, 7),
+                                ),
+                              ] else
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.22),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                            ],
                           ),
-                        ]
-                      : null,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedContainer(
-                      duration: Duration(milliseconds: 200),
-                      child: shouldShowLoading
-                          ? SizedBox(
-                              width: isSelected ? 28 : 24,
-                              height: isSelected ? 28 : 24,
-                              child: CircularProgressIndicator(
-                                color: iconColor,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : imageUrl != null
-                              ? SizedBox(
-                                  width: isSelected ? 28 : 24,
-                                  height: isSelected ? 28 : 24,
-                                  child: CachedNetworkImage(
-                                    imageUrl: imageUrl,
-                                    color: iconColor,
-                                    placeholder: (context, url) => SizedBox(
-                                      width: isSelected ? 28 : 24,
-                                      height: isSelected ? 28 : 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.0,
-                                        color: iconColor,
-                                      ),
-                                    ),
-                                    errorWidget: (context, url, error) => Icon(
-                                      Icons.home_rounded,
-                                      size: isSelected ? 28 : 24,
-                                      color: iconColor,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              if (isSelected)
+                                Positioned(
+                                  top: 7,
+                                  left: 10,
+                                  child: Container(
+                                    width: 13,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.32),
+                                      borderRadius: BorderRadius.circular(999),
                                     ),
                                   ),
-                                )
-                              : Icon(
-                                  icon,
-                                  size: isSelected ? 28 : 24,
-                                  color: iconColor,
                                 ),
-                    ),
-                    if (!isSelected) ...[
-                      SizedBox(height: 6),
-                      Flexible(
-                        child: AnimatedDefaultTextStyle(
-                          duration: Duration(milliseconds: 200),
-                          style: TextStyle(
-                            fontSize: isSelected ? 11 : 9,
-                            fontWeight:
-                                isSelected ? FontWeight.w700 : FontWeight.w600,
-                            color: iconColor,
-                            height: 1.2,
-                            letterSpacing: 0.3,
-                          ),
-                          child: Text(
-                            label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            textScaler: TextScaler.linear(1.0),
+                              _buildNavIcon(
+                                icon: icon,
+                                imageUrl: imageUrl,
+                                color: isSelected ? Colors.white : iconColor,
+                                size: isSelected ? 20 : 18,
+                                shouldShowLoading: shouldShowLoading,
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
-                  ],
+                        const SizedBox(height: 2),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          constraints: BoxConstraints(
+                            minHeight: isSelected ? 12 : 10,
+                            maxWidth: 64,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isSelected ? 6 : 0,
+                            vertical: isSelected ? 1 : 0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.black.withValues(alpha: 0.28)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              label,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              textScaler: const TextScaler.linear(1.0),
+                              style: TextStyle(
+                                fontSize: isSelected ? 9.5 : 8.5,
+                                fontWeight: isSelected
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                height: 1.1,
+                                letterSpacing: 0,
+                                color: isSelected
+                                    ? Colors.white
+                                    : iconColor.withValues(alpha: 0.86),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             );
@@ -619,129 +727,145 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     }
 
     // Apply the height, ensuring it's within the allowed range
-    double adjustedHeight = (containerHeight + 15).clamp(60.0, 90.0);
+    double adjustedHeight = (containerHeight + 16).clamp(70.0, 92.0);
 
     // Only add extra padding for Android devices with 3-button software navigation bar
     final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
     final bool hasThreeButtonNav = isAndroid && bottomNavBarPadding >= 40;
     final totalBottomPadding = hasThreeButtonNav ? bottomNavBarPadding : 0.0;
-    final extraBottomSpace = 16.0;
+    final extra = widget.fullBleed ? 15.0 : 0.0;
 
-    return Container(
-      height: adjustedHeight + totalBottomPadding + extraBottomSpace,
-      padding: EdgeInsets.only(bottom: totalBottomPadding),
-      child: Consumer<TutorialFlowProvider>(
-        builder: (context, tutorial, _) {
-          return SizedBox(
-            height: adjustedHeight + 16,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Modern navigation bar with enhanced neon glow design
-                Container(
-                  height: adjustedHeight + 8,
-                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF0F0F1F),
-                        Color(0xFF1A1A2E),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        blurRadius: 20,
-                        spreadRadius: 4,
-                        offset: Offset(0, -8),
+    return ColoredBox(
+      color: Colors.transparent,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: totalBottomPadding),
+        child: SizedBox(
+          height: adjustedHeight + extra,
+          child: Consumer<TutorialFlowProvider>(
+            builder: (context, tutorial, _) {
+              return Align(
+                alignment: Alignment.bottomCenter,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      left: 18,
+                      right: 18,
+                      bottom: 4,
+                      child: Container(
+                        height: adjustedHeight - 14,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(34),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.35),
+                              blurRadius: 24,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
+                        ),
                       ),
-                      BoxShadow(
-                        color: Color(0xFF5DBBFF).withValues(alpha: 0.1),
-                        blurRadius: 15,
-                        spreadRadius: 2,
+                    ),
+                    Container(
+                      height: adjustedHeight - 8,
+                      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF172B4D),
+                            Color(0xFF111827),
+                            Color(0xFF241A3B),
+                          ],
+                          stops: [0.0, 0.55, 1.0],
+                        ),
+                        borderRadius: BorderRadius.circular(34),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            blurRadius: 2,
+                            offset: const Offset(0, -1),
+                          ),
+                          BoxShadow(
+                            color: Color(0xFF5DBBFF).withValues(alpha: 0.12),
+                            blurRadius: 24,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.16),
+                          width: 1.2,
+                        ),
                       ),
-                    ],
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      width: 1,
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 0,
+                                imageUrl: 'assets/images/sikka.png',
+                                label: AppLocalizations.of(context)!.courses,
+                                isSelected: widget.index == 0,
+                                tutorial: tutorial,
+                                tutorialCondition: tutorial.currentStep == 0 &&
+                                    tutorial.isActive,
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 1,
+                                icon: Icons.play_circle_filled_rounded,
+                                label: AppLocalizations.of(context)!.shorts,
+                                isSelected: widget.index == 1,
+                                tutorial: tutorial,
+                                tutorialCondition: tutorial.currentStep == 4 &&
+                                    tutorial.isActive,
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 3,
+                                icon: Icons.shopping_cart_rounded,
+                                label: AppLocalizations.of(context)!.store,
+                                isSelected: widget.index == 3,
+                                tutorial: tutorial,
+                                tutorialCondition: false,
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 2,
+                                icon: Icons.emoji_events_rounded,
+                                label: AppLocalizations.of(context)!.challenges,
+                                isSelected: widget.index == 2,
+                                tutorial: tutorial,
+                                tutorialCondition: false,
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildNavItem(
+                                index: 4,
+                                icon: Icons.person_rounded,
+                                label: AppLocalizations.of(context)!.profile,
+                                isSelected: widget.index == 4,
+                                tutorial: tutorial,
+                                tutorialCondition: false,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Story tab (Courses)
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 0,
-                            imageUrl: 'assets/images/sikka.png',
-                            label: AppLocalizations.of(context)!.courses,
-                            isSelected: widget.index == 0,
-                            tutorial: tutorial,
-                            tutorialCondition:
-                                tutorial.currentStep == 0 && tutorial.isActive,
-                          ),
-                        ),
-
-                        // Shorts tab
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 1,
-                            icon: Icons.play_circle_filled_rounded,
-                            label: AppLocalizations.of(context)!.shorts,
-                            isSelected: widget.index == 1,
-                            tutorial: tutorial,
-                            tutorialCondition:
-                                tutorial.currentStep == 4 && tutorial.isActive,
-                          ),
-                        ),
-
-                        // Store tab
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 3,
-                            icon: Icons.shopping_cart_rounded,
-                            label: AppLocalizations.of(context)!.store,
-                            isSelected: widget.index == 3,
-                            tutorial: tutorial,
-                            tutorialCondition: false,
-                          ),
-                        ),
-                        // My Courses tab
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 2,
-                            icon: Icons.bookmark_rounded,
-                            label: 'My Courses',
-                            isSelected: widget.index == 2,
-                            tutorial: tutorial,
-                            tutorialCondition: false,
-                          ),
-                        ),
-
-                        // Profile tab
-                        Expanded(
-                          child: _buildNavItem(
-                            index: 4,
-                            icon: Icons.person_rounded,
-                            label: AppLocalizations.of(context)!.profile,
-                            isSelected: widget.index == 4,
-                            tutorial: tutorial,
-                            tutorialCondition: false,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

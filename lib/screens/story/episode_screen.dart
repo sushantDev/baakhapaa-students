@@ -956,7 +956,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                       SizedBox(height: 12),
                       Row(
                         children: [
-                          Icon(
+                          FaIcon(
                             FontAwesomeIcons.coins,
                             size: 16,
                             color: canAfford ? Colors.amber : Colors.red,
@@ -984,7 +984,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                           ),
                           child: Row(
                             children: [
-                              Icon(FontAwesomeIcons.crown,
+                              FaIcon(FontAwesomeIcons.crown,
                                   color: Colors.green, size: 16),
                               SizedBox(width: 10),
                               Expanded(
@@ -1571,9 +1571,8 @@ class _LockSectionState extends State<LockSection> {
           context.findAncestorStateOfType<_EpisodeScreenState>();
       final detailedData = episodeState?._detailedSeasonData;
       final seasonData = detailedData ?? story;
-      final initialState = seasonData.containsKey('my_list')
-          ? seasonData['my_list'] == true
-          : storyProvider.isSeasonInMyList(seasonId);
+      final initialState = storyProvider.isSeasonInMyList(seasonId) ||
+          seasonData['my_list'] == true;
       DebugLogger.api(
           '📋 Episode Screen: Initial My List state for season $seasonId: $initialState');
       DebugLogger.api(
@@ -1910,8 +1909,7 @@ class _LockSectionState extends State<LockSection> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Use listen: false to prevent auto-refresh - only rebuild when state changes internally
-    final storyProvider = Provider.of<Story>(context, listen: false);
+    final storyProvider = Provider.of<Story>(context);
     final story = storyProvider.selectedSeason;
     final bool isDefaultLocked = story['is_locked'] ?? false;
     final bool isWatched = story['watched'] ?? false;
@@ -1940,11 +1938,10 @@ class _LockSectionState extends State<LockSection> {
         ? Icons.menu_book
         : (hasLastWatched ? Icons.play_circle_fill : Icons.play_arrow);
 
-    // Check My List status from both API data and provider state
-    // If detailed season data has my_list field, use it; otherwise use provider state
-    final bool isInMyList = seasonData.containsKey('my_list')
-        ? seasonData['my_list'] == true
-        : storyProvider.isSeasonInMyList(seasonId);
+    // Check My List status from both API data and provider state. The provider
+    // list wins when detail data is stale and still says false.
+    final bool isInMyList = storyProvider.isSeasonInMyList(seasonId) ||
+        seasonData['my_list'] == true;
     final creatorUsername = seasonData['username']?.toString().trim();
 
     return LayoutBuilder(
@@ -3530,7 +3527,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                             ),
                             title: Row(
                               children: [
-                                Icon(FontAwesomeIcons.crown,
+                                FaIcon(FontAwesomeIcons.crown,
                                     color: Colors.amber, size: 20),
                                 SizedBox(width: 10),
                                 Text(
@@ -3563,7 +3560,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                                     children: [
                                       Row(
                                         children: [
-                                          Icon(FontAwesomeIcons.gift,
+                                          FaIcon(FontAwesomeIcons.gift,
                                               color: Colors.green, size: 16),
                                           SizedBox(width: 10),
                                           Text(
@@ -4104,7 +4101,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                             ),
                             title: Row(
                               children: [
-                                Icon(FontAwesomeIcons.crown,
+                                FaIcon(FontAwesomeIcons.crown,
                                     color: Colors.amber, size: 20),
                                 SizedBox(width: 10),
                                 Text(
@@ -4137,7 +4134,7 @@ class _UnlockRewardsTabsState extends State<UnlockRewardsTabs> {
                                     children: [
                                       Row(
                                         children: [
-                                          Icon(FontAwesomeIcons.gift,
+                                          FaIcon(FontAwesomeIcons.gift,
                                               color: Colors.green, size: 16),
                                           SizedBox(width: 10),
                                           Text(

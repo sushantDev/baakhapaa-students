@@ -13,6 +13,7 @@ import 'package:baakhapaa/screens/others/creator_request_screen.dart';
 import '../../services/subscription_service.dart';
 import '../../models/subscription.dart';
 // import 'package:baakhapaa/theme/theme_constants.dart';
+import 'package:baakhapaa/widgets/footer.dart';
 import 'package:baakhapaa/widgets/header.dart';
 import 'package:baakhapaa/widgets/loading.dart';
 import '../../utils/puppet_screen_mapping.dart';
@@ -79,6 +80,7 @@ class _ChallengeDetailSeasonScreenState
     }
   }
 
+  // ignore: unused_element
   Future<void> _useUnlockChallengeBenefit() async {
     if (_unlockChallengeBenefit == null || challenge == null) return;
 
@@ -583,12 +585,7 @@ class _ChallengeDetailSeasonScreenState
                               });
                             },
                           ),
-                          UnlockRewardsTabs(
-                            challengeData: challenge,
-                            unlockChallengeBenefit: _unlockChallengeBenefit,
-                            onUseUnlockChallengeBenefit:
-                                _useUnlockChallengeBenefit,
-                          ),
+                          UnlockRewardsTabs(challengeData: challenge),
                           Builder(
                             builder: (context) {
                               bool isExpired = false;
@@ -699,11 +696,7 @@ class _ChallengeDetailSeasonScreenState
                                         }
 
                                         if (!unlocked) {
-                                          return unlockChallengeButton(
-                                            onTap: () => handleChallengeTap(
-                                                context, challenge),
-                                            text: 'Unlock Challenge',
-                                          );
+                                          return const SizedBox.shrink();
                                         } else if (seasonProgress.step2 ==
                                             ChallengeStepStatus.active) {
                                           return GestureDetector(
@@ -880,7 +873,12 @@ class _ChallengeDetailSeasonScreenState
                             ParticipatedSeasons(
                               challengeSeasons: sortedChallengeSeasons,
                             ),
-                          const SizedBox(height: 10),
+                          ChallengeBottomUnlockButton(
+                            challenge: challenge,
+                            onUnlock: () =>
+                                handleChallengeTap(context, challenge),
+                          ),
+                          Footer.scrollBottomSpacer(context),
                         ],
                       ),
                     ),

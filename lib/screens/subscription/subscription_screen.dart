@@ -396,7 +396,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                 ],
               ),
-              child: const Icon(
+              child: FaIcon(
                 FontAwesomeIcons.crown,
                 size: 44,
                 color: Colors.white,

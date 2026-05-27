@@ -14,6 +14,7 @@ import '../../models/subscription.dart';
 // import 'package:baakhapaa/screens/shorts/single_shorts_screen.dart';
 // import 'package:baakhapaa/screens/user/achievements_screen.dart';
 // import 'package:baakhapaa/theme/theme_constants.dart';
+import 'package:baakhapaa/widgets/footer.dart';
 import 'package:baakhapaa/widgets/header.dart';
 import 'package:baakhapaa/widgets/loading.dart';
 // import 'package:baakhapaa/models/url.dart';
@@ -81,6 +82,7 @@ class _ChallengeDetailShortsScreenState
     }
   }
 
+  // ignore: unused_element
   Future<void> _useUnlockChallengeBenefit() async {
     if (_unlockChallengeBenefit == null || challenge == null) return;
 
@@ -339,22 +341,13 @@ class _ChallengeDetailShortsScreenState
       final bool locked = isChallengeLocked(challenge);
 
       if (locked) {
-        final dynamic unlockPointsRaw = challenge?['unlock_points'];
-        final int unlockPoints = unlockPointsRaw == null
-            ? 0
-            : (unlockPointsRaw is int
-                ? unlockPointsRaw
-                : int.tryParse(unlockPointsRaw.toString()) ?? 0);
-
         step1Status = ChallengeStepStatus.active;
         step2Status = ChallengeStepStatus.locked;
         step3Status = ChallengeStepStatus.locked;
-        buttonText = unlockPoints == 0 ? 'Unlock Free' : 'Unlock Challenge';
-        buttonColor = unlockPoints == 0
-            ? const Color(0xFF3DDC84)
-            : const Color(0xFFE50914);
+        buttonText = '';
+        buttonColor = const Color(0xFFE50914);
         buttonIcon = Icons.lock_open;
-        buttonAction = () => handleChallengeTap(context, challenge);
+        buttonAction = null;
       } else {
         step1Status = ChallengeStepStatus.completed;
         step2Status = ChallengeStepStatus.active;
@@ -621,12 +614,7 @@ class _ChallengeDetailShortsScreenState
                               });
                             },
                           ),
-                          UnlockRewardsTabs(
-                            challengeData: challenge,
-                            unlockChallengeBenefit: _unlockChallengeBenefit,
-                            onUseUnlockChallengeBenefit:
-                                _useUnlockChallengeBenefit,
-                          ),
+                          UnlockRewardsTabs(challengeData: challenge),
                           Builder(
                             builder: (context) {
                               final progressState = getChallengeProgressState();
@@ -677,7 +665,12 @@ class _ChallengeDetailShortsScreenState
                             ParticipatedVideos(
                               challengeShorts: sortedChallengeShorts,
                             ),
-                          const SizedBox(height: 10),
+                          ChallengeBottomUnlockButton(
+                            challenge: challenge,
+                            onUnlock: () =>
+                                handleChallengeTap(context, challenge),
+                          ),
+                          Footer.scrollBottomSpacer(context),
                         ],
                       ),
                     ),

@@ -1,10 +1,13 @@
 import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import '../story/story_screen.dart';
 // import './shorts_screen.dart';
 import '../auth/login_screen.dart'; // Assuming you have a login screen
+import '../../providers/video_state_provider.dart';
+import '../../utils/debug_logger.dart';
 
 class GuestWinnerScreen extends StatefulWidget {
   static const routeName = '/guest-winner-screen';
@@ -46,6 +49,20 @@ class _GuestWinnerScreenState extends State<GuestWinnerScreen>
     ));
 
     _animationController.forward();
+
+    // Stop background music when win screen is shown
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final videoStateProvider =
+            Provider.of<VideoStateProvider>(context, listen: false);
+        DebugLogger.info(
+            '🎵 GuestWinnerScreen: Stopping background music on win screen');
+        videoStateProvider.forceStopAllRegisteredVideos();
+        videoStateProvider.forceStopAllVideos();
+        videoStateProvider.exitResultScreen();
+        videoStateProvider.setScreen('win');
+      }
+    });
   }
 
   @override

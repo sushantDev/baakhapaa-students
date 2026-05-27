@@ -10,6 +10,7 @@ import '../../providers/shorts.dart';
 import '../../providers/auth.dart';
 import '../../providers/puppet_interaction_provider.dart';
 import '../../utils/debug_logger.dart';
+import '../../widgets/footer.dart';
 import '../../widgets/header.dart';
 import '../../widgets/loading.dart';
 
@@ -23,6 +24,7 @@ class AllChallengesScreen extends StatefulWidget {
 }
 
 class _AllChallengesScreenState extends State<AllChallengesScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = false;
 
   static const List<String> _filters = ['All', 'Unlocked', 'Locked'];
@@ -256,10 +258,12 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: isDark ? const Color(0xFF090909) : Colors.white,
       appBar: header(
         context: context,
         titleText: context.l10n.challenges,
+        scaffoldKey: _scaffoldKey,
       ),
       body: RefreshIndicator(
         onRefresh: _loadChallenges,
@@ -287,7 +291,9 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
                           physics: const BouncingScrollPhysics(
                             parent: AlwaysScrollableScrollPhysics(),
                           ),
-                          padding: const EdgeInsets.only(bottom: 20),
+                          padding: EdgeInsets.only(
+                            bottom: Footer.estimatedHeight(context) + 16,
+                          ),
                           itemCount: challenges.length,
                           itemBuilder: (_, i) {
                             final c = challenges[i];
@@ -335,29 +341,29 @@ class SubHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
-        children: [
-          // All Challenges (Active)
-          Expanded(
-            child: Container(
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFAD9), // light cream
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Text(
-                "All Challenges",
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-          ),
+          // children: [
+          //   // All Challenges (Active)
+          //   Expanded(
+          //     child: Container(
+          //       height: 44,
+          //       alignment: Alignment.center,
+          //       decoration: BoxDecoration(
+          //         color: const Color(0xFFFFFAD9), // light cream
+          //         borderRadius: BorderRadius.circular(30),
+          //       ),
+          //       // child: Text(
+          //       //   "All Challenges",
+          //       //   style: GoogleFonts.poppins(
+          //       //     fontSize: 15,
+          //       //     fontWeight: FontWeight.w600,
+          //       //     color: Colors.black87,
+          //       //   ),
+          //       // ),
+          //     ),
+          //   ),
 
-        ],
-      ),
+          // ],
+          ),
     );
   }
 }
@@ -843,7 +849,7 @@ class EmptyState extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
+              child: FaIcon(
                 FontAwesomeIcons.trophy,
                 size: 48,
                 color: Colors.white,

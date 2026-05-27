@@ -1155,7 +1155,7 @@ class _StoryScreenState extends State<StoryScreen>
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: Colors.amber.withValues(alpha: 0.1),
-                    child: const Icon(
+                    child: FaIcon(
                       FontAwesomeIcons.trophy,
                       color: Colors.amber,
                       size: 20,
@@ -1163,7 +1163,7 @@ class _StoryScreenState extends State<StoryScreen>
                   ),
                   errorWidget: (context, url, error) => Container(
                     color: Colors.amber.withValues(alpha: 0.1),
-                    child: const Icon(
+                    child: FaIcon(
                       FontAwesomeIcons.trophy,
                       color: Colors.amber,
                       size: 20,
@@ -1172,7 +1172,7 @@ class _StoryScreenState extends State<StoryScreen>
                 )
               : Container(
                   color: Colors.amber.withValues(alpha: 0.1),
-                  child: const Icon(
+                  child: FaIcon(
                     FontAwesomeIcons.trophy,
                     color: Colors.amber,
                     size: 20,
@@ -1326,10 +1326,10 @@ class _StoryScreenState extends State<StoryScreen>
 
   IconData _getGiftIcon(int index) {
     final icons = [
-      FontAwesomeIcons.coins,
-      FontAwesomeIcons.trophy,
-      FontAwesomeIcons.crown,
-      FontAwesomeIcons.gift,
+      FontAwesomeIcons.coins.data,
+      FontAwesomeIcons.trophy.data,
+      FontAwesomeIcons.crown.data,
+      FontAwesomeIcons.gift.data,
     ];
     return icons[index % icons.length];
   }
@@ -2099,7 +2099,7 @@ class _StoryScreenState extends State<StoryScreen>
 
           // Add challenges section after the first category
           if (i == 0 && suggestedSeasons.length > 1) {
-            sections.add(_buildRewardsSection());
+            // sections.add(_buildRewardsSection());
           }
         }
 
@@ -2479,7 +2479,7 @@ class _StoryScreenState extends State<StoryScreen>
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Icon(
+                                        FaIcon(
                                           FontAwesomeIcons.image,
                                           color: Colors.amber,
                                           size: 40,
@@ -2551,7 +2551,7 @@ class _StoryScreenState extends State<StoryScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      FaIcon(
                         FontAwesomeIcons.bullhorn,
                         color: Colors.amber,
                         size: 48,
@@ -2584,17 +2584,18 @@ class _StoryScreenState extends State<StoryScreen>
   }
 
   Widget _buildMyListSection() {
-    return Selector<Story, List<dynamic>>(
-      selector: (context, story) => story.myListItems,
-      builder: (context, myListItems, child) {
+    return Consumer<Story>(
+      builder: (context, story, child) {
+        final myListItems = story.myListItems;
         // Check if user is authenticated
         if (_authProvider.isGuest) {
           return SizedBox.shrink();
         }
 
         // Use cached data if provider data is empty but cache has data
-        List<dynamic> myListItemsToShow =
-            myListItems.isNotEmpty ? myListItems : _cachedMyListItems;
+        List<dynamic> myListItemsToShow = myListItems.isNotEmpty
+            ? myListItems
+            : (story.hasFetchedMyList ? [] : _cachedMyListItems);
 
         // Update cache if provider has newer data
         if (myListItems.isNotEmpty && myListItems != _cachedMyListItems) {
@@ -2613,6 +2614,7 @@ class _StoryScreenState extends State<StoryScreen>
           final season = Map<String, dynamic>.from(item['season'] ?? {});
           return {
             ...season,
+            'my_list': true,
             'watched': item['watched'] ?? false,
             'rewards': item['reward_details'] != null
                 ? Map<String, dynamic>.from(item['reward_details'])
@@ -3196,7 +3198,7 @@ class _StoryScreenState extends State<StoryScreen>
           _buildConditionalDifficultSeasonsSection(),
 
           // 6. Challenges Section
-          _buildChallengesSection(),
+          // _buildChallengesSection(),
 
           // 7. Suggested Seasons Section (Netflix-style)
           _buildSuggestedSeasonsSection(),
@@ -3204,10 +3206,13 @@ class _StoryScreenState extends State<StoryScreen>
           // AdMob Banner Ad
           const BaakhaBannerAd(),
 
-          // 8. Banner Ads
+          // 8. Gift Rewards Section
+          // _buildRewardsSection(),
+
+          // 9. Banner Ads
           _buildBannerAds(),
 
-          // 9. Difficult Seasons Section (default position)
+          // 10. Difficult Seasons Section (default position)
           _buildDefaultDifficultSeasonsSection(),
 
           // AdMob Banner Ad
@@ -3220,9 +3225,9 @@ class _StoryScreenState extends State<StoryScreen>
   }
 
   Widget _buildBooksSection() {
-    return Selector<Story, List<dynamic>>(
-      selector: (context, story) => story.readableSeasons,
-      builder: (context, readableSeasons, child) {
+    return Consumer<Story>(
+      builder: (context, story, child) {
+        final readableSeasons = story.readableSeasons;
         // Use cached data if provider data is empty but cache has data
         List<dynamic> readableSeasonsToShow = readableSeasons.isNotEmpty
             ? readableSeasons
@@ -3269,7 +3274,20 @@ class _StoryScreenState extends State<StoryScreen>
             if (_showInterestPrompt) _buildInterestPromptBanner(),
             _buildUnifiedSeasonCategory(
               title: 'Books 📖',
-              seasons: readableSeasonsToShow,
+              seasons: readableSeasonsToShow.map((item) {
+                final season = item is Map<String, dynamic>
+                    ? Map<String, dynamic>.from(item)
+                    : Map<String, dynamic>.from(item as Map);
+                final rawSeasonId = season['id'];
+                final seasonId = rawSeasonId is int
+                    ? rawSeasonId
+                    : int.tryParse(rawSeasonId?.toString() ?? '');
+                if (seasonId != null) {
+                  season['my_list'] = story.isSeasonInMyList(seasonId) ||
+                      season['my_list'] == true;
+                }
+                return season;
+              }).toList(),
               isWatchTitle: false,
               showDifficulty: false,
               showSeeMore: true,

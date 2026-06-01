@@ -616,8 +616,7 @@ class Story with ChangeNotifier {
         headers: Url.baakhapaaAuthHeaders(authToken),
       );
 
-      DebugLogger.api(
-          '?? Episode API Response Status: ${response.statusCode}');
+      DebugLogger.api('?? Episode API Response Status: ${response.statusCode}');
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       DebugLogger.api('?? Episode API Response: ${responseData.toString()}');
 
@@ -862,8 +861,7 @@ class Story with ChangeNotifier {
             .map((e) => Map<String, dynamic>.from(e))
             .toList();
 
-        DebugLogger.info(
-            '?? Final list size after filtering: ${list.length}');
+        DebugLogger.info('?? Final list size after filtering: ${list.length}');
         DebugLogger.info('?? Returning list for creator $creatorId');
 
         if (!returnList) {
@@ -987,46 +985,53 @@ class Story with ChangeNotifier {
     try {
       if (episodeCoinsUsers == 0) {
         // for baakhapaa episodes reward process
-        await http.post(
-          Uri.parse(Url.baakhapaaApi('/coin-transaction')),
-          headers: Url.baakhapaaAuthHeaders(authToken),
-          body: json.encode({
-            'user_id': userId,
-            'status': 'credited',
-            'coin': fallBackPoints,
-            'remarks':
-                'Episode "$episodeTitle" has been completed. You have received fallback points because the creator\'s allocated points have already been used.',
-          }),
-        );
-      } else {
-        // for creators episodes reward process
-        if (episodeCoinsUsers > 0) {
-          await http
-              .get(
-            Uri.parse(
-              Url.baakhapaaApi('/episode/$episodeId/deduct-coins-users'),
-            ),
-            headers: Url.baakhapaaAuthHeaders(authToken),
-          )
-              .then((_) async {
-            await http.post(
+        await http
+            .post(
               Uri.parse(Url.baakhapaaApi('/coin-transaction')),
               headers: Url.baakhapaaAuthHeaders(authToken),
               body: json.encode({
                 'user_id': userId,
                 'status': 'credited',
-                'coin': episodeRewardCoin,
-                'remarks': 'Episode "$episodeTitle" completed',
+                'coin': fallBackPoints,
+                'remarks':
+                    'Episode "$episodeTitle" has been completed. You have received fallback points because the creator\'s allocated points have already been used.',
               }),
-            );
+            )
+            .timeout(const Duration(seconds: 12));
+      } else {
+        // for creators episodes reward process
+        if (episodeCoinsUsers > 0) {
+          await http
+              .get(
+                Uri.parse(
+                  Url.baakhapaaApi('/episode/$episodeId/deduct-coins-users'),
+                ),
+                headers: Url.baakhapaaAuthHeaders(authToken),
+              )
+              .timeout(const Duration(seconds: 12))
+              .then((_) async {
+            await http
+                .post(
+                  Uri.parse(Url.baakhapaaApi('/coin-transaction')),
+                  headers: Url.baakhapaaAuthHeaders(authToken),
+                  body: json.encode({
+                    'user_id': userId,
+                    'status': 'credited',
+                    'coin': episodeRewardCoin,
+                    'remarks': 'Episode "$episodeTitle" completed',
+                  }),
+                )
+                .timeout(const Duration(seconds: 12));
           });
         }
       }
-      await http.get(
-        Uri.parse(Url.baakhapaaApi(
-            '/episode/$episodeId/watched?game_mode=${_selectedGameMode.toApiString()}')),
-        headers: Url.baakhapaaAuthHeaders(authToken),
-      );
+      await http
+          .get(
+            Uri.parse(Url.baakhapaaApi(
+                '/episode/$episodeId/watched?game_mode=${_selectedGameMode.toApiString()}')),
+            headers: Url.baakhapaaAuthHeaders(authToken),
+          )
+          .timeout(const Duration(seconds: 12));
     } catch (error) {
       throw error;
     }
@@ -1084,7 +1089,8 @@ class Story with ChangeNotifier {
   }
 
   /// Completed challenge modes from GET /api/v2/episode/{id} and related fields.
-  List<GameMode> completedGameModesFromEpisode(Map<String, dynamic> episodeData) {
+  List<GameMode> completedGameModesFromEpisode(
+      Map<String, dynamic> episodeData) {
     final completed = <GameMode>{};
 
     if (isQuizCompletedFromEpisode(episodeData)) {
@@ -1165,8 +1171,7 @@ class Story with ChangeNotifier {
       return GameMode.values
           .where(
             (mode) =>
-                mode != GameMode.quiz ||
-                episodeHasQuizQuestions(episodeData),
+                mode != GameMode.quiz || episodeHasQuizQuestions(episodeData),
           )
           .toList();
     }
@@ -1524,8 +1529,7 @@ class Story with ChangeNotifier {
       DebugLogger.api(
         '?? My List Toggle API Response Status: ${response.statusCode}',
       );
-      DebugLogger.api(
-          '?? My List Toggle API Response Body: ${response.body}');
+      DebugLogger.api('?? My List Toggle API Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
@@ -1670,8 +1674,7 @@ class Story with ChangeNotifier {
 
   Future<Map<String, dynamic>?> fetchSeasonDetails(int seasonId) async {
     try {
-      DebugLogger.api(
-          '?? STARTING fetchSeasonDetails - Season ID: $seasonId');
+      DebugLogger.api('?? STARTING fetchSeasonDetails - Season ID: $seasonId');
 
       final String apiUrl = Url.baakhapaaApi('/season-details/$seasonId');
       DebugLogger.api('?? API URL: $apiUrl');

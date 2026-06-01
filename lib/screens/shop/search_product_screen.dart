@@ -1,8 +1,10 @@
 import 'package:baakhapaa/helpers/helpers.dart';
 import 'package:flutter/material.dart';
-import '../../utils/puppet_screen_mapping.dart';
 import 'package:provider/provider.dart';
 
+import '../../utils/guest_auth_helper.dart';
+import '../../utils/puppet_screen_mapping.dart';
+import '../../providers/auth.dart';
 import '../../providers/shop.dart';
 import '../../widgets/search_product_item.dart';
 import '../../widgets/header.dart';
@@ -414,7 +416,23 @@ class _SearchProductScreenState extends State<SearchProductScreen>
               ),
               itemCount: productsToShow.length,
               itemBuilder: (context, index) {
-                return SearchProductItem(productsToShow[index]);
+                return Stack(
+                  children: [
+                    SearchProductItem(productsToShow[index]),
+                    if (Provider.of<Auth>(context, listen: false).isGuest)
+                      Positioned.fill(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              GuestAuthHelper.showGuestLoginDialog(
+                                  context, 'view product details');
+                            },
+                          ),
+                        ),
+                      ),
+                  ],
+                );
               },
             ),
           ),

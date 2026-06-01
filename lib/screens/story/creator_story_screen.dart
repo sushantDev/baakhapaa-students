@@ -1112,7 +1112,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
       return;
     }
 
-    List<int> userIds = [_authProvider.userId, _creatorId!];
+    List<int> userIds = [_creatorId!];
     bool conversationStarted =
         _authProvider.creatorsRankings['conversation_started'] ?? false;
 
@@ -1126,6 +1126,14 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
             'conversation_id': _authProvider.selectedConversationId,
             'user_name': creatorName,
           },
+        );
+      }).catchError((error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.toString()),
+            backgroundColor: Colors.red,
+          ),
         );
       });
       return;
@@ -1203,14 +1211,16 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                 try {
                   Navigator.of(dialogContext).pop();
 
-                  await _authProvider.coinTransaction(
-                      conversationFee,
-                      'debited',
-                      'Fee for stating a conversation with $creatorName.');
+                  await _authProvider.startConversations(userIds);
 
                   if (!mounted) return;
 
-                  await _authProvider.startConversations(userIds);
+                  if (conversationFee > 0) {
+                    await _authProvider.coinTransaction(
+                        conversationFee,
+                        'debited',
+                        'Fee for starting a conversation with $creatorName.');
+                  }
 
                   if (!mounted) return;
 
@@ -1225,7 +1235,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Failed to start conversation'),
+                      content: Text('Failed to start conversation: $e'),
                       backgroundColor: Colors.red,
                     ),
                   );

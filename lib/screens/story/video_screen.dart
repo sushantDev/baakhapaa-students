@@ -2289,6 +2289,7 @@ class _VideoScreenState extends State<VideoScreen>
 
                                     await showModalBottomSheet(
                                       context: context,
+                                      isScrollControlled: true,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.vertical(
                                             top: Radius.circular(24)),
@@ -4298,58 +4299,68 @@ class _VideoScreenState extends State<VideoScreen>
 
   Widget _buildShareModal(BuildContext context, String shareText) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75, // Limit max height
+      // Size to content but never exceed 85% of the screen; inner list scrolls.
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).brightness == Brightness.dark
             ? Color(0xFF2A2A2A)
             : Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: EdgeInsets.all(20),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        20,
+        20,
+        20 + MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          SizedBox(height: 20),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue.shade400, Colors.purple.shade400],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  Icons.share_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue.shade400, Colors.purple.shade400],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    Icons.share_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+              SizedBox(width: 16),
+              Text(
+                'Share Episode',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black87,
                 ),
-                SizedBox(width: 16),
-                Text(
-                  'Share Episode',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 24),
-            Consumer<Auth>(
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          // Conversations grid: flexes & scrolls so the action tiles below
+          // (incl. "Share using QR") always stay visible on any screen size.
+          Flexible(
+            child: Consumer<Auth>(
               builder: (ctx, auth, _) => FutureBuilder(
                 future: auth.fetchConversations(),
                 builder: (context, snapshot) {
@@ -4357,132 +4368,132 @@ class _VideoScreenState extends State<VideoScreen>
                     return const ListSkeleton(itemCount: 2);
                   }
                   final conversations = auth.conversations;
-                  return Container(
-                    height: 160, // Reduced from 200 to prevent overflow
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                        childAspectRatio: 0.8,
-                      ),
-                      itemCount: conversations.length,
-                      itemBuilder: (ctx, index) {
-                        final conversation = conversations[index];
-                        final userImage = conversation['user_image'] ?? '';
-                        final name = conversation['name'] ?? '';
-                        final username = conversation['username'];
-
-                        return GestureDetector(
-                          onTap: () {
-                            final authProvider =
-                                Provider.of<Auth>(context, listen: false);
-                            authProvider
-                                .sendMessages(
-                              conversation['conversation_id'],
-                              shareText,
-                              'text',
-                              null,
-                              null,
-                            )
-                                .then((_) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Shared Successfully!')),
-                              );
-                              Navigator.pop(context);
-                            }).catchError((error) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text(
-                                        'Failed to share. Please try again.')),
-                              );
-                            });
-                          },
-                          child: Column(
-                            children: [
-                              CircleAvatar(
-                                radius: 25,
-                                backgroundImage: userImage.isNotEmpty
-                                    ? CachedNetworkImageProvider(userImage)
-                                    : null,
-                                child: userImage.isEmpty
-                                    ? Text(name.isEmpty ? username[0] : name[0])
-                                    : null,
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                name.isEmpty ? username : name,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      childAspectRatio: 0.8,
                     ),
+                    itemCount: conversations.length,
+                    itemBuilder: (ctx, index) {
+                      final conversation = conversations[index];
+                      final userImage = conversation['user_image'] ?? '';
+                      final name = conversation['name'] ?? '';
+                      final username = conversation['username'];
+
+                      return GestureDetector(
+                        onTap: () {
+                          final authProvider =
+                              Provider.of<Auth>(context, listen: false);
+                          authProvider
+                              .sendMessages(
+                            conversation['conversation_id'],
+                            shareText,
+                            'text',
+                            null,
+                            null,
+                          )
+                              .then((_) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Shared Successfully!')),
+                            );
+                            Navigator.pop(context);
+                          }).catchError((error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Failed to share. Please try again.')),
+                            );
+                          });
+                        },
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 25,
+                              backgroundImage: userImage.isNotEmpty
+                                  ? CachedNetworkImageProvider(userImage)
+                                  : null,
+                              child: userImage.isEmpty
+                                  ? Text(name.isEmpty ? username[0] : name[0])
+                                  : null,
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              name.isEmpty ? username : name,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   );
                 },
               ),
             ),
-            SizedBox(height: 20),
-            Divider(),
-            SizedBox(height: 10),
-            ListTile(
-              leading: Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.share,
-                  color: Colors.green,
-                  size: 20,
-                ),
+          ),
+          SizedBox(height: 10),
+          Divider(),
+          SizedBox(height: 4),
+          ListTile(
+            leading: Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              title: Text('Share to Other Apps'),
-              trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16),
-              onTap: () {
-                SharePlus.instance.share(
-                  ShareParams(
-                    text: shareText,
-                    subject: "Join Skill Sikka and earn points!",
-                    sharePositionOrigin: Rect.fromLTWH(0, 0, 100, 100),
-                  ),
-                );
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.qr_code,
-                  color: Colors.blue,
-                  size: 20,
-                ),
+              child: Icon(
+                Icons.share,
+                color: Colors.green,
+                size: 20,
               ),
-              title: Text('Share using QR'),
-              trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16),
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(24)),
-                  ),
-                  builder: (context) => ShareWithQrModal(
-                    data: shareText,
-                    subject: "Join Skill Sikka and earn points!",
-                  ),
-                );
-              },
             ),
-            SizedBox(height: 20),
-          ],
-        ),
+            title: Text('Share to Other Apps'),
+            trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16),
+            onTap: () {
+              SharePlus.instance.share(
+                ShareParams(
+                  text: shareText,
+                  subject: "Join Skill Sikka and earn points!",
+                  sharePositionOrigin: Rect.fromLTWH(0, 0, 100, 100),
+                ),
+              );
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.qr_code,
+                color: Colors.blue,
+                size: 20,
+              ),
+            ),
+            title: Text('Share using QR'),
+            trailing: Icon(Icons.arrow_forward_ios_rounded, size: 16),
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                builder: (context) => ShareWithQrModal(
+                  data: shareText,
+                  subject: "Join Skill Sikka and earn points!",
+                ),
+              );
+            },
+          ),
+          SizedBox(height: 8),
+        ],
       ),
     );
   }

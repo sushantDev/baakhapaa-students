@@ -1553,6 +1553,13 @@ class _StoryScreenState extends State<StoryScreen>
 
     return InkWell(
       onTap: () async {
+        final auth = Provider.of<Auth>(context, listen: false);
+        if (auth.isGuest) {
+          await GuestAuthHelper.showGuestLoginDialog(
+              context, 'view course details');
+          return;
+        }
+
         try {
           // Always navigate to episode screen - let users see unlock requirements for locked seasons
           final story = context.read<Story>();
@@ -2147,7 +2154,14 @@ class _StoryScreenState extends State<StoryScreen>
                   ),
                   if (showSeeMore)
                     InkWell(
-                      onTap: () {
+                      onTap: () async {
+                        final auth = Provider.of<Auth>(context, listen: false);
+                        if (auth.isGuest) {
+                          await GuestAuthHelper.showGuestLoginDialog(
+                              context, 'view courses');
+                          return;
+                        }
+
                         if (seeMoreQuery == 'content_type:readable') {
                           // Show all readable books via search screen with pre-loaded results
                           final storyProvider =
@@ -2587,9 +2601,82 @@ class _StoryScreenState extends State<StoryScreen>
     return Consumer<Story>(
       builder: (context, story, child) {
         final myListItems = story.myListItems;
-        // Check if user is authenticated
+        // Prompt guests to log in if they try to open My List
         if (_authProvider.isGuest) {
-          return SizedBox.shrink();
+          return GestureDetector(
+            onTap: () {
+              GuestAuthHelper.showGuestLoginDialog(context, 'view My List');
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.blue.shade900,
+                    Colors.blue.shade700,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 14,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      Icons.playlist_add_check,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'My List',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          'Login to access your saved courses and continue where you left off.',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.login,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+            ),
+          );
         }
 
         // Use cached data if provider data is empty but cache has data
@@ -2884,7 +2971,14 @@ class _StoryScreenState extends State<StoryScreen>
             children: [
               // Search button
               InkWell(
-                onTap: () {
+                onTap: () async {
+                  final auth = Provider.of<Auth>(context, listen: false);
+                  if (auth.isGuest) {
+                    await GuestAuthHelper.showGuestLoginDialog(
+                        context, 'search courses');
+                    return;
+                  }
+
                   Navigator.push(
                     context,
                     PageTransition(

@@ -2012,19 +2012,47 @@ class Auth with ChangeNotifier {
     }
   }
 
+  int _parseConversationId(dynamic data) {
+    if (data is int) return data;
+    if (data is String) return int.tryParse(data) ?? 0;
+    if (data is Map<String, dynamic>) {
+      for (final key in [
+        'value',
+        'conversation_id',
+        'id',
+        'chat_room_id',
+      ]) {
+        final parsed = _parseConversationId(data[key]);
+        if (parsed > 0) return parsed;
+      }
+    }
+    return 0;
+  }
+
   Future<void> startConversations(List<int> userIds) async {
     try {
       final response = await http.post(
         Uri.parse(Url.baakhapaaApi('/conversations')),
         headers: Url.baakhapaaAuthHeaders(_token),
-        body: json.encode({'user_ids': userIds}),
+        body: json.encode({
+          'user_ids': userIds,
+          if (userIds.isNotEmpty) 'user_id': userIds.last,
+        }),
       );
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
-      if (responseData['success']) {
-        _selectedConversationId = responseData['data']['value'];
+      final success = responseData['success'] == true ||
+          responseData['success'] == 1 ||
+          responseData['success']?.toString().toLowerCase() == 'true';
+      if (success) {
+        final conversationId = _parseConversationId(responseData['data']);
+        if (conversationId <= 0) {
+          throw responseData['message'] ?? 'Missing conversation id';
+        }
+        _selectedConversationId = conversationId;
+        notifyListeners();
       } else {
-        throw ('Error');
+        throw responseData['message'] ?? 'Failed to start conversation';
       }
     } catch (error) {
       throw error;
@@ -2260,10 +2288,20 @@ class Auth with ChangeNotifier {
   // Fetch daily rewards status from the server
   Future<void> fetchDailyRewardsStatus() async {
     try {
-      final response = await http.get(
-        Uri.parse(Url.baakhapaaApi('/daily-rewards/status')),
-        headers: Url.baakhapaaAuthHeaders(token),
-      );
+      var response = await http
+          .get(
+            Uri.parse(Url.baakhapaaApi('/daily-rewards/status')),
+            headers: Url.baakhapaaAuthHeaders(token),
+          )
+          .timeout(const Duration(seconds: 12));
+      if (response.statusCode == 404) {
+        response = await http
+            .get(
+              Uri.parse(Url.baakhapaaApi('/daily-reward/status')),
+              headers: Url.baakhapaaAuthHeaders(token),
+            )
+            .timeout(const Duration(seconds: 12));
+      }
 
       // Check if response is successful before decoding
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -2271,7 +2309,18 @@ class Auth with ChangeNotifier {
         if (response.body.trim().startsWith('{')) {
           final responseData = json.decode(utf8.decode(response.bodyBytes));
           if (responseData['success']) {
-            _dailyRewardsData = responseData['data'];
+            final data = Map<String, dynamic>.from(responseData['data'] ?? {});
+            data['current_day'] ??= DateTime.now().weekday;
+            data['rewards'] ??= [
+              {'day': 1, 'name': 'Monday', 'points': 10},
+              {'day': 2, 'name': 'Tuesday', 'points': 15},
+              {'day': 3, 'name': 'Wednesday', 'points': 20},
+              {'day': 4, 'name': 'Thursday', 'points': 25},
+              {'day': 5, 'name': 'Friday', 'points': 30},
+              {'day': 6, 'name': 'Saturday', 'points': 40},
+              {'day': 7, 'name': 'Sunday', 'points': 50},
+            ];
+            _dailyRewardsData = data;
             notifyListeners();
           } else {
             throw responseData['message'] ??
@@ -2294,10 +2343,18 @@ class Auth with ChangeNotifier {
 
       // Set default values rather than failing
       _dailyRewardsData = {
-        'current_day': 1,
+        'current_day': DateTime.now().weekday,
         'can_claim_today': true, // Allow claiming by default if API fails
         'last_claim_date': null,
-        'reward_points': [10, 15, 20, 25, 30, 40, 50],
+        'rewards': [
+          {'day': 1, 'name': 'Monday', 'points': 10},
+          {'day': 2, 'name': 'Tuesday', 'points': 15},
+          {'day': 3, 'name': 'Wednesday', 'points': 20},
+          {'day': 4, 'name': 'Thursday', 'points': 25},
+          {'day': 5, 'name': 'Friday', 'points': 30},
+          {'day': 6, 'name': 'Saturday', 'points': 40},
+          {'day': 7, 'name': 'Sunday', 'points': 50},
+        ],
       };
 
       notifyListeners();
@@ -2308,10 +2365,20 @@ class Auth with ChangeNotifier {
   // Claim daily reward
   Future<Map<String, dynamic>> claimDailyReward() async {
     try {
-      final response = await http.post(
-        Uri.parse(Url.baakhapaaApi('/daily-rewards/claim')),
-        headers: Url.baakhapaaAuthHeaders(token),
-      );
+      var response = await http
+          .post(
+            Uri.parse(Url.baakhapaaApi('/daily-rewards/claim')),
+            headers: Url.baakhapaaAuthHeaders(token),
+          )
+          .timeout(const Duration(seconds: 12));
+      if (response.statusCode == 404) {
+        response = await http
+            .post(
+              Uri.parse(Url.baakhapaaApi('/daily-reward/claim')),
+              headers: Url.baakhapaaAuthHeaders(token),
+            )
+            .timeout(const Duration(seconds: 12));
+      }
 
       // Check if response is successful before decoding
       if (response.statusCode >= 200 && response.statusCode < 300) {

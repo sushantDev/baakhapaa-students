@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../widgets/product.dart';
-import '../../utils/puppet_screen_mapping.dart';
+import 'package:provider/provider.dart';
 
+import '../../utils/guest_auth_helper.dart';
+import '../../utils/puppet_screen_mapping.dart';
 import '../../widgets/header.dart';
+import '../../providers/auth.dart';
 import '../../providers/cart.dart';
 import '../../providers/shop.dart';
-import 'package:provider/provider.dart';
+import '../../widgets/product.dart';
 import '../../widgets/skeleton_loading.dart';
 import 'cart_screen.dart';
 import '../../../utils/debug_logger.dart';
@@ -499,9 +501,25 @@ class _ForYouProductsScreenState extends State<ForYouProductsScreen>
                   DebugLogger.info('Product data: $productMap');
                 }
 
-                return ProductItem(
-                  productMap,
-                  compactReward: true,
+                return Stack(
+                  children: [
+                    ProductItem(
+                      productMap,
+                      compactReward: true,
+                    ),
+                    if (Provider.of<Auth>(context, listen: false).isGuest)
+                      Positioned.fill(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              GuestAuthHelper.showGuestLoginDialog(
+                                  context, 'view product details');
+                            },
+                          ),
+                        ),
+                      ),
+                  ],
                 );
               },
             ),

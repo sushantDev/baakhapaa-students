@@ -880,17 +880,21 @@ class _LoginScreenState extends State<LoginScreen> {
         child: _isLoading
             ? _buildAuthLoadingView(isDarkMode)
             : SafeArea(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 24),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        SizedBox(height: 30),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(height: 16),
 
                         // Logo Section - Matching story_screen colors
                         Container(
-                          padding: EdgeInsets.symmetric(vertical: 30),
+                          padding: EdgeInsets.symmetric(vertical: 16),
                           child: Column(
                             children: [
                               Container(
@@ -993,7 +997,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         // Login Form - Ultra Modern Design with Enhanced Premium Look
                         Container(
-                          padding: EdgeInsets.all(32),
+                          padding: EdgeInsets.all(24),
                           decoration: BoxDecoration(
                             color: isDarkMode
                                 ? Colors.grey.shade900.withValues(alpha: 0.75)
@@ -1296,7 +1300,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                        SizedBox(height: 32),
+                        SizedBox(height: 16),
 
                         // Social Login Section - Modern & Platform Specific
                         Container(
@@ -1446,55 +1450,59 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                        SizedBox(height: 30),
-
-                        // Register Link - Matching story_screen colors
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 16),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? Colors.black.withValues(alpha: 0.6)
-                                : Colors.white.withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.amber.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "${context.l10n.dontHaveAccount} ",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontFamily: 'Montserrat',
-                                  color: isDarkMode
-                                      ? Colors.white.withValues(alpha: 0.9)
-                                      : Colors.grey.shade800,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: goToRegisterScreen,
-                                child: Text(
-                                  context.l10n.signUpTitle,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontFamily: 'Montserrat',
-                                    color: Colors.amber.shade600,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
+                              SizedBox(height: 20),
                             ],
                           ),
                         ),
-
-                        SizedBox(height: 40),
-                      ],
+                      ),
                     ),
-                  ),
+
+                    // Register Link - Fixed footer, always visible without scrolling
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(24, 8, 24, 16),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: isDarkMode
+                              ? Colors.black.withValues(alpha: 0.6)
+                              : Colors.white.withValues(alpha: 0.85),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.amber.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "${context.l10n.dontHaveAccount} ",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontFamily: 'Montserrat',
+                                color: isDarkMode
+                                    ? Colors.white.withValues(alpha: 0.9)
+                                    : Colors.grey.shade800,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: goToRegisterScreen,
+                              child: Text(
+                                context.l10n.signUpTitle,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontFamily: 'Montserrat',
+                                  color: Colors.amber.shade600,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
       ),

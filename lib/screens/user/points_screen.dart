@@ -337,10 +337,10 @@ class _PointsScreenState extends State<PointsScreen>
       _rewardedAd?.show(
         onUserEarnedReward: (AdWithoutView ad, RewardItem reward) async {
           var auth = Provider.of<Auth>(context, listen: false);
+          final rewardPoints =
+              int.tryParse(_user['ads_watched_points']?.toString() ?? '') ?? 5;
           await auth
-              .coinTransaction(
-                  int.parse(_user['ads_watched_points'].toString()),
-                  'credited',
+              .coinTransaction(rewardPoints, 'credited',
                   'Rewards granted from watching ads.')
               .then((_) {
             showScaffoldMessenger(context,

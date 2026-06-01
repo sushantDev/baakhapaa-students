@@ -254,13 +254,28 @@ class _SingleProductScreenState extends State<SingleProductScreen>
       return imagePath.substring(storageIdx + '/storage/'.length);
     }
 
+    final trimmedPath = imagePath.trim();
+
     // If it already starts with http, return as-is
-    if (imagePath.startsWith('http')) {
+    if (trimmedPath.startsWith('http')) {
+      return trimmedPath;
+    }
+
+    var normalizedPath = trimmedPath.replaceFirst(RegExp(r'^/+'), '');
+    normalizedPath = normalizedPath.replaceFirst(
+        RegExp(r'^(storage/storage/)+'), 'storage/');
+    normalizedPath = normalizedPath.replaceFirst(RegExp(r'^storage/'), '');
+
+    if (normalizedPath.startsWith('http')) {
+      return normalizedPath;
+    }
+
+    if (normalizedPath.isEmpty) {
       return imagePath;
     }
 
     // Prepend the CDN base URL for relative paths
-    return '${Url.mediaUrl}$imagePath';
+    return '${Url.mediaUrl}/$normalizedPath';
   }
 
   // Build specification images widget

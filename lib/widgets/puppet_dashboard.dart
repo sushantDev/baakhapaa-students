@@ -702,13 +702,27 @@ class _PuppetDashboardState extends State<PuppetDashboard>
       return;
     }
     _rewardedAd!.show(
-      onUserEarnedReward: (ad, reward) {
+      onUserEarnedReward: (ad, reward) async {
         DebugLogger.info('User earned reward: ${reward.amount} ${reward.type}');
-        // Reward points via auth provider
         try {
           final auth = Provider.of<Auth>(context, listen: false);
-          auth.claimDailyReward();
-        } catch (_) {}
+          final rewardPoints =
+              int.tryParse(auth.user['ads_watched_points']?.toString() ?? '') ??
+                  5;
+          await auth.coinTransaction(
+            rewardPoints,
+            'credited',
+            'Rewards granted from watching ads.',
+          );
+          await auth.getUser();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('You earned $rewardPoints points!')),
+            );
+          }
+        } catch (e) {
+          DebugLogger.error('Rewarded ad credit failed: $e');
+        }
       },
     );
     _rewardedAd = null;

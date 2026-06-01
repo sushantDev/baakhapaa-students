@@ -807,8 +807,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                 context: context,
                 isScrollControlled: true,
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 builder: (context) => ShareWithQrModal(
                   data: shareText,

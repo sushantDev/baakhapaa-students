@@ -113,10 +113,10 @@ class _StoryScreenState extends State<StoryScreen>
   bool _positioningCalculated = false;
 
   // For stories scroll tracking
+  late ScrollController _mainScrollController;
   late ScrollController _storiesScrollController;
-  double _scrollPosition = 0.0;
-  int _currentStoryIndex = 0;
-
+  static double _savedMainScrollOffset = 0;
+  static double _savedStoriesScrollOffset = 0;
   // Continue watching refresh tracking
   DateTime? _lastContinueWatchingRefresh;
   static const Duration _refreshCooldown = Duration(seconds: 2);
@@ -125,7 +125,10 @@ class _StoryScreenState extends State<StoryScreen>
   void initState() {
     super.initState();
     _bannerPageController = PageController();
-    _storiesScrollController = ScrollController();
+    _mainScrollController =
+        ScrollController(initialScrollOffset: _savedMainScrollOffset);
+    _storiesScrollController =
+        ScrollController(initialScrollOffset: _savedStoriesScrollOffset);
 
     // Initialize tutorial with proper delay and state check
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -169,7 +172,14 @@ class _StoryScreenState extends State<StoryScreen>
         _initInProgress = true;
         try {
           if (mounted) {
-            await _mainInit();
+            final story = Provider.of<Story>(context, listen: false);
+            final hasStoryData = story.featuredSeasons.isNotEmpty ||
+                story.suggestedSeasons.isNotEmpty ||
+                story.readableSeasons.isNotEmpty ||
+                story.difficultSeasons.isNotEmpty;
+            if (!hasStoryData) {
+              await _mainInit();
+            }
             if (mounted) {
               await _showEulaIfNeeded();
             }
@@ -187,7 +197,14 @@ class _StoryScreenState extends State<StoryScreen>
   @override
   void dispose() {
     _bannerTimer?.cancel();
+    if (_mainScrollController.hasClients) {
+      _savedMainScrollOffset = _mainScrollController.offset;
+    }
+    if (_storiesScrollController.hasClients) {
+      _savedStoriesScrollOffset = _storiesScrollController.offset;
+    }
     _bannerPageController.dispose();
+    _mainScrollController.dispose();
     _storiesScrollController.dispose();
 
     // Clear puppet interactions when leaving screen
@@ -199,6 +216,37 @@ class _StoryScreenState extends State<StoryScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    if (_authProvider == null) {
+      final auth = Provider.of<Auth>(context, listen: false);
+      final story = Provider.of<Story>(context, listen: false);
+      final hasStoryData = story.featuredSeasons.isNotEmpty ||
+          story.suggestedSeasons.isNotEmpty ||
+          story.readableSeasons.isNotEmpty ||
+          story.difficultSeasons.isNotEmpty;
+
+      _authProvider = auth;
+      if (hasStoryData) {
+        _isLoading = false;
+        if (story.featuredSeasons.isNotEmpty) {
+          _cachedFeaturedSeasons =
+              List<Map<String, dynamic>>.from(story.featuredSeasons);
+        }
+        if (story.myListItems.isNotEmpty) {
+          _cachedMyListItems = List<dynamic>.from(story.myListItems);
+        }
+        if (story.continueWatchingItems.isNotEmpty) {
+          _cachedContinueWatchingItems =
+              List<dynamic>.from(story.continueWatchingItems);
+        }
+        if (story.difficultSeasons.isNotEmpty) {
+          _cachedDifficultSeasons = List<dynamic>.from(story.difficultSeasons);
+        }
+        if (story.readableSeasons.isNotEmpty) {
+          _cachedReadableSeasons = List<dynamic>.from(story.readableSeasons);
+        }
+      }
+    }
 
     // Check if we're returning to this screen from another screen
     // CRITICAL: Skip during initial load (_isInit=true or _mainInitInProgress=true)
@@ -286,7 +334,7 @@ class _StoryScreenState extends State<StoryScreen>
       final freshStoryProvider = Provider.of<Story>(context, listen: false);
 
       // Always refresh continue watching when returning to story screen
-      await freshStoryProvider.fetchContinueWatching();
+      await freshStoryProvider.fetchContinueWatching(forceRefresh: true);
 
       // Update cache if new data is available
       if (mounted && freshStoryProvider.continueWatchingItems.isNotEmpty) {
@@ -429,12 +477,35 @@ class _StoryScreenState extends State<StoryScreen>
     try {
       final authProv = Provider.of<Auth>(context, listen: false);
       var _storyProvider = Provider.of<Story>(context, listen: false);
+      final hasUsableStoryData = _storyProvider.featuredSeasons.isNotEmpty ||
+          _storyProvider.suggestedSeasons.isNotEmpty ||
+          _storyProvider.readableSeasons.isNotEmpty ||
+          _storyProvider.difficultSeasons.isNotEmpty;
 
       // Set _authProvider immediately with setState so the UI can dismiss
       // the Loading() widget gate in _upgradeAlertWidget()
       setState(() {
         _authProvider = authProv;
-        _isLoading = true;
+        _isLoading = !hasUsableStoryData;
+        if (_storyProvider.featuredSeasons.isNotEmpty) {
+          _cachedFeaturedSeasons =
+              List<Map<String, dynamic>>.from(_storyProvider.featuredSeasons);
+        }
+        if (_storyProvider.myListItems.isNotEmpty) {
+          _cachedMyListItems = List<dynamic>.from(_storyProvider.myListItems);
+        }
+        if (_storyProvider.continueWatchingItems.isNotEmpty) {
+          _cachedContinueWatchingItems =
+              List<dynamic>.from(_storyProvider.continueWatchingItems);
+        }
+        if (_storyProvider.difficultSeasons.isNotEmpty) {
+          _cachedDifficultSeasons =
+              List<dynamic>.from(_storyProvider.difficultSeasons);
+        }
+        if (_storyProvider.readableSeasons.isNotEmpty) {
+          _cachedReadableSeasons =
+              List<dynamic>.from(_storyProvider.readableSeasons);
+        }
       });
 
       DebugLogger.info("🏛️ StoryScreen - Auth provider initialized");
@@ -727,12 +798,22 @@ class _StoryScreenState extends State<StoryScreen>
     try {
       final story = Provider.of<Story>(context, listen: false);
       Future.wait([
-        story.fetchFeaturedSeasons().catchError((e) => Future.value()),
-        story.fetchSuggestedSeasons().catchError((e) => Future.value()),
-        story.fetchDifficultSeasons().catchError((e) => Future.value()),
-        story.fetchMyList().catchError((e) => Future.value()),
-        story.fetchContinueWatching().catchError((e) => Future.value()),
-        story.fetchReadableSeasons().catchError((e) => Future.value()),
+        story
+            .fetchFeaturedSeasons(forceRefresh: true)
+            .catchError((e) => Future.value()),
+        story
+            .fetchSuggestedSeasons(forceRefresh: true)
+            .catchError((e) => Future.value()),
+        story
+            .fetchDifficultSeasons(forceRefresh: true)
+            .catchError((e) => Future.value()),
+        story.fetchMyList(forceRefresh: true).catchError((e) => Future.value()),
+        story
+            .fetchContinueWatching(forceRefresh: true)
+            .catchError((e) => Future.value()),
+        story
+            .fetchReadableSeasons(forceRefresh: true)
+            .catchError((e) => Future.value()),
       ], eagerError: false)
           .then((_) {
         if (mounted) {
@@ -983,13 +1064,6 @@ class _StoryScreenState extends State<StoryScreen>
         DebugLogger.info(
             '   ✅ Building Continue Watching section with ${continueWatchingItemsToShow.length} items');
 
-        // Debug: Log raw continue watching data
-        DebugLogger.info('⏯️ RAW Continue Watching Data:');
-        for (int i = 0; i < continueWatchingItemsToShow.length; i++) {
-          final item = continueWatchingItemsToShow[i];
-          DebugLogger.info('⏯️ Item $i: ${json.encode(item)}');
-        }
-
         // Convert Continue Watching items to season format for unified widget
         // (reward_details are already normalized in the provider)
         List<dynamic> seasonsForUnifiedWidget =
@@ -998,9 +1072,6 @@ class _StoryScreenState extends State<StoryScreen>
           final rewards =
               Map<String, dynamic>.from(item['reward_details'] ?? {});
           final completionPercentage = item['completion_percentage'] ?? 0.0;
-
-          DebugLogger.info(
-              '   - Season: ${season['title']}, Completion: $completionPercentage%, Rewards: $rewards');
 
           return {
             ...season,
@@ -2770,109 +2841,84 @@ class _StoryScreenState extends State<StoryScreen>
 
                   return Container(
                     height: 380,
-                    child: NotificationListener<ScrollNotification>(
-                      onNotification: (ScrollNotification notification) {
-                        if (notification is ScrollUpdateNotification) {
-                          setState(() {
-                            _scrollPosition = _storiesScrollController.offset;
-
-                            // Calculate current index based on scroll position for individual cards
-                            double itemWidth =
-                                MediaQuery.of(context).size.width -
-                                    90; // Account for peek
-                            _currentStoryIndex =
-                                (_scrollPosition / itemWidth).round();
-                            if (_currentStoryIndex >=
-                                featuredSeasonsToShow.length) {
-                              _currentStoryIndex =
-                                  featuredSeasonsToShow.length - 1;
-                            }
-                            if (_currentStoryIndex < 0) {
-                              _currentStoryIndex = 0;
-                            }
-                          });
+                    child: ListView.builder(
+                      controller: _storiesScrollController,
+                      scrollDirection: Axis.horizontal,
+                      physics: BouncingScrollPhysics(),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 0, vertical: 0), // Remove all padding
+                      itemCount: featuredSeasonsToShow.length,
+                      itemBuilder: (_, index) {
+                        if (index >= featuredSeasonsToShow.length) {
+                          return SizedBox.shrink();
                         }
-                        return false;
-                      },
-                      child: ListView.builder(
-                        controller: _storiesScrollController,
-                        scrollDirection: Axis.horizontal,
-                        physics: BouncingScrollPhysics(),
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 0, vertical: 0), // Remove all padding
-                        itemCount: featuredSeasonsToShow.length,
-                        itemBuilder: (_, index) {
-                          if (index >= featuredSeasonsToShow.length) {
-                            return SizedBox.shrink();
-                          }
 
-                          return Consumer<TutorialFlowProvider>(
-                            builder: (context, tutorial, _) => Container(
-                              width: MediaQuery.of(context).size.width - 90,
-                              margin: EdgeInsets.only(
-                                right: 10,
-                                top: 0,
-                                bottom: 0,
-                              ),
-                              child: AnimatedContainer(
-                                duration: Duration(milliseconds: 600),
-                                curve: Curves.easeInOut,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.black.withValues(alpha: 0.3)
-                                          : Colors.grey.withValues(alpha: 0.15),
-                                      blurRadius: 20,
-                                      spreadRadius: 0,
-                                      offset: Offset(0, 8),
-                                    ),
-                                    BoxShadow(
-                                      color: Theme.of(context).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white.withValues(alpha: 0.05)
-                                          : Colors.white.withValues(alpha: 0.8),
-                                      blurRadius: 1,
-                                      spreadRadius: 0,
-                                      offset: Offset(0, 1),
-                                    ),
-                                  ],
-                                  border: Border.all(
+                        return Consumer<TutorialFlowProvider>(
+                          builder: (context, tutorial, _) => Container(
+                            width: MediaQuery.of(context).size.width - 90,
+                            margin: EdgeInsets.only(
+                              right: 10,
+                              top: 0,
+                              bottom: 0,
+                            ),
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 600),
+                              curve: Curves.easeInOut,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
                                     color: Theme.of(context).brightness ==
                                             Brightness.dark
-                                        ? Colors.white.withValues(alpha: 0.1)
-                                        : Colors.grey.withValues(alpha: 0.1),
-                                    width: 1,
+                                        ? Colors.black.withValues(alpha: 0.3)
+                                        : Colors.grey.withValues(alpha: 0.15),
+                                    blurRadius: 20,
+                                    spreadRadius: 0,
+                                    offset: Offset(0, 8),
                                   ),
+                                  BoxShadow(
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white.withValues(alpha: 0.05)
+                                        : Colors.white.withValues(alpha: 0.8),
+                                    blurRadius: 1,
+                                    spreadRadius: 0,
+                                    offset: Offset(0, 1),
+                                  ),
+                                ],
+                                border: Border.all(
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : Colors.grey.withValues(alpha: 0.1),
+                                  width: 1,
                                 ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      StoryCard(
-                                        index,
-                                        featuredSeasonsToShow[index],
-                                        _authProvider.user,
-                                        'storyScreen',
-                                        [],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(24),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    StoryCard(
+                                      index,
+                                      featuredSeasonsToShow[index],
+                                      _authProvider.user,
+                                      'storyScreen',
+                                      [],
+                                    ),
+                                    if (tutorial.currentStep == 5 &&
+                                        tutorial.isActive)
+                                      Positioned(
+                                        right: 30,
+                                        child: TutorialIndicator(),
                                       ),
-                                      if (tutorial.currentStep == 5 &&
-                                          tutorial.isActive)
-                                        Positioned(
-                                          right: 30,
-                                          child: TutorialIndicator(),
-                                        ),
-                                    ],
-                                  ),
+                                  ],
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 } catch (e) {
@@ -3196,6 +3242,7 @@ class _StoryScreenState extends State<StoryScreen>
         },
         child: RawScrollbar(
           child: SingleChildScrollView(
+            controller: _mainScrollController,
             physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics()),
             child: _buildMainContent(),

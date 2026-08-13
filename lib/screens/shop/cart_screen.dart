@@ -15,6 +15,7 @@ import '../../helpers/helpers.dart';
 import '../../utils/puppet_screen_mapping.dart';
 import '../../widgets/checkout_bottom_sheet.dart';
 import '../../utils/order_success_dialog.dart';
+import '../../widgets/footer.dart';
 
 // Fix the ambiguous import by using an alias
 import '../../services/khalti_service.dart' as app_khalti;
@@ -44,177 +45,183 @@ class CartScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: header(context: context, titleText: '${context.l10n.yourCart}'),
-      body: cart.itemCount == 0
-          ? _buildEmptyCart(context)
-          : Container(
-              // decoration: BoxDecoration(
-              //   gradient: LinearGradient(
-              //     begin: Alignment.topCenter,
-              //     end: Alignment.bottomCenter,
-              //     colors: [
-              //       Theme.of(context).brightness == Brightness.dark
-              //           ? Color.fromARGB(255, 9, 9, 9)
-              //           : Colors.white,
-              //       Theme.of(context).brightness == Brightness.dark
-              //           ? Color(0xFF082032)
-              //           : Color.fromARGB(255, 248, 248, 248),
-              //     ],
-              //   ),
-              // ),
-              child: Column(
-                children: <Widget>[
-                  // Cart Items Section
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: BouncingScrollPhysics(),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 16),
+        appBar: header(context: context, titleText: '${context.l10n.yourCart}'),
+        // Add bottom padding equal to the footer height so the cart summary
+        // and footer-sized content are not overlapped by the global footer.
+        body: Padding(
+          padding: EdgeInsets.only(bottom: Footer.estimatedHeight(context)),
+          child: cart.itemCount == 0
+              ? _buildEmptyCart(context)
+              : Container(
+                  // decoration: BoxDecoration(
+                  //   gradient: LinearGradient(
+                  //     begin: Alignment.topCenter,
+                  //     end: Alignment.bottomCenter,
+                  //     colors: [
+                  //       Theme.of(context).brightness == Brightness.dark
+                  //           ? Color.fromARGB(255, 9, 9, 9)
+                  //           : Colors.white,
+                  //       Theme.of(context).brightness == Brightness.dark
+                  //           ? Color(0xFF082032)
+                  //           : Color.fromARGB(255, 248, 248, 248),
+                  //     ],
+                  //   ),
+                  // ),
+                  child: Column(
+                    children: <Widget>[
+                      // Cart Items Section
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: BouncingScrollPhysics(),
+                          child: Column(
+                            children: [
+                              SizedBox(height: 16),
 
-                          // Cart Items List
-                          Container(
-                            margin: EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Color(0xFF2A2A2A)
-                                      : Colors.white,
-                                  Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Color(0xFF1E1E1E)
-                                      : Colors.grey.shade50,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.black.withValues(alpha: 0.3)
-                                      : Colors.grey.withValues(alpha: 0.15),
-                                  blurRadius: 15,
-                                  spreadRadius: 0,
-                                  offset: Offset(0, 5),
-                                ),
-                              ],
-                              border: Border.all(
-                                color: Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Colors.white.withValues(alpha: 0.1)
-                                    : Colors.grey.withValues(alpha: 0.1),
-                                width: 1,
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                // Header
-                                Container(
-                                  padding: EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.blue.shade400,
-                                              Colors.cyan.shade400
-                                            ],
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.blue
-                                                  .withValues(alpha: 0.4),
-                                              blurRadius: 10,
-                                              offset: Offset(0, 4),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Icon(
-                                          Icons.shopping_cart_rounded,
-                                          color: Colors.white,
-                                          size: 24,
-                                        ),
-                                      ),
-                                      SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Cart Items',
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                letterSpacing: 0.5,
-                                              ),
-                                            ),
-                                            SizedBox(height: 4),
-                                            Text(
-                                              '${cart.itemCount} ${cart.itemCount == 1 ? 'item' : 'items'} in your cart',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                              // Cart Items List
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Color(0xFF2A2A2A)
+                                          : Colors.white,
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Color(0xFF1E1E1E)
+                                          : Colors.grey.shade50,
                                     ],
                                   ),
-                                ),
-
-                                // Cart Items
-                                ListView.separated(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  padding: EdgeInsets.only(bottom: 20),
-                                  itemCount: cart.itemCount,
-                                  separatorBuilder: (context, index) => Divider(
-                                    height: 1,
-                                    color: Colors.grey.withValues(alpha: 0.2),
-                                    indent: 20,
-                                    endIndent: 20,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.black.withValues(alpha: 0.3)
+                                          : Colors.grey.withValues(alpha: 0.15),
+                                      blurRadius: 15,
+                                      spreadRadius: 0,
+                                      offset: Offset(0, 5),
+                                    ),
+                                  ],
+                                  border: Border.all(
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white.withValues(alpha: 0.1)
+                                        : Colors.grey.withValues(alpha: 0.1),
+                                    width: 1,
                                   ),
-                                  itemBuilder: (ctx, i) {
-                                    final cartItem =
-                                        cart.items.values.toList()[i];
-                                    final productId =
-                                        cart.items.keys.toList()[i];
-                                    return CartItem(
-                                      cartItem.id,
-                                      productId,
-                                      cartItem.price,
-                                      cartItem.quantity,
-                                      cartItem.title,
-                                      cartItem.image,
-                                    );
-                                  },
                                 ),
-                              ],
-                            ),
+                                child: Column(
+                                  children: [
+                                    // Header
+                                    Container(
+                                      padding: EdgeInsets.all(20),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  Colors.blue.shade400,
+                                                  Colors.cyan.shade400
+                                                ],
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.blue
+                                                      .withValues(alpha: 0.4),
+                                                  blurRadius: 10,
+                                                  offset: Offset(0, 4),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Icon(
+                                              Icons.shopping_cart_rounded,
+                                              color: Colors.white,
+                                              size: 24,
+                                            ),
+                                          ),
+                                          SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Cart Items',
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 0.5,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 4),
+                                                Text(
+                                                  '${cart.itemCount} ${cart.itemCount == 1 ? 'item' : 'items'} in your cart',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Cart Items
+                                    ListView.separated(
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      padding: EdgeInsets.only(bottom: 20),
+                                      itemCount: cart.itemCount,
+                                      separatorBuilder: (context, index) =>
+                                          Divider(
+                                        height: 1,
+                                        color:
+                                            Colors.grey.withValues(alpha: 0.2),
+                                        indent: 20,
+                                        endIndent: 20,
+                                      ),
+                                      itemBuilder: (ctx, i) {
+                                        final cartItem =
+                                            cart.items.values.toList()[i];
+                                        final productId =
+                                            cart.items.keys.toList()[i];
+                                        return CartItem(
+                                          cartItem.id,
+                                          productId,
+                                          cartItem.price,
+                                          cartItem.quantity,
+                                          cartItem.title,
+                                          cartItem.image,
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              SizedBox(height: 16),
+                            ],
                           ),
-
-                          SizedBox(height: 16),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
 
-                  // Cart Summary & Checkout Section
-                  _buildCartSummary(context, cart),
-                ],
-              ),
-            ),
-    );
+                      // Cart Summary & Checkout Section
+                      _buildCartSummary(context, cart),
+                    ],
+                  ),
+                ),
+        ));
   }
 
   Widget _buildEmptyCart(BuildContext context) {

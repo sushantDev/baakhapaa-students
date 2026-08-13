@@ -37,6 +37,8 @@ class Auth with ChangeNotifier {
   late List<dynamic> _withdrawals = [];
   Function(String)? _onLevelUpCheck;
   bool _isLoadingUser = false; // Add loading state for user fetching
+  Future<void>? _getUserFuture;
+  Future<bool>? _tryAutoLoginFuture;
   // Add these properties to your Auth class (near the top with other late declarations)
   late Map<String, dynamic> _followData = {
     'followers_count': 0,
@@ -680,6 +682,24 @@ class Auth with ChangeNotifier {
   }
 
   Future<bool> tryAutoLogin() async {
+    if (_token.isNotEmpty) {
+      return true;
+    }
+
+    final activeLogin = _tryAutoLoginFuture;
+    if (activeLogin != null) {
+      return activeLogin;
+    }
+
+    _tryAutoLoginFuture = _tryAutoLoginFromStorage();
+    try {
+      return await _tryAutoLoginFuture!;
+    } finally {
+      _tryAutoLoginFuture = null;
+    }
+  }
+
+  Future<bool> _tryAutoLoginFromStorage() async {
     DebugLogger.info("🔐 Auth.tryAutoLogin() - Starting auto login check");
     final prefs = await SharedPreferences.getInstance();
 
@@ -737,6 +757,20 @@ class Auth with ChangeNotifier {
       return;
     }
 
+    final activeFetch = _getUserFuture;
+    if (activeFetch != null) {
+      return activeFetch;
+    }
+
+    _getUserFuture = _fetchUserFromApi();
+    try {
+      await _getUserFuture;
+    } finally {
+      _getUserFuture = null;
+    }
+  }
+
+  Future<void> _fetchUserFromApi() async {
     _isLoadingUser = true;
     notifyListeners();
 

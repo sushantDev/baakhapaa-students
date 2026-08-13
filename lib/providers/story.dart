@@ -46,6 +46,28 @@ class Story with ChangeNotifier {
   bool _isStreakFetching = false;
   List<Map<String, dynamic>> _readingHistory = [];
 
+  static const Duration _homeSectionCacheDuration = Duration(minutes: 5);
+  DateTime? _featuredSeasonsFetchedAt;
+  DateTime? _suggestedSeasonsFetchedAt;
+  DateTime? _difficultSeasonsFetchedAt;
+  DateTime? _myListFetchedAt;
+  DateTime? _continueWatchingFetchedAt;
+  DateTime? _premiumCreatorSeasonsFetchedAt;
+  DateTime? _readableSeasonsFetchedAt;
+  DateTime? _storySliderFetchedAt;
+  bool _isFetchingFeaturedSeasons = false;
+  bool _isFetchingSuggestedSeasons = false;
+  bool _isFetchingDifficultSeasons = false;
+  bool _isFetchingMyList = false;
+  bool _isFetchingPremiumCreatorSeasons = false;
+  bool _isFetchingReadableSeasons = false;
+  bool _isFetchingStorySlider = false;
+
+  bool _isFresh(DateTime? fetchedAt) {
+    return fetchedAt != null &&
+        DateTime.now().difference(fetchedAt) < _homeSectionCacheDuration;
+  }
+
   Map<String, dynamic> get readingStreak => _readingStreak;
   List<Map<String, dynamic>> get readingHistory => _readingHistory;
 
@@ -272,7 +294,14 @@ class Story with ChangeNotifier {
     }
   }
 
-  Future<void> fetchFeaturedSeasons() async {
+  Future<void> fetchFeaturedSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingFeaturedSeasons) return;
+    if (!forceRefresh &&
+        _featuredSeasons.isNotEmpty &&
+        _isFresh(_featuredSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingFeaturedSeasons = true;
     try {
       final response = await http
           .get(
@@ -322,6 +351,7 @@ class Story with ChangeNotifier {
           return _normalizeSeasonData(safeSeason);
         }).toList();
 
+        _featuredSeasonsFetchedAt = DateTime.now();
         notifyListeners();
       } else {
         throw ('Error');
@@ -330,10 +360,19 @@ class Story with ChangeNotifier {
       DebugLogger.api('Error fetching featured seasons: $e');
       _featuredSeasons = [];
       notifyListeners();
+    } finally {
+      _isFetchingFeaturedSeasons = false;
     }
   }
 
-  Future<void> fetchSuggestedSeasons() async {
+  Future<void> fetchSuggestedSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingSuggestedSeasons) return;
+    if (!forceRefresh &&
+        _suggestedSeasons.isNotEmpty &&
+        _isFresh(_suggestedSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingSuggestedSeasons = true;
     try {
       final String apiUrl = Url.baakhapaaApi('/seasons/suggested-seasons');
       final Map<String, String> headers = Url.baakhapaaAuthHeaders(authToken);
@@ -356,6 +395,7 @@ class Story with ChangeNotifier {
 
           // Also update local variable
           _suggestedSeasons = typedCategories;
+          _suggestedSeasonsFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -364,10 +404,19 @@ class Story with ChangeNotifier {
       }
     } catch (e) {
       DebugLogger.error('Error fetching suggested seasons: $e');
+    } finally {
+      _isFetchingSuggestedSeasons = false;
     }
   }
 
-  Future<void> fetchDifficultSeasons() async {
+  Future<void> fetchDifficultSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingDifficultSeasons) return;
+    if (!forceRefresh &&
+        _difficultSeasons.isNotEmpty &&
+        _isFresh(_difficultSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingDifficultSeasons = true;
     try {
       final String apiUrl = Url.baakhapaaApi('/seasons/difficult-seasons');
       final Map<String, String> headers = Url.baakhapaaAuthHeaders(authToken);
@@ -385,6 +434,7 @@ class Story with ChangeNotifier {
 
           // Update local variable
           _difficultSeasons = categories.cast<Map<String, dynamic>>();
+          _difficultSeasonsFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -393,6 +443,8 @@ class Story with ChangeNotifier {
       }
     } catch (e) {
       DebugLogger.error('Error fetching difficult seasons: $e');
+    } finally {
+      _isFetchingDifficultSeasons = false;
     }
   }
 
@@ -1375,7 +1427,14 @@ class Story with ChangeNotifier {
     }
   }
 
-  Future<void> fetchStorySlider() async {
+  Future<void> fetchStorySlider({bool forceRefresh = false}) async {
+    if (_isFetchingStorySlider) return;
+    if (!forceRefresh &&
+        _sliders.isNotEmpty &&
+        _isFresh(_storySliderFetchedAt)) {
+      return;
+    }
+    _isFetchingStorySlider = true;
     try {
       final response = await http
           .get(
@@ -1387,6 +1446,7 @@ class Story with ChangeNotifier {
       var responseData = json.decode(utf8.decode(response.bodyBytes));
       if (responseData['success'] == true) {
         _sliders = responseData['data']['items'];
+        _storySliderFetchedAt = DateTime.now();
         notifyListeners();
       } else {
         DebugLogger.error(
@@ -1395,6 +1455,8 @@ class Story with ChangeNotifier {
     } catch (error) {
       DebugLogger.error('Error fetching story slider: $error');
       // Don't rethrow ? caller should not crash for non-critical slider data
+    } finally {
+      _isFetchingStorySlider = false;
     }
   }
 
@@ -1421,7 +1483,12 @@ class Story with ChangeNotifier {
     }
   }
 
-  Future<void> fetchMyList() async {
+  Future<void> fetchMyList({bool forceRefresh = false}) async {
+    if (_isFetchingMyList) return;
+    if (!forceRefresh && _hasFetchedMyList && _isFresh(_myListFetchedAt)) {
+      return;
+    }
+    _isFetchingMyList = true;
     try {
       DebugLogger.api(
         '?? STARTING fetchMyList - authToken length: ${authToken.length}',
@@ -1446,6 +1513,7 @@ class Story with ChangeNotifier {
           _hasFetchedMyList = true;
           _syncMyListStatusAcrossCollections();
           DebugLogger.api('?? Loaded ${_myListItems.length} my list items');
+          _myListFetchedAt = DateTime.now();
           notifyListeners();
         } else {
           DebugLogger.api(
@@ -1454,6 +1522,7 @@ class Story with ChangeNotifier {
           _myListItems = [];
           _hasFetchedMyList = true;
           _syncMyListStatusAcrossCollections();
+          _myListFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -1463,6 +1532,7 @@ class Story with ChangeNotifier {
         _myListItems = [];
         _hasFetchedMyList = true;
         _syncMyListStatusAcrossCollections();
+        _myListFetchedAt = DateTime.now();
         notifyListeners();
       }
     } catch (e) {
@@ -1471,6 +1541,8 @@ class Story with ChangeNotifier {
       _hasFetchedMyList = true;
       _syncMyListStatusAcrossCollections();
       notifyListeners();
+    } finally {
+      _isFetchingMyList = false;
     }
   }
 
@@ -1551,7 +1623,7 @@ class Story with ChangeNotifier {
           );
 
           // Refresh My List to get updated data
-          await fetchMyList();
+          await fetchMyList(forceRefresh: true);
 
           return true;
         } else {
@@ -1714,7 +1786,13 @@ class Story with ChangeNotifier {
 
   // Add this method to your Story provider class
 
-  Future<void> fetchContinueWatching() async {
+  Future<void> fetchContinueWatching({bool forceRefresh = false}) async {
+    if (_isLoadingContinueWatching) return;
+    if (!forceRefresh &&
+        _continueWatchingItems.isNotEmpty &&
+        _isFresh(_continueWatchingFetchedAt)) {
+      return;
+    }
     _isLoadingContinueWatching = true;
     notifyListeners();
 
@@ -1776,6 +1854,7 @@ class Story with ChangeNotifier {
           }
 
           _isLoadingContinueWatching = false;
+          _continueWatchingFetchedAt = DateTime.now();
           notifyListeners();
         } else {
           DebugLogger.api(
@@ -1783,6 +1862,7 @@ class Story with ChangeNotifier {
           );
           _continueWatchingItems = [];
           _isLoadingContinueWatching = false;
+          _continueWatchingFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -1791,6 +1871,7 @@ class Story with ChangeNotifier {
         );
         _continueWatchingItems = [];
         _isLoadingContinueWatching = false;
+        _continueWatchingFetchedAt = DateTime.now();
         notifyListeners();
       }
     } catch (e) {
@@ -1801,7 +1882,14 @@ class Story with ChangeNotifier {
     }
   }
 
-  Future<void> fetchPremiumCreatorSeasons() async {
+  Future<void> fetchPremiumCreatorSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingPremiumCreatorSeasons) return;
+    if (!forceRefresh &&
+        _premiumCreatorSeasons.isNotEmpty &&
+        _isFresh(_premiumCreatorSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingPremiumCreatorSeasons = true;
     try {
       DebugLogger.api(
         '?? STARTING fetchPremiumCreatorSeasons - authToken length: ${authToken.length}',
@@ -1838,12 +1926,14 @@ class Story with ChangeNotifier {
             '?? Loaded ${_premiumCreatorSeasons.length} premium creator seasons',
           );
 
+          _premiumCreatorSeasonsFetchedAt = DateTime.now();
           notifyListeners();
         } else {
           DebugLogger.api(
             '?? Premium Creator Seasons API Error: ${responseData['message'] ?? 'Unknown error'}',
           );
           _premiumCreatorSeasons = [];
+          _premiumCreatorSeasonsFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -1851,17 +1941,27 @@ class Story with ChangeNotifier {
           '?? Premium Creator Seasons API Error: ${response.statusCode} - ${response.body}',
         );
         _premiumCreatorSeasons = [];
+        _premiumCreatorSeasonsFetchedAt = DateTime.now();
         notifyListeners();
       }
     } catch (e) {
       DebugLogger.api('?? Error fetching premium creator seasons: $e');
       _premiumCreatorSeasons = [];
       notifyListeners();
+    } finally {
+      _isFetchingPremiumCreatorSeasons = false;
     }
   }
 
   /// Fetch readable (book summary) seasons
-  Future<void> fetchReadableSeasons() async {
+  Future<void> fetchReadableSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingReadableSeasons) return;
+    if (!forceRefresh &&
+        _readableSeasons.isNotEmpty &&
+        _isFresh(_readableSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingReadableSeasons = true;
     try {
       final response = await http
           .get(
@@ -1918,12 +2018,15 @@ class Story with ChangeNotifier {
 
         DebugLogger.api(
             '?? Loaded ${_readableSeasons.length} readable seasons');
+        _readableSeasonsFetchedAt = DateTime.now();
         notifyListeners();
       }
     } catch (e) {
       DebugLogger.error('?? Error fetching readable seasons: $e');
       _readableSeasons = [];
       notifyListeners();
+    } finally {
+      _isFetchingReadableSeasons = false;
     }
   }
 

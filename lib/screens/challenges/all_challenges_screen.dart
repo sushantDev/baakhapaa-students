@@ -25,6 +25,8 @@ class AllChallengesScreen extends StatefulWidget {
 
 class _AllChallengesScreenState extends State<AllChallengesScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  static double _savedScrollOffset = 0;
+  late final ScrollController _scrollController;
   bool _isLoading = false;
 
   static const List<String> _filters = ['All', 'Unlocked', 'Locked'];
@@ -34,6 +36,8 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController =
+        ScrollController(initialScrollOffset: _savedScrollOffset);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
@@ -46,8 +50,23 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
     _loadChallenges();
   }
 
-  Future<void> _loadChallenges() async {
-    setState(() => _isLoading = true);
+  @override
+  void dispose() {
+    if (_scrollController.hasClients) {
+      _savedScrollOffset = _scrollController.offset;
+    }
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadChallenges({bool forceRefresh = false}) async {
+    final challengeProvider = context.read<Challenge>();
+    final shortsProvider = context.read<Shorts>();
+    final hasCachedChallenges = challengeProvider.challenges.isNotEmpty;
+
+    if (!hasCachedChallenges && mounted) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       final authProvider = context.read<Auth>();
@@ -55,8 +74,9 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
 
       // Load both challenges and creator shorts to check participation
       await Future.wait([
-        context.read<Challenge>().fetchChallenges(),
-        context.read<Shorts>().fetchCreatorShorts(userId),
+        challengeProvider.fetchChallenges(forceRefresh: forceRefresh),
+        if (forceRefresh || shortsProvider.creatorShorts.isEmpty)
+          shortsProvider.fetchCreatorShorts(userId),
       ]);
     } catch (_) {
       if (!mounted) return;
@@ -266,7 +286,7 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
         scaffoldKey: _scaffoldKey,
       ),
       body: RefreshIndicator(
-        onRefresh: _loadChallenges,
+        onRefresh: () => _loadChallenges(forceRefresh: true),
         child: Column(
           children: [
             const SubHeader(),
@@ -288,6 +308,7 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
                         }
 
                         return ListView.builder(
+                          controller: _scrollController,
                           physics: const BouncingScrollPhysics(
                             parent: AlwaysScrollableScrollPhysics(),
                           ),

@@ -36,11 +36,13 @@ class Story with ChangeNotifier {
   late List<dynamic> _myListItems = [];
   bool _hasFetchedMyList = false;
   late List<dynamic> _continueWatchingItems = [];
+  late List<dynamic> _ownedCourseItems = [];
   late List<dynamic> _premiumCreatorSeasons = [];
   late List<dynamic> _readableSeasons = [];
   late List<dynamic> _episodePages = [];
   bool _isLoadingPages = false;
   bool _isLoadingContinueWatching = false;
+  bool _isLoadingOwnedCourses = false;
   Map<String, dynamic> _readingStreak = {};
   DateTime? _streakLastFetched;
   bool _isStreakFetching = false;
@@ -52,6 +54,7 @@ class Story with ChangeNotifier {
   DateTime? _difficultSeasonsFetchedAt;
   DateTime? _myListFetchedAt;
   DateTime? _continueWatchingFetchedAt;
+  DateTime? _ownedCoursesFetchedAt;
   DateTime? _premiumCreatorSeasonsFetchedAt;
   DateTime? _readableSeasonsFetchedAt;
   DateTime? _storySliderFetchedAt;
@@ -115,6 +118,7 @@ class Story with ChangeNotifier {
     List<Map<String, dynamic>>? difficultSeasons,
     List<dynamic>? myListItems,
     List<dynamic>? continueWatchingItems,
+    List<dynamic>? ownedCourseItems,
     List<dynamic>? premiumCreatorSeasons,
     List<dynamic>? creatorSeasons,
     List<dynamic>? readableSeasons,
@@ -128,6 +132,7 @@ class Story with ChangeNotifier {
     _difficultSeasons = difficultSeasons ?? [];
     _myListItems = myListItems ?? [];
     _continueWatchingItems = continueWatchingItems ?? [];
+    _ownedCourseItems = ownedCourseItems ?? [];
     _premiumCreatorSeasons = premiumCreatorSeasons ?? [];
     _creatorSeasons = creatorSeasons ?? [];
     _readableSeasons = readableSeasons ?? [];
@@ -208,6 +213,10 @@ class Story with ChangeNotifier {
     return _continueWatchingItems;
   }
 
+  List<dynamic> get ownedCourseItems {
+    return _ownedCourseItems;
+  }
+
   List<dynamic> get premiumCreatorSeasons {
     return _premiumCreatorSeasons;
   }
@@ -222,6 +231,7 @@ class Story with ChangeNotifier {
 
   bool get isLoadingPages => _isLoadingPages;
   bool get isLoadingContinueWatching => _isLoadingContinueWatching;
+  bool get isLoadingOwnedCourses => _isLoadingOwnedCourses;
 
   List<dynamic> get creatorSeasons {
     return _creatorSeasons;
@@ -629,6 +639,7 @@ class Story with ChangeNotifier {
     _syncSeasonInDirectList(_readableSeasons, seasonId, updates);
     _syncSeasonInWrappedList(_myListItems, seasonId, updates);
     _syncSeasonInWrappedList(_continueWatchingItems, seasonId, updates);
+    _syncSeasonInWrappedList(_ownedCourseItems, seasonId, updates);
     _syncSeasonInCategoryList(_suggestedSeasons, seasonId, updates);
     _syncSeasonInCategoryList(_difficultSeasons, seasonId, updates);
 
@@ -1090,7 +1101,10 @@ class Story with ChangeNotifier {
   }
 
   static bool _isTruthy(dynamic value) {
-    return value == true || value == 1 || value == '1' || value == 'true';
+    return value == true ||
+        value == 1 ||
+        value == '1' ||
+        value?.toString().toLowerCase() == 'true';
   }
 
   void _mergeSeasonEpisodeSnapshot(
@@ -1878,6 +1892,75 @@ class Story with ChangeNotifier {
       DebugLogger.api('?? Error fetching continue watching: $e');
       _continueWatchingItems = [];
       _isLoadingContinueWatching = false;
+      notifyListeners();
+    }
+  }
+
+  bool _isOwnedPaidSeason(Map<String, dynamic> season) {
+    final explicitlyPurchased = _isTruthy(season['purchased']) ||
+        _isTruthy(season['is_purchased']) ||
+        _isTruthy(season['has_purchased']);
+    if (explicitlyPurchased) return true;
+
+    final isLocked = _isTruthy(season['is_locked']);
+    final isUnlockedForUser =
+        _isTruthy(season['watched']) || _isTruthy(season['has_unlocked']);
+    final rawUnlockCost = season['coin_to_unlock'] ??
+        season['coins_to_unlock'] ??
+        season['unlock_points'];
+    final unlockCost = rawUnlockCost is num
+        ? rawUnlockCost.toInt()
+        : int.tryParse(rawUnlockCost?.toString() ?? '') ?? 0;
+
+    return isLocked && isUnlockedForUser && unlockCost > 0;
+  }
+
+  Future<void> fetchOwnedCourses({bool forceRefresh = false}) async {
+    if (_isLoadingOwnedCourses) return;
+    if (!forceRefresh &&
+        _ownedCourseItems.isNotEmpty &&
+        _isFresh(_ownedCoursesFetchedAt)) {
+      return;
+    }
+
+    _isLoadingOwnedCourses = true;
+    notifyListeners();
+
+    try {
+      await Future.wait([
+        fetchAllSeasons().catchError((e) {
+          DebugLogger.error('Owned courses: all seasons fetch failed: $e');
+        }),
+        fetchReadableSeasons(forceRefresh: forceRefresh).catchError((e) {
+          DebugLogger.error('Owned courses: readable seasons fetch failed: $e');
+        }),
+      ], eagerError: false);
+
+      final byId = <String, Map<String, dynamic>>{};
+      for (final item in [..._seasons, ..._readableSeasons]) {
+        if (item is! Map) continue;
+        final season = _normalizeSeasonData(Map<String, dynamic>.from(item));
+        final seasonId = season['id']?.toString();
+        if (seasonId == null || seasonId.isEmpty) continue;
+        if (!_isOwnedPaidSeason(season)) continue;
+        byId[seasonId] = season;
+      }
+
+      _ownedCourseItems = byId.values
+          .map((season) => {
+                'season': season,
+                'completion_percentage': season['completion_percentage'] ?? 0,
+                'owned_content': true,
+              })
+          .toList();
+
+      _ownedCoursesFetchedAt = DateTime.now();
+      DebugLogger.api('?? Loaded ${_ownedCourseItems.length} owned courses');
+    } catch (e) {
+      DebugLogger.error('?? Error fetching owned courses: $e');
+      _ownedCourseItems = [];
+    } finally {
+      _isLoadingOwnedCourses = false;
       notifyListeners();
     }
   }

@@ -952,6 +952,9 @@ class _ShortsSideBarState extends State<ShortsSideBar>
                       () => Navigator.push(
                         context,
                         MaterialPageRoute(
+                          settings: const RouteSettings(
+                            name: CommentsSheet.routeName,
+                          ),
                           builder: (context) => CommentsSheet(
                             shortsId: widget.shortsId,
                           ),

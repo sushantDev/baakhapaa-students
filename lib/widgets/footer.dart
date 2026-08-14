@@ -27,6 +27,7 @@ class Footer extends StatefulWidget {
   static const Set<String> _routesWithOwnFooter = {
     '/single-product-screen',
     '/single-gift-screen',
+    '/comments-sheet',
   };
 
   static const Set<String> _quizRoutes = {
@@ -111,6 +112,7 @@ class Footer extends StatefulWidget {
     if (childType.contains('create') ||
         childType.contains('drafts') ||
         childType.contains('preview') ||
+        childType.contains('commentssheet') ||
         childType.contains('youtube') ||
         childType.contains('camerarecording') ||
         childType.contains('aicontent') ||
@@ -533,11 +535,11 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 260),
                 curve: Curves.easeOutCubic,
-                height: 48,
+                height: 46,
                 margin: const EdgeInsets.symmetric(horizontal: 3),
                 padding: EdgeInsets.symmetric(
                   horizontal: isSelected ? 10 : 6,
-                  vertical: 6,
+                  vertical: 4,
                 ),
                 decoration: BoxDecoration(
                   color: isSelected ? selectedColor : Colors.transparent,
@@ -626,7 +628,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     // Get the bottom padding for system navigation bar (back, home, recent buttons)
     final bottomNavBarPadding = MediaQuery.of(context).viewPadding.bottom;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final adjustedHeight = screenWidth <= 360 ? 68.0 : 74.0;
+    final adjustedHeight = screenWidth <= 360 ? 72.0 : 78.0;
 
     // Only add extra padding for Android devices with 3-button software navigation bar
     final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
@@ -648,10 +650,10 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      height: adjustedHeight - 10,
+                      height: adjustedHeight - 8,
                       margin: const EdgeInsets.symmetric(
                         horizontal: 14,
-                        vertical: 5,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF111827) : Colors.white,

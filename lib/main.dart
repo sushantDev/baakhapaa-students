@@ -819,6 +819,7 @@ class _MyAppState extends State<MyApp> {
               difficultSeasons: previousStory?.difficultSeasons,
               myListItems: previousStory?.myListItems,
               continueWatchingItems: previousStory?.continueWatchingItems,
+              ownedCourseItems: previousStory?.ownedCourseItems,
               premiumCreatorSeasons: previousStory?.premiumCreatorSeasons,
               creatorSeasons: previousStory?.creatorSeasons,
               readableSeasons: previousStory?.readableSeasons,

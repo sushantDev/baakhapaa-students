@@ -164,26 +164,31 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
     return [const Color(0xFFFFCB0C), const Color(0xFFDC9903)];
   }
 
-  // Get dynamic points reward from challenge data
-  int _getPointsReward(Map<String, dynamic> challenge) {
-    // Highest priority: actual reward
-    if (challenge['unlock_points'] != null) {
-      return _toInt(challenge['unlock_points']);
+  // Enrollment cost shown on challenge cards.
+  int _getEnrollmentPoints(Map<String, dynamic> challenge) {
+    const fields = [
+      'points_required',
+      'unlock_points',
+      'coin_to_unlock',
+      'challenge_points',
+      'entry_points',
+      'entry_fee',
+    ];
+
+    for (final field in fields) {
+      final points = _toInt(challenge[field]);
+      if (points > 0) return points;
     }
 
-    // Fallback: required points (what your API actually sends)
-    if (challenge['unlock_points'] != null) {
-      return _toInt(challenge['unlock_points']);
-    }
-
-    // Last fallback
     return 0;
   }
 
   int _toInt(dynamic value) {
     if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) return int.tryParse(value) ?? 0;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      return int.tryParse(value) ?? double.tryParse(value)?.toInt() ?? 0;
+    }
     return 0;
   }
 
@@ -340,7 +345,7 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
                                 completed,
                                 expired,
                               ),
-                              pointsReward: _getPointsReward(c),
+                              pointsReward: _getEnrollmentPoints(c),
                             );
                           },
                         );
@@ -472,7 +477,7 @@ class _ChallengeCard extends StatelessWidget {
         children: [
           Container(
             width: 368,
-            height: 148,
+            constraints: const BoxConstraints(minHeight: 148),
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

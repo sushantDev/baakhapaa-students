@@ -1255,6 +1255,7 @@ class _OrderButtonState extends State<OrderButton> with PuppetInteractionMixin {
                           showShippingProvider: !isDigitalOnly,
                           requiresShipping: !isDigitalOnly,
                           allowAppleIap: hasOnlyAppleIapItems,
+                          avoidFooter: true,
                         );
                         if (result != null && mounted) {
                           await _processOrder(result);

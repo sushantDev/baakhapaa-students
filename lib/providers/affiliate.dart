@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/url.dart';
 import '../utils/debug_logger.dart';
@@ -17,8 +17,12 @@ class AffiliateProvider with ChangeNotifier {
 
   /// Synchronize affiliate status from Auth provider
   void updateFromAuth(dynamic auth) {
-    if (auth.user != null && auth.user['affiliation'] != null) {
-      _affiliateStatus = auth.user['affiliation'];
+    if (auth.user != null && auth.user['affiliation'] is Map) {
+      final nextStatus = Map<String, dynamic>.from(auth.user['affiliation']);
+      if (mapEquals(_affiliateStatus, nextStatus)) {
+        return;
+      }
+      _affiliateStatus = nextStatus;
       notifyListeners();
     }
   }

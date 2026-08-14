@@ -235,6 +235,9 @@ class _StoryCardState extends State<StoryCard> {
 
       final thumbnailUrl = getSeasonImageThumbnail();
       final bool hasUnlocked = isSeasonUnlocked(widget.season);
+      final pointsButton = _buildPointsButton();
+      final badgesButton = _buildBadgesButton(pointsButton != null);
+      final giftsButton = _buildGiftsButton(pointsButton != null);
 
       if (_debugLogCounter % 50 == 0) {
         DebugLogger.info('StoryCard thumbnail URL: $thumbnailUrl');
@@ -383,34 +386,26 @@ class _StoryCardState extends State<StoryCard> {
                           ],
                         ),
                       ),
-
                       SizedBox(height: 8),
-
                       _buildGenresRow(),
-
                       SizedBox(height: 10),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           // Points button - only show if available
-                          if (_buildPointsButton() != null) ...[
-                            _buildPointsButton()!,
+                          if (pointsButton != null) ...[
+                            pointsButton,
                             SizedBox(width: 8), // Reduced spacing when 3 items
                           ],
 
                           // Badges button - only show if available
-                          if (_buildBadgesButton(
-                                  _buildPointsButton() != null) !=
-                              null) ...[
-                            _buildBadgesButton(_buildPointsButton() != null)!,
+                          if (badgesButton != null) ...[
+                            badgesButton,
                             SizedBox(width: 8), // Reduced spacing
                           ],
 
                           // Gifts button - only show if available
-                          if (_buildGiftsButton(_buildPointsButton() != null) !=
-                              null)
-                            _buildGiftsButton(_buildPointsButton() != null)!,
+                          if (giftsButton != null) giftsButton,
                         ],
                       ),
                     ],

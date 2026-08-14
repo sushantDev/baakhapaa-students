@@ -172,6 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
         PageTransition(
           child: RegisterScreen(),
           type: PageTransitionType.rightToLeft,
+          settings: RouteSettings(name: RegisterScreen.routeName),
         ));
   }
 
@@ -867,6 +868,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: BoxDecoration(
           color: isDarkMode ? Colors.grey.shade900 : Colors.white,
@@ -880,621 +882,771 @@ class _LoginScreenState extends State<LoginScreen> {
         child: _isLoading
             ? _buildAuthLoadingView(isDarkMode)
             : SafeArea(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(horizontal: 24),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        SizedBox(height: 30),
-
-                        // Logo Section - Matching story_screen colors
-                        Container(
-                          padding: EdgeInsets.symmetric(vertical: 30),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      child: ConstrainedBox(
+                        constraints:
+                            BoxConstraints(minHeight: constraints.maxHeight),
+                        child: IntrinsicHeight(
                           child: Column(
                             children: [
-                              Container(
-                                width: 90,
-                                height: 90,
-                                decoration: BoxDecoration(
-                                  color: isDarkMode
-                                      ? Colors.grey.shade800
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: isDarkMode
-                                          ? Colors.black.withValues(alpha: 0.3)
-                                          : Colors.grey.withValues(alpha: 0.2),
-                                      blurRadius: 16,
-                                      offset: Offset(0, 8),
-                                    ),
-                                  ],
-                                  border: Border.all(
-                                    color: Colors.amber.withValues(alpha: 0.3),
-                                    width: 2,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Image.asset(
-                                    'assets/images/sikka2.jpeg',
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 20),
-                              Text(
-                                'Skill Sikka',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Montserrat',
-                                  color: isDarkMode
-                                      ? Colors.white
-                                      : Colors.grey.shade800,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  'Knowledge, Action & Rewards',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontFamily: 'Montserrat',
-                                    color: Colors.amber.shade600,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 24),
+                                  child: Form(
+                                    key: _formKey,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(height: 16),
 
-                        SizedBox(height: 10),
-
-                        // Welcome Text - Modern with better spacing
-                        // Text(
-                        //   'Welcome Back!',
-                        //   style: TextStyle(
-                        //     fontSize: 28,
-                        //     fontWeight: FontWeight.bold,
-                        //     fontFamily: 'Montserrat',
-                        //     color:
-                        //         isDarkMode ? Colors.white : Colors.grey.shade800,
-                        //   ),
-                        // ),
-                        // SizedBox(height: 8),
-                        // Padding(
-                        //   padding: EdgeInsets.symmetric(horizontal: 10),
-                        //   child: Text(
-                        //     'Sign in to continue your amazing journey of entertainment and learning',
-                        //     style: TextStyle(
-                        //       fontSize: 14,
-                        //       fontFamily: 'Montserrat',
-                        //       color: Colors.grey.shade600,
-                        //       height: 1.3,
-                        //     ),
-                        //     textAlign: TextAlign.center,
-                        //     maxLines: 2,
-                        //     overflow: TextOverflow.ellipsis,
-                        //   ),
-                        // ),
-
-                        // SizedBox(height: 40),
-
-                        // Login Form - Ultra Modern Design with Enhanced Premium Look
-                        Container(
-                          padding: EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? Colors.grey.shade900.withValues(alpha: 0.75)
-                                : Colors.white.withValues(alpha: 0.75),
-                            borderRadius: BorderRadius.circular(28),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.amber.withValues(alpha: 0.15),
-                                blurRadius: 32,
-                                offset: Offset(0, 16),
-                              ),
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 16,
-                                offset: Offset(0, 8),
-                              ),
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 8,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                            border: Border.all(
-                              color: Colors.amber.withValues(alpha: 0.3),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              // Email Field - Ultra Modern
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: isDarkMode
-                                      ? Colors.black.withValues(alpha: 0.3)
-                                      : Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.amber.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                child: TextFormField(
-                                  controller: emailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your email';
-                                    }
-                                    if (!isEmailValid(value)) {
-                                      return 'Please enter a valid email';
-                                    }
-                                    return null;
-                                  },
-                                  style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: 15,
-                                    color: isDarkMode
-                                        ? Colors.white
-                                        : Colors.black87,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: context.l10n.email,
-                                    hintStyle: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      color: Colors.grey.shade500,
-                                      fontSize: 15,
-                                    ),
-                                    prefixIcon: Container(
-                                      margin: EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.amber
-                                            .withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Icon(
-                                        Icons.email_outlined,
-                                        color: Colors.amber.shade600,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 18),
-                                  ),
-                                ),
-                              ),
-
-                              SizedBox(height: 20),
-
-                              // Password Field - Ultra Modern
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: isDarkMode
-                                      ? Colors.black.withValues(alpha: 0.3)
-                                      : Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.amber.withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                child: TextFormField(
-                                  controller: passwordController,
-                                  obscureText: _obscureText,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your password';
-                                    }
-                                    if (value.length < 6) {
-                                      return 'Password must be at least 6 characters';
-                                    }
-                                    return null;
-                                  },
-                                  style: TextStyle(
-                                    fontFamily: 'Montserrat',
-                                    fontSize: 15,
-                                    color: isDarkMode
-                                        ? Colors.white
-                                        : Colors.black87,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: context.l10n.password,
-                                    hintStyle: TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      color: Colors.grey.shade500,
-                                      fontSize: 15,
-                                    ),
-                                    prefixIcon: Container(
-                                      margin: EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.amber
-                                            .withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Icon(
-                                        Icons.lock_outline,
-                                        color: Colors.amber.shade600,
-                                        size: 20,
-                                      ),
-                                    ),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscureText
-                                            ? Icons.visibility_off
-                                            : Icons.visibility,
-                                        color: Colors.grey.shade500,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscureText = !_obscureText;
-                                        });
-                                      },
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 18),
-                                  ),
-                                ),
-                              ),
-
-                              SizedBox(height: 32),
-
-                              // Login Button - Enhanced Premium Design with Loading State
-                              Container(
-                                width: double.infinity,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  gradient: _isLoading
-                                      ? null
-                                      : LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Colors.amber.shade400,
-                                            Colors.amber.shade600,
-                                            Colors.orange.shade600,
-                                          ],
-                                        ),
-                                  color:
-                                      _isLoading ? Colors.grey.shade300 : null,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: _isLoading
-                                      ? []
-                                      : [
-                                          BoxShadow(
-                                            color: Colors.amber
-                                                .withValues(alpha: 0.4),
-                                            blurRadius: 16,
-                                            offset: Offset(0, 8),
-                                          ),
-                                        ],
-                                ),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    onTap: _isLoading ? null : login,
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      alignment: Alignment.center,
-                                      child: _isLoading
-                                          ? Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                SizedBox(
-                                                  width: 20,
-                                                  height: 20,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<
-                                                                Color>(
-                                                            Colors.white),
+                                        // Logo Section - Matching story_screen colors
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 16),
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                width: 90,
+                                                height: 90,
+                                                decoration: BoxDecoration(
+                                                  color: isDarkMode
+                                                      ? Colors.grey.shade800
+                                                      : Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: isDarkMode
+                                                          ? Colors.black
+                                                              .withValues(
+                                                                  alpha: 0.3)
+                                                          : Colors.grey
+                                                              .withValues(
+                                                                  alpha: 0.2),
+                                                      blurRadius: 16,
+                                                      offset: Offset(0, 8),
+                                                    ),
+                                                  ],
+                                                  border: Border.all(
+                                                    color: Colors.amber
+                                                        .withValues(alpha: 0.3),
+                                                    width: 2,
                                                   ),
                                                 ),
-                                                SizedBox(width: 12),
-                                                Text(
-                                                  '${context.l10n.signInTitle}...',
-                                                  style: TextStyle(
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'Montserrat',
-                                                    color: Colors.white,
-                                                    letterSpacing: 0.5,
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                  child: Image.asset(
+                                                    'assets/images/sikka2.jpeg',
+                                                    fit: BoxFit.cover,
                                                   ),
                                                 ),
-                                              ],
-                                            )
-                                          : Text(
-                                              '${context.l10n.signInTitle}',
-                                              style: TextStyle(
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Montserrat',
-                                                color: Colors.white,
-                                                letterSpacing: 0.5,
                                               ),
+                                              SizedBox(height: 20),
+                                              Text(
+                                                'Skill Sikka',
+                                                style: TextStyle(
+                                                  fontSize: 28,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontFamily: 'Montserrat',
+                                                  color: isDarkMode
+                                                      ? Colors.white
+                                                      : Colors.grey.shade800,
+                                                  letterSpacing: 1.2,
+                                                ),
+                                              ),
+                                              SizedBox(height: 8),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 6),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.amber
+                                                      .withValues(alpha: 0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                ),
+                                                child: Text(
+                                                  'Knowledge, Action & Rewards',
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontFamily: 'Montserrat',
+                                                    color:
+                                                        Colors.amber.shade600,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        SizedBox(height: 10),
+
+                                        // Welcome Text - Modern with better spacing
+                                        // Text(
+                                        //   'Welcome Back!',
+                                        //   style: TextStyle(
+                                        //     fontSize: 28,
+                                        //     fontWeight: FontWeight.bold,
+                                        //     fontFamily: 'Montserrat',
+                                        //     color:
+                                        //         isDarkMode ? Colors.white : Colors.grey.shade800,
+                                        //   ),
+                                        // ),
+                                        // SizedBox(height: 8),
+                                        // Padding(
+                                        //   padding: EdgeInsets.symmetric(horizontal: 10),
+                                        //   child: Text(
+                                        //     'Sign in to continue your amazing journey of entertainment and learning',
+                                        //     style: TextStyle(
+                                        //       fontSize: 14,
+                                        //       fontFamily: 'Montserrat',
+                                        //       color: Colors.grey.shade600,
+                                        //       height: 1.3,
+                                        //     ),
+                                        //     textAlign: TextAlign.center,
+                                        //     maxLines: 2,
+                                        //     overflow: TextOverflow.ellipsis,
+                                        //   ),
+                                        // ),
+
+                                        // SizedBox(height: 40),
+
+                                        // Login Form - Ultra Modern Design with Enhanced Premium Look
+                                        Container(
+                                          padding: EdgeInsets.all(24),
+                                          decoration: BoxDecoration(
+                                            color: isDarkMode
+                                                ? Colors.grey.shade900
+                                                    .withValues(alpha: 0.75)
+                                                : Colors.white
+                                                    .withValues(alpha: 0.75),
+                                            borderRadius:
+                                                BorderRadius.circular(28),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.amber
+                                                    .withValues(alpha: 0.15),
+                                                blurRadius: 32,
+                                                offset: Offset(0, 16),
+                                              ),
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.1),
+                                                blurRadius: 16,
+                                                offset: Offset(0, 8),
+                                              ),
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.05),
+                                                blurRadius: 8,
+                                                offset: Offset(0, 4),
+                                              ),
+                                            ],
+                                            border: Border.all(
+                                              color: Colors.amber
+                                                  .withValues(alpha: 0.3),
+                                              width: 1.5,
                                             ),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              // Email Field - Ultra Modern
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: isDarkMode
+                                                      ? Colors.black.withValues(
+                                                          alpha: 0.3)
+                                                      : Colors.grey.shade50,
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                  border: Border.all(
+                                                    color: Colors.amber
+                                                        .withValues(alpha: 0.3),
+                                                  ),
+                                                ),
+                                                child: TextFormField(
+                                                  controller: emailController,
+                                                  keyboardType: TextInputType
+                                                      .emailAddress,
+                                                  validator: (value) {
+                                                    if (value == null ||
+                                                        value.isEmpty) {
+                                                      return 'Please enter your email';
+                                                    }
+                                                    if (!isEmailValid(value)) {
+                                                      return 'Please enter a valid email';
+                                                    }
+                                                    return null;
+                                                  },
+                                                  style: TextStyle(
+                                                    fontFamily: 'Montserrat',
+                                                    fontSize: 15,
+                                                    color: isDarkMode
+                                                        ? Colors.white
+                                                        : Colors.black87,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                  decoration: InputDecoration(
+                                                    hintText:
+                                                        context.l10n.email,
+                                                    hintStyle: TextStyle(
+                                                      fontFamily: 'Montserrat',
+                                                      color:
+                                                          Colors.grey.shade500,
+                                                      fontSize: 15,
+                                                    ),
+                                                    prefixIcon: Container(
+                                                      margin:
+                                                          EdgeInsets.all(12),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.amber
+                                                            .withValues(
+                                                                alpha: 0.15),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                      ),
+                                                      child: Icon(
+                                                        Icons.email_outlined,
+                                                        color: Colors
+                                                            .amber.shade600,
+                                                        size: 20,
+                                                      ),
+                                                    ),
+                                                    border: InputBorder.none,
+                                                    contentPadding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 20,
+                                                            vertical: 18),
+                                                  ),
+                                                ),
+                                              ),
+
+                                              SizedBox(height: 20),
+
+                                              // Password Field - Ultra Modern
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: isDarkMode
+                                                      ? Colors.black.withValues(
+                                                          alpha: 0.3)
+                                                      : Colors.grey.shade50,
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                  border: Border.all(
+                                                    color: Colors.amber
+                                                        .withValues(alpha: 0.3),
+                                                  ),
+                                                ),
+                                                child: TextFormField(
+                                                  controller:
+                                                      passwordController,
+                                                  obscureText: _obscureText,
+                                                  validator: (value) {
+                                                    if (value == null ||
+                                                        value.isEmpty) {
+                                                      return 'Please enter your password';
+                                                    }
+                                                    if (value.length < 6) {
+                                                      return 'Password must be at least 6 characters';
+                                                    }
+                                                    return null;
+                                                  },
+                                                  style: TextStyle(
+                                                    fontFamily: 'Montserrat',
+                                                    fontSize: 15,
+                                                    color: isDarkMode
+                                                        ? Colors.white
+                                                        : Colors.black87,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                  decoration: InputDecoration(
+                                                    hintText:
+                                                        context.l10n.password,
+                                                    hintStyle: TextStyle(
+                                                      fontFamily: 'Montserrat',
+                                                      color:
+                                                          Colors.grey.shade500,
+                                                      fontSize: 15,
+                                                    ),
+                                                    prefixIcon: Container(
+                                                      margin:
+                                                          EdgeInsets.all(12),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.amber
+                                                            .withValues(
+                                                                alpha: 0.15),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                      ),
+                                                      child: Icon(
+                                                        Icons.lock_outline,
+                                                        color: Colors
+                                                            .amber.shade600,
+                                                        size: 20,
+                                                      ),
+                                                    ),
+                                                    suffixIcon: IconButton(
+                                                      icon: Icon(
+                                                        _obscureText
+                                                            ? Icons
+                                                                .visibility_off
+                                                            : Icons.visibility,
+                                                        color: Colors
+                                                            .grey.shade500,
+                                                        size: 20,
+                                                      ),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          _obscureText =
+                                                              !_obscureText;
+                                                        });
+                                                      },
+                                                    ),
+                                                    border: InputBorder.none,
+                                                    contentPadding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 20,
+                                                            vertical: 18),
+                                                  ),
+                                                ),
+                                              ),
+
+                                              SizedBox(height: 32),
+
+                                              // Login Button - Enhanced Premium Design with Loading State
+                                              Container(
+                                                width: double.infinity,
+                                                height: 56,
+                                                decoration: BoxDecoration(
+                                                  gradient: _isLoading
+                                                      ? null
+                                                      : LinearGradient(
+                                                          begin:
+                                                              Alignment.topLeft,
+                                                          end: Alignment
+                                                              .bottomRight,
+                                                          colors: [
+                                                            Colors
+                                                                .amber.shade400,
+                                                            Colors
+                                                                .amber.shade600,
+                                                            Colors.orange
+                                                                .shade600,
+                                                          ],
+                                                        ),
+                                                  color: _isLoading
+                                                      ? Colors.grey.shade300
+                                                      : null,
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                  boxShadow: _isLoading
+                                                      ? []
+                                                      : [
+                                                          BoxShadow(
+                                                            color: Colors.amber
+                                                                .withValues(
+                                                                    alpha: 0.4),
+                                                            blurRadius: 16,
+                                                            offset:
+                                                                Offset(0, 8),
+                                                          ),
+                                                        ],
+                                                ),
+                                                child: Material(
+                                                  color: Colors.transparent,
+                                                  child: InkWell(
+                                                    onTap: _isLoading
+                                                        ? null
+                                                        : login,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            16),
+                                                    child: Container(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: _isLoading
+                                                          ? Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                SizedBox(
+                                                                  width: 20,
+                                                                  height: 20,
+                                                                  child:
+                                                                      CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2,
+                                                                    valueColor: AlwaysStoppedAnimation<
+                                                                            Color>(
+                                                                        Colors
+                                                                            .white),
+                                                                  ),
+                                                                ),
+                                                                SizedBox(
+                                                                    width: 12),
+                                                                Text(
+                                                                  '${context.l10n.signInTitle}...',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        17,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    fontFamily:
+                                                                        'Montserrat',
+                                                                    color: Colors
+                                                                        .white,
+                                                                    letterSpacing:
+                                                                        0.5,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          : Text(
+                                                              '${context.l10n.signInTitle}',
+                                                              style: TextStyle(
+                                                                fontSize: 17,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontFamily:
+                                                                    'Montserrat',
+                                                                color: Colors
+                                                                    .white,
+                                                                letterSpacing:
+                                                                    0.5,
+                                                              ),
+                                                            ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+
+                                              SizedBox(height: 20),
+
+                                              // Error Message Display
+                                              if (_errorMessage != null)
+                                                Container(
+                                                  width: double.infinity,
+                                                  padding: EdgeInsets.all(12),
+                                                  margin: EdgeInsets.only(
+                                                      bottom: 16),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red.shade50,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                    border: Border.all(
+                                                        color: Colors
+                                                            .red.shade200),
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.error_outline,
+                                                        color:
+                                                            Colors.red.shade600,
+                                                        size: 20,
+                                                      ),
+                                                      SizedBox(width: 8),
+                                                      Expanded(
+                                                        child: Text(
+                                                          _errorMessage!,
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .red.shade700,
+                                                            fontSize: 13,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+
+                                              // Forgot Password - Elegant
+                                              TextButton(
+                                                onPressed:
+                                                    goToForgotPasswordScreen,
+                                                style: TextButton.styleFrom(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 12),
+                                                ),
+                                                child: Text(
+                                                  '${context.l10n.forgotPasswordLink} ',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontFamily: 'Montserrat',
+                                                    color:
+                                                        Colors.amber.shade600,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        SizedBox(height: 16),
+
+                                        // Social Login Section - Modern & Platform Specific
+                                        Container(
+                                          padding: EdgeInsets.all(20),
+                                          decoration: BoxDecoration(
+                                            color: isDarkMode
+                                                ? Colors.black
+                                                    .withValues(alpha: 0.7)
+                                                : Colors.white
+                                                    .withValues(alpha: 0.9),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            border: Border.all(
+                                              color: isDarkMode
+                                                  ? Colors.amber
+                                                      .withValues(alpha: 0.3)
+                                                  : Colors.grey.shade300
+                                                      .withValues(alpha: 0.8),
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.1),
+                                                blurRadius: 16,
+                                                offset: Offset(0, 6),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                '${context.l10n.or} ${context.l10n.continueButton} ${context.l10n.withString}',
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontFamily: 'Montserrat',
+                                                  color: isDarkMode
+                                                      ? Colors.white.withValues(
+                                                          alpha: 0.9)
+                                                      : Colors.grey.shade700,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              SizedBox(height: 16),
+                                              // Platform specific login buttons
+                                              if (Platform.isAndroid)
+                                                // Google Login for Android
+                                                Container(
+                                                  width: double.infinity,
+                                                  height: 52,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            14),
+                                                    border: Border.all(
+                                                        color: Colors
+                                                            .grey.shade300),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black
+                                                            .withValues(
+                                                                alpha: 0.05),
+                                                        blurRadius: 10,
+                                                        offset: Offset(0, 4),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Material(
+                                                    color: Colors.transparent,
+                                                    child: InkWell(
+                                                      onTap: signinGoogle,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              14),
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Container(
+                                                            width: 24,
+                                                            height: 24,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              gradient:
+                                                                  LinearGradient(
+                                                                colors: [
+                                                                  Colors.red
+                                                                      .shade400,
+                                                                  Colors.red
+                                                                      .shade600
+                                                                ],
+                                                              ),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          6),
+                                                            ),
+                                                            child: Icon(
+                                                              Icons
+                                                                  .g_mobiledata,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 18,
+                                                            ),
+                                                          ),
+                                                          SizedBox(width: 12),
+                                                          Text(
+                                                            '${context.l10n.continueButton} ${context.l10n.withString}Google',
+                                                            style: TextStyle(
+                                                              fontSize: 15,
+                                                              fontFamily:
+                                                                  'Montserrat',
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: Colors.grey
+                                                                  .shade700,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              if (Platform.isIOS)
+                                                // Apple Login for iOS
+                                                Container(
+                                                  width: double.infinity,
+                                                  height: 52,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            14),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black
+                                                            .withValues(
+                                                                alpha: 0.3),
+                                                        blurRadius: 10,
+                                                        offset: Offset(0, 4),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Material(
+                                                    color: Colors.transparent,
+                                                    child: InkWell(
+                                                      onTap: signinApple,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              14),
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.apple,
+                                                            color: Colors.white,
+                                                            size: 24,
+                                                          ),
+                                                          SizedBox(width: 12),
+                                                          Text(
+                                                            '${context.l10n.continueButton} ${context.l10n.withString} Apple',
+                                                            style: TextStyle(
+                                                              fontSize: 15,
+                                                              fontFamily:
+                                                                  'Montserrat',
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        SizedBox(height: 20),
+                                      ],
                                     ),
                                   ),
                                 ),
                               ),
 
-                              SizedBox(height: 20),
-
-                              // Error Message Display
-                              if (_errorMessage != null)
-                                Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.all(12),
-                                  margin: EdgeInsets.only(bottom: 16),
+                              // Register Link - Fixed footer, scrolls above the keyboard
+                              Padding(
+                                padding: EdgeInsets.fromLTRB(24, 8, 24, 16),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 16),
                                   decoration: BoxDecoration(
-                                    color: Colors.red.shade50,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border:
-                                        Border.all(color: Colors.red.shade200),
+                                    color: isDarkMode
+                                        ? Colors.black.withValues(alpha: 0.6)
+                                        : Colors.white.withValues(alpha: 0.85),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color:
+                                          Colors.amber.withValues(alpha: 0.2),
+                                    ),
                                   ),
                                   child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(
-                                        Icons.error_outline,
-                                        color: Colors.red.shade600,
-                                        size: 20,
+                                      Text(
+                                        "${context.l10n.dontHaveAccount} ",
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontFamily: 'Montserrat',
+                                          color: isDarkMode
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.9)
+                                              : Colors.grey.shade800,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                      SizedBox(width: 8),
-                                      Expanded(
+                                      GestureDetector(
+                                        onTap: goToRegisterScreen,
                                         child: Text(
-                                          _errorMessage!,
+                                          context.l10n.signUpTitle,
                                           style: TextStyle(
-                                            color: Colors.red.shade700,
-                                            fontSize: 13,
+                                            fontSize: 15,
                                             fontFamily: 'Montserrat',
+                                            color: Colors.amber.shade600,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-
-                              // Forgot Password - Elegant
-                              TextButton(
-                                onPressed: goToForgotPasswordScreen,
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 12),
-                                ),
-                                child: Text(
-                                  '${context.l10n.forgotPasswordLink} ',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontFamily: 'Montserrat',
-                                    color: Colors.amber.shade600,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
                               ),
                             ],
                           ),
                         ),
-
-                        SizedBox(height: 32),
-
-                        // Social Login Section - Modern & Platform Specific
-                        Container(
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? Colors.black.withValues(alpha: 0.7)
-                                : Colors.white.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isDarkMode
-                                  ? Colors.amber.withValues(alpha: 0.3)
-                                  : Colors.grey.shade300.withValues(alpha: 0.8),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 16,
-                                offset: Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                '${context.l10n.or} ${context.l10n.continueButton} ${context.l10n.withString}',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontFamily: 'Montserrat',
-                                  color: isDarkMode
-                                      ? Colors.white.withValues(alpha: 0.9)
-                                      : Colors.grey.shade700,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(height: 16),
-                              // Platform specific login buttons
-                              if (Platform.isAndroid)
-                                // Google Login for Android
-                                Container(
-                                  width: double.infinity,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border:
-                                        Border.all(color: Colors.grey.shade300),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.05),
-                                        blurRadius: 10,
-                                        offset: Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: signinGoogle,
-                                      borderRadius: BorderRadius.circular(14),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            width: 24,
-                                            height: 24,
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  Colors.red.shade400,
-                                                  Colors.red.shade600
-                                                ],
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                            ),
-                                            child: Icon(
-                                              Icons.g_mobiledata,
-                                              color: Colors.white,
-                                              size: 18,
-                                            ),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text(
-                                            '${context.l10n.continueButton} ${context.l10n.withString}Google',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontFamily: 'Montserrat',
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.grey.shade700,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              if (Platform.isIOS)
-                                // Apple Login for iOS
-                                Container(
-                                  width: double.infinity,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(14),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.3),
-                                        blurRadius: 10,
-                                        offset: Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: signinApple,
-                                      borderRadius: BorderRadius.circular(14),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.apple,
-                                            color: Colors.white,
-                                            size: 24,
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text(
-                                            '${context.l10n.continueButton} ${context.l10n.withString} Apple',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontFamily: 'Montserrat',
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-
-                        SizedBox(height: 30),
-
-                        // Register Link - Matching story_screen colors
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 16),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? Colors.black.withValues(alpha: 0.6)
-                                : Colors.white.withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.amber.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "${context.l10n.dontHaveAccount} ",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontFamily: 'Montserrat',
-                                  color: isDarkMode
-                                      ? Colors.white.withValues(alpha: 0.9)
-                                      : Colors.grey.shade800,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: goToRegisterScreen,
-                                child: Text(
-                                  context.l10n.signUpTitle,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontFamily: 'Montserrat',
-                                    color: Colors.amber.shade600,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        SizedBox(height: 40),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
       ),

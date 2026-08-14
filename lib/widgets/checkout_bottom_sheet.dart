@@ -9,6 +9,7 @@ import '../models/shipping.dart';
 import '../providers/auth.dart';
 import '../providers/delivery_provider.dart';
 import '../screens/shop/shipping_address_screen.dart';
+import 'footer.dart';
 
 /// Result returned after the user completes (or cancels) the checkout sheet.
 class CheckoutResult {
@@ -32,6 +33,7 @@ Future<CheckoutResult?> showCheckoutSheet(
   bool showShippingProvider = true, // false for subscriptions
   bool requiresShipping = true, // false for digital products
   bool allowAppleIap = false,
+  bool avoidFooter = false,
 }) {
   return showModalBottomSheet<CheckoutResult>(
     context: context,
@@ -44,6 +46,7 @@ Future<CheckoutResult?> showCheckoutSheet(
       showShippingProvider: showShippingProvider,
       requiresShipping: requiresShipping,
       allowAppleIap: allowAppleIap,
+      avoidFooter: avoidFooter,
     ),
   );
 }
@@ -56,6 +59,7 @@ class _CheckoutSheet extends StatefulWidget {
   final bool showShippingProvider;
   final bool requiresShipping;
   final bool allowAppleIap;
+  final bool avoidFooter;
 
   const _CheckoutSheet({
     required this.totalNpr,
@@ -63,6 +67,7 @@ class _CheckoutSheet extends StatefulWidget {
     required this.showShippingProvider,
     this.requiresShipping = true,
     this.allowAppleIap = false,
+    this.avoidFooter = false,
   });
 
   @override
@@ -164,6 +169,8 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? const Color(0xFF0F1117) : Colors.white;
+    final footerClearance =
+        widget.avoidFooter ? Footer.estimatedHeight(context) : 0.0;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
@@ -181,7 +188,9 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
           Flexible(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom +
+                    footerClearance +
+                    24,
                 top: 4,
               ),
               child: FadeTransition(
@@ -192,7 +201,7 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
               ),
             ),
           ),
-          _buildActionBar(isDark),
+          _buildActionBar(isDark, footerClearance),
         ],
       ),
     );
@@ -884,11 +893,13 @@ class _CheckoutSheetState extends State<_CheckoutSheet>
 
   // ── Action bar ────────────────────────────────────────────────────────────
 
-  Widget _buildActionBar(bool isDark) {
+  Widget _buildActionBar(bool isDark, double footerClearance) {
     final isLastStep = _step == 1 || !widget.requiresShipping;
+    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPadding = keyboardInset > 0 ? 20.0 : 20.0 + footerClearance;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, bottomPadding),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0F1117) : Colors.white,
         border: Border(

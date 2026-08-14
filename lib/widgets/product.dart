@@ -351,7 +351,7 @@ class ProductItem extends StatelessWidget {
         RegExp(r'^(storage/storage/)+'), 'storage/');
     normalizedPath = normalizedPath.replaceFirst(RegExp(r'^storage/'), '');
 
-    return 'https://student.baakhapaa.com/storage/storage/$normalizedPath';
+    return 'https://student.baakhapaa.com/storage/$normalizedPath';
   }
 
   int? _normalizedId() {
@@ -408,7 +408,12 @@ class ProductItem extends StatelessWidget {
       width: 220,
       margin: EdgeInsets.only(top: 2, right: 0, bottom: 2, left: 0),
       child: InkWell(
-        onTap: () {
+        onTap: () async {
+          if (auth.isGuest) {
+            await GuestAuthHelper.showGuestLoginDialog(
+                context, 'view product details');
+            return;
+          }
           Navigator.of(context).pushNamed(
             SingleProductScreen.routeName,
             arguments: _item['id'],

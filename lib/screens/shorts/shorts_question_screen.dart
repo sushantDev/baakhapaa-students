@@ -21,6 +21,7 @@ import '../../providers/auth.dart';
 import './shorts_loose_screen.dart';
 import './shorts_win_screen.dart';
 import '../../widgets/loading.dart';
+import '../../widgets/footer.dart';
 import '../../utils/debug_logger.dart';
 
 // ignore_for_file: unnecessary_null_comparison
@@ -809,6 +810,7 @@ class _ShortsQuestionScreenState extends State<ShortsQuestionScreen>
           PageTransition(
             type: PageTransitionType.rightToLeft,
             child: GuestWinnerScreen(),
+            settings: RouteSettings(name: GuestWinnerScreen.routeName),
           ),
         );
       }
@@ -1336,6 +1338,11 @@ class _ShortsQuestionScreenState extends State<ShortsQuestionScreen>
   Widget build(BuildContext context) {
     final _authProvider = Provider.of<Auth>(context, listen: false);
     final screenWidth = MediaQuery.of(context).size.width;
+    final footerInset = Footer.contentBottomInset(
+      context,
+      child: widget,
+      routeName: ModalRoute.of(context)?.settings.name,
+    );
 
     String strDigits(int n) => n.toString().padLeft(2, '0');
 
@@ -1419,7 +1426,9 @@ class _ShortsQuestionScreenState extends State<ShortsQuestionScreen>
             ),
           ],
         ),
-        body: Stack(
+        body: Padding(
+          padding: EdgeInsets.only(bottom: footerInset),
+          child: Stack(
           children: [
             _isLoading
                 ? Loading()
@@ -1733,6 +1742,7 @@ class _ShortsQuestionScreenState extends State<ShortsQuestionScreen>
             // Celebration particles overlay
             _buildCelebrationParticles(),
           ],
+        ),
         ),
       ),
     );

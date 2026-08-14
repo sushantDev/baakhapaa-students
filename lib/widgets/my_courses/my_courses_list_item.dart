@@ -1,12 +1,12 @@
-// ignore_for_file: duplicate_import, unused_local_variable, unused_import
+// ignore_for_file: unused_local_variable, unused_import
 
-import 'package:baakhapaa/providers/story.dart';
 import 'package:baakhapaa/providers/story.dart';
 import 'package:baakhapaa/theme/app_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
+import 'package:baakhapaa/screens/story/readable_episode_screen.dart';
 import 'package:baakhapaa/screens/story/video_screen.dart';
 import 'package:baakhapaa/utils/debug_logger.dart' as debug;
 
@@ -100,7 +100,7 @@ class _MyCourseListItemState extends State<MyCourseListItem>
         fallback;
   }
 
-  Future<void> _openResumeVideo({
+  Future<void> _openCourse({
     required BuildContext context,
     required Map<String, dynamic>? season,
     required int? initialEpisodeId,
@@ -111,9 +111,13 @@ class _MyCourseListItemState extends State<MyCourseListItem>
       int? episodeId = initialEpisodeId;
       int resumeSeconds = initialResumeSeconds;
       List<dynamic> episodes = [];
+      Map<String, dynamic>? episodeToOpen;
 
       final seasonId =
           _asInt(season?['id']) ?? _asInt(widget.course['season_id']);
+      final isReadable =
+          (season?['content_type'] ?? widget.course['content_type']) ==
+              'readable';
 
       if (episodeId == null) {
         final seasonEpisodes = season?['episodes'];
@@ -132,15 +136,21 @@ class _MyCourseListItemState extends State<MyCourseListItem>
         }
 
         if (episodes.isNotEmpty) {
-          dynamic episodeToPlay;
           try {
-            episodeToPlay = episodes.firstWhere((ep) => !_isEpisodeWatched(ep));
+            episodeToOpen = Map<String, dynamic>.from(
+              episodes.firstWhere((ep) => !_isEpisodeWatched(ep)) as Map,
+            );
           } catch (_) {
-            episodeToPlay = episodes.first;
+            final fallbackEpisode = isReadable ? episodes.last : episodes.first;
+            if (fallbackEpisode is Map) {
+              episodeToOpen = Map<String, dynamic>.from(fallbackEpisode);
+            }
           }
-          episodeId = _episodeIdFrom(episodeToPlay);
-          resumeSeconds = _resumeSecondsFrom(episodeToPlay, resumeSeconds);
+          episodeId = _episodeIdFrom(episodeToOpen);
+          resumeSeconds = _resumeSecondsFrom(episodeToOpen, resumeSeconds);
         }
+      } else if (isReadable) {
+        episodeToOpen = {'id': episodeId};
       }
 
       if (episodeId == null) {
@@ -164,6 +174,21 @@ class _MyCourseListItemState extends State<MyCourseListItem>
       }
 
       if (!context.mounted) return;
+      if (isReadable) {
+        Navigator.push(
+          context,
+          PageTransition(
+            child: const ReadableEpisodeScreen(),
+            type: PageTransitionType.rightToLeftWithFade,
+            settings: RouteSettings(
+              name: ReadableEpisodeScreen.routeName,
+              arguments: episodeToOpen ?? {'id': episodeId},
+            ),
+          ),
+        );
+        return;
+      }
+
       Navigator.push(
         context,
         PageTransition(
@@ -206,8 +231,17 @@ class _MyCourseListItemState extends State<MyCourseListItem>
 
     // Get course data from season
     final courseTitle = season?['title'] ?? 'Untitled Course';
-    final courseThumbnail = season?['course_thumbnail'] ?? season?['thumbnail'];
-    final episodesCount = season?['episodes_count'] ?? 0;
+    final courseThumbnail = season?['course_thumbnail'] ??
+        season?['thumbnail'] ??
+        season?['image_url'];
+    final episodesCount = _asInt(season?['episodes_count']) ?? 0;
+    final isReadable =
+        (season?['content_type'] ?? widget.course['content_type']) ==
+            'readable';
+    final isOwnedContent = widget.course is Map &&
+        (widget.course['owned_content'] == true ||
+            widget.course['owned_content'] == 1 ||
+            widget.course['owned_content'] == '1');
 
     // Get resume position from last watched episode
     int lastWatchedSeconds = 0;
@@ -237,7 +271,7 @@ class _MyCourseListItemState extends State<MyCourseListItem>
         opacity: _fadeAnimation,
         child: GestureDetector(
           onTap: () async {
-            await _openResumeVideo(
+            await _openCourse(
               context: context,
               season: season,
               initialEpisodeId: lastWatchedEpisodeId,
@@ -332,7 +366,7 @@ class _MyCourseListItemState extends State<MyCourseListItem>
                           ),
                         ),
 
-                        // Resume button overlay
+                        // Primary action overlay
                         Positioned(
                           bottom: 12,
                           right: 12,
@@ -363,7 +397,11 @@ class _MyCourseListItemState extends State<MyCourseListItem>
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Resume',
+                                  lastWatchedSeconds > 0
+                                      ? 'Resume'
+                                      : isReadable
+                                          ? 'Read'
+                                          : 'Open',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
@@ -375,7 +413,7 @@ class _MyCourseListItemState extends State<MyCourseListItem>
                           ),
                         ),
 
-                        // Completion badge
+                        // Completion or owned badge
                         Positioned(
                           top: 12,
                           left: 12,
@@ -393,7 +431,9 @@ class _MyCourseListItemState extends State<MyCourseListItem>
                               ),
                             ),
                             child: Text(
-                              '${completionPercentage.toStringAsFixed(0)}%',
+                              isOwnedContent && completionPercentage == 0
+                                  ? 'Owned'
+                                  : '${completionPercentage.toStringAsFixed(0)}%',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -427,7 +467,11 @@ class _MyCourseListItemState extends State<MyCourseListItem>
 
                           // Episodes count
                           Text(
-                            '$watchedEpisodes of $episodesCount episodes completed',
+                            episodesCount > 0
+                                ? '$watchedEpisodes of $episodesCount ${isReadable ? 'chapters' : 'episodes'} completed'
+                                : isReadable
+                                    ? 'Purchased book'
+                                    : 'Purchased course',
                             style: TextStyle(
                               fontSize: 12,
                               color: textColor.withValues(alpha: 0.6),

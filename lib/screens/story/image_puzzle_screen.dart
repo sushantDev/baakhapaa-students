@@ -1345,104 +1345,110 @@ class _ImagePuzzleScreenState extends State<ImagePuzzleScreen>
   }
 
   Widget _buildPuzzleGame(bool isDark) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final boardSize = screenWidth - 32;
-    final slotSize = boardSize / _cols;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final boardMaxWidth = constraints.maxWidth - 24;
+        final boardMaxHeight = constraints.maxHeight * 0.58;
+        final slotSize =
+            min(boardMaxWidth / _cols, boardMaxHeight / _rows).floorToDouble();
+        final boardWidth = slotSize * _cols;
+        final boardHeight = slotSize * _rows;
+        final trayPieceSize = (slotSize * 0.85).clamp(42.0, 86.0).toDouble();
 
-    return Column(
-      children: [
-        const SizedBox(height: 8),
-        // Puzzle board
-        Expanded(
-          flex: 3,
-          child: Center(
-            child: Container(
-              width: boardSize,
-              height: slotSize * _rows,
-              decoration: BoxDecoration(
-                color:
-                    isDark ? const Color(0xFF2A2A2A) : const Color(0xFFFAFAFA),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+        return Column(
+          children: [
+            const SizedBox(height: 8),
+            SizedBox(
+              height: boardHeight,
+              child: Center(
+                child: Container(
+                  width: boardWidth,
+                  height: boardHeight,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF2A2A2A)
+                        : const Color(0xFFFAFAFA),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      ...List.generate(_rows, (r) {
+                        return List.generate(_cols, (c) {
+                          return _buildGridSlot(r, c, slotSize, isDark);
+                        });
+                      }).expand((e) => e),
+                      ..._pieces.where((p) => p.isPlaced).map((p) {
+                        final isHinted = _hintedPieceKeys.contains(p.key);
+                        return Positioned(
+                          left: p.currentCol * slotSize,
+                          top: p.currentRow * slotSize,
+                          width: slotSize,
+                          height: slotSize,
+                          child: isHinted
+                              ? Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD700),
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFFFD700)
+                                            .withValues(alpha: 0.3),
+                                        blurRadius: 6,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      _buildPieceWidget(p, slotSize),
+                                      Positioned(
+                                        right: 2,
+                                        bottom: 2,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFFFD700),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.auto_awesome,
+                                            size: 10,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : _buildPieceWidget(p, slotSize),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
               ),
-              child: Stack(
-                children: [
-                  // Grid slots
-                  ...List.generate(_rows, (r) {
-                    return List.generate(_cols, (c) {
-                      return _buildGridSlot(r, c, slotSize, isDark);
-                    });
-                  }).expand((e) => e),
-                  // Placed pieces
-                  ..._pieces.where((p) => p.isPlaced).map((p) {
-                    final isHinted = _hintedPieceKeys.contains(p.key);
-                    return Positioned(
-                      left: p.currentCol * slotSize,
-                      top: p.currentRow * slotSize,
-                      width: slotSize,
-                      height: slotSize,
-                      child: isHinted
-                          ? Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: const Color(0xFFFFD700),
-                                  width: 2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFFD700)
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 6,
-                                    spreadRadius: 1,
-                                  ),
-                                ],
-                              ),
-                              child: Stack(
-                                children: [
-                                  _buildPieceWidget(p, slotSize),
-                                  Positioned(
-                                    right: 2,
-                                    bottom: 2,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(2),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFFFD700),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.auto_awesome,
-                                        size: 10,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : _buildPieceWidget(p, slotSize),
-                    );
-                  }),
-                ],
+            ),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF263238)
+                      : const Color(0xFFECEFF1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: _buildPieceTray(trayPieceSize, isDark),
               ),
             ),
-          ),
-        ),
-        // Piece tray
-        Expanded(
-          flex: 2,
-          child: Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF263238) : const Color(0xFFECEFF1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: _buildPieceTray(slotSize * 0.85, isDark),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 

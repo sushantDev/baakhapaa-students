@@ -42,8 +42,8 @@ class _MyCoursesState extends State<MyCourses> with TickerProviderStateMixin {
       _isInit = false;
       final storyProvider = Provider.of<Story>(context, listen: false);
       _floatingActionController.forward();
-      // Load continue watching data
       storyProvider.fetchContinueWatching();
+      storyProvider.fetchOwnedCourses();
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _checkGuestAccess();
@@ -77,6 +77,64 @@ class _MyCoursesState extends State<MyCourses> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  String? _seasonIdFromCourse(dynamic course) {
+    if (course is! Map) return null;
+    final season = course['season'];
+    if (season is Map && season['id'] != null) {
+      return season['id'].toString();
+    }
+    return course['season_id']?.toString();
+  }
+
+  Widget _buildSectionHeader(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+  }) {
+    final textColor = AppColors.getOnBackground(context);
+    final primaryColor = AppColors.getPrimary(context);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
+      child: Row(
+        children: [
+          Icon(icon, color: primaryColor, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildCourseSection({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required List<dynamic> items,
+    required int startIndex,
+  }) {
+    if (items.isEmpty) return [];
+
+    return [
+      _buildSectionHeader(context, title: title, icon: icon),
+      for (int i = 0; i < items.length; i++)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: MyCourseListItem(
+            course: items[i],
+            index: startIndex + i,
+          ),
+        ),
+      const SizedBox(height: 8),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final backgroundColor = AppColors.getBackground(context);
@@ -96,11 +154,42 @@ class _MyCoursesState extends State<MyCourses> with TickerProviderStateMixin {
         child: Consumer<Story>(
           builder: (context, storyProvider, _) {
             final continueWatching = storyProvider.continueWatchingItems;
+            final continueWatchingIds = continueWatching
+                .map(_seasonIdFromCourse)
+                .whereType<String>()
+                .toSet();
+            final ownedCourses = storyProvider.ownedCourseItems
+                .where((course) =>
+                    !continueWatchingIds.contains(_seasonIdFromCourse(course)))
+                .toList();
             final footerHeight = Footer.estimatedHeight(context);
             final bottomPadding =
                 MediaQuery.of(context).viewPadding.bottom + footerHeight + 40;
+            final isLoading = storyProvider.isLoadingContinueWatching ||
+                storyProvider.isLoadingOwnedCourses;
+            final sectionChildren = [
+              ..._buildCourseSection(
+                context: context,
+                title: 'Continue Watching',
+                icon: Icons.play_circle_outline_rounded,
+                items: continueWatching,
+                startIndex: 0,
+              ),
+              ..._buildCourseSection(
+                context: context,
+                title: 'Purchased Courses & Books',
+                icon: Icons.lock_open_rounded,
+                items: ownedCourses,
+                startIndex: continueWatching.length,
+              ),
+            ];
 
-            if (continueWatching.isEmpty) {
+            if (continueWatching.isEmpty && ownedCourses.isEmpty) {
+              if (isLoading) {
+                return Center(
+                  child: CircularProgressIndicator(color: primaryColor),
+                );
+              }
               return Padding(
                 padding: EdgeInsets.only(bottom: bottomPadding),
                 child: const MyCourseEmptyState(),
@@ -109,7 +198,10 @@ class _MyCoursesState extends State<MyCourses> with TickerProviderStateMixin {
 
             return CustomRefreshIndicator(
               onRefresh: () async {
-                await storyProvider.fetchContinueWatching();
+                await Future.wait([
+                  storyProvider.fetchContinueWatching(forceRefresh: true),
+                  storyProvider.fetchOwnedCourses(forceRefresh: true),
+                ]);
               },
               builder: (context, child, controller) {
                 return Stack(
@@ -152,17 +244,8 @@ class _MyCoursesState extends State<MyCourses> with TickerProviderStateMixin {
                   12,
                   bottomPadding,
                 ),
-                itemCount: continueWatching.length,
-                itemBuilder: (context, index) {
-                  final course = continueWatching[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: MyCourseListItem(
-                      course: course,
-                      index: index,
-                    ),
-                  );
-                },
+                itemCount: sectionChildren.length,
+                itemBuilder: (context, index) => sectionChildren[index],
               ),
             );
           },

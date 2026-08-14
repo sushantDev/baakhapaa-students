@@ -25,6 +25,8 @@ class AllChallengesScreen extends StatefulWidget {
 
 class _AllChallengesScreenState extends State<AllChallengesScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  static double _savedScrollOffset = 0;
+  late final ScrollController _scrollController;
   bool _isLoading = false;
 
   static const List<String> _filters = ['All', 'Unlocked', 'Locked'];
@@ -34,6 +36,8 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController =
+        ScrollController(initialScrollOffset: _savedScrollOffset);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
@@ -46,8 +50,23 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
     _loadChallenges();
   }
 
-  Future<void> _loadChallenges() async {
-    setState(() => _isLoading = true);
+  @override
+  void dispose() {
+    if (_scrollController.hasClients) {
+      _savedScrollOffset = _scrollController.offset;
+    }
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadChallenges({bool forceRefresh = false}) async {
+    final challengeProvider = context.read<Challenge>();
+    final shortsProvider = context.read<Shorts>();
+    final hasCachedChallenges = challengeProvider.challenges.isNotEmpty;
+
+    if (!hasCachedChallenges && mounted) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       final authProvider = context.read<Auth>();
@@ -55,8 +74,9 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
 
       // Load both challenges and creator shorts to check participation
       await Future.wait([
-        context.read<Challenge>().fetchChallenges(),
-        context.read<Shorts>().fetchCreatorShorts(userId),
+        challengeProvider.fetchChallenges(forceRefresh: forceRefresh),
+        if (forceRefresh || shortsProvider.creatorShorts.isEmpty)
+          shortsProvider.fetchCreatorShorts(userId),
       ]);
     } catch (_) {
       if (!mounted) return;
@@ -144,26 +164,31 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
     return [const Color(0xFFFFCB0C), const Color(0xFFDC9903)];
   }
 
-  // Get dynamic points reward from challenge data
-  int _getPointsReward(Map<String, dynamic> challenge) {
-    // Highest priority: actual reward
-    if (challenge['unlock_points'] != null) {
-      return _toInt(challenge['unlock_points']);
+  // Enrollment cost shown on challenge cards.
+  int _getEnrollmentPoints(Map<String, dynamic> challenge) {
+    const fields = [
+      'points_required',
+      'unlock_points',
+      'coin_to_unlock',
+      'challenge_points',
+      'entry_points',
+      'entry_fee',
+    ];
+
+    for (final field in fields) {
+      final points = _toInt(challenge[field]);
+      if (points > 0) return points;
     }
 
-    // Fallback: required points (what your API actually sends)
-    if (challenge['unlock_points'] != null) {
-      return _toInt(challenge['unlock_points']);
-    }
-
-    // Last fallback
     return 0;
   }
 
   int _toInt(dynamic value) {
     if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) return int.tryParse(value) ?? 0;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      return int.tryParse(value) ?? double.tryParse(value)?.toInt() ?? 0;
+    }
     return 0;
   }
 
@@ -266,7 +291,7 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
         scaffoldKey: _scaffoldKey,
       ),
       body: RefreshIndicator(
-        onRefresh: _loadChallenges,
+        onRefresh: () => _loadChallenges(forceRefresh: true),
         child: Column(
           children: [
             const SubHeader(),
@@ -288,6 +313,7 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
                         }
 
                         return ListView.builder(
+                          controller: _scrollController,
                           physics: const BouncingScrollPhysics(
                             parent: AlwaysScrollableScrollPhysics(),
                           ),
@@ -319,7 +345,7 @@ class _AllChallengesScreenState extends State<AllChallengesScreen> {
                                 completed,
                                 expired,
                               ),
-                              pointsReward: _getPointsReward(c),
+                              pointsReward: _getEnrollmentPoints(c),
                             );
                           },
                         );
@@ -451,7 +477,7 @@ class _ChallengeCard extends StatelessWidget {
         children: [
           Container(
             width: 368,
-            height: 148,
+            constraints: const BoxConstraints(minHeight: 148),
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

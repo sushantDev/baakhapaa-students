@@ -36,15 +36,40 @@ class Story with ChangeNotifier {
   late List<dynamic> _myListItems = [];
   bool _hasFetchedMyList = false;
   late List<dynamic> _continueWatchingItems = [];
+  late List<dynamic> _ownedCourseItems = [];
   late List<dynamic> _premiumCreatorSeasons = [];
   late List<dynamic> _readableSeasons = [];
   late List<dynamic> _episodePages = [];
   bool _isLoadingPages = false;
   bool _isLoadingContinueWatching = false;
+  bool _isLoadingOwnedCourses = false;
   Map<String, dynamic> _readingStreak = {};
   DateTime? _streakLastFetched;
   bool _isStreakFetching = false;
   List<Map<String, dynamic>> _readingHistory = [];
+
+  static const Duration _homeSectionCacheDuration = Duration(minutes: 5);
+  DateTime? _featuredSeasonsFetchedAt;
+  DateTime? _suggestedSeasonsFetchedAt;
+  DateTime? _difficultSeasonsFetchedAt;
+  DateTime? _myListFetchedAt;
+  DateTime? _continueWatchingFetchedAt;
+  DateTime? _ownedCoursesFetchedAt;
+  DateTime? _premiumCreatorSeasonsFetchedAt;
+  DateTime? _readableSeasonsFetchedAt;
+  DateTime? _storySliderFetchedAt;
+  bool _isFetchingFeaturedSeasons = false;
+  bool _isFetchingSuggestedSeasons = false;
+  bool _isFetchingDifficultSeasons = false;
+  bool _isFetchingMyList = false;
+  bool _isFetchingPremiumCreatorSeasons = false;
+  bool _isFetchingReadableSeasons = false;
+  bool _isFetchingStorySlider = false;
+
+  bool _isFresh(DateTime? fetchedAt) {
+    return fetchedAt != null &&
+        DateTime.now().difference(fetchedAt) < _homeSectionCacheDuration;
+  }
 
   Map<String, dynamic> get readingStreak => _readingStreak;
   List<Map<String, dynamic>> get readingHistory => _readingHistory;
@@ -93,6 +118,7 @@ class Story with ChangeNotifier {
     List<Map<String, dynamic>>? difficultSeasons,
     List<dynamic>? myListItems,
     List<dynamic>? continueWatchingItems,
+    List<dynamic>? ownedCourseItems,
     List<dynamic>? premiumCreatorSeasons,
     List<dynamic>? creatorSeasons,
     List<dynamic>? readableSeasons,
@@ -106,6 +132,7 @@ class Story with ChangeNotifier {
     _difficultSeasons = difficultSeasons ?? [];
     _myListItems = myListItems ?? [];
     _continueWatchingItems = continueWatchingItems ?? [];
+    _ownedCourseItems = ownedCourseItems ?? [];
     _premiumCreatorSeasons = premiumCreatorSeasons ?? [];
     _creatorSeasons = creatorSeasons ?? [];
     _readableSeasons = readableSeasons ?? [];
@@ -186,6 +213,10 @@ class Story with ChangeNotifier {
     return _continueWatchingItems;
   }
 
+  List<dynamic> get ownedCourseItems {
+    return _ownedCourseItems;
+  }
+
   List<dynamic> get premiumCreatorSeasons {
     return _premiumCreatorSeasons;
   }
@@ -200,6 +231,7 @@ class Story with ChangeNotifier {
 
   bool get isLoadingPages => _isLoadingPages;
   bool get isLoadingContinueWatching => _isLoadingContinueWatching;
+  bool get isLoadingOwnedCourses => _isLoadingOwnedCourses;
 
   List<dynamic> get creatorSeasons {
     return _creatorSeasons;
@@ -272,7 +304,14 @@ class Story with ChangeNotifier {
     }
   }
 
-  Future<void> fetchFeaturedSeasons() async {
+  Future<void> fetchFeaturedSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingFeaturedSeasons) return;
+    if (!forceRefresh &&
+        _featuredSeasons.isNotEmpty &&
+        _isFresh(_featuredSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingFeaturedSeasons = true;
     try {
       final response = await http
           .get(
@@ -322,6 +361,7 @@ class Story with ChangeNotifier {
           return _normalizeSeasonData(safeSeason);
         }).toList();
 
+        _featuredSeasonsFetchedAt = DateTime.now();
         notifyListeners();
       } else {
         throw ('Error');
@@ -330,10 +370,19 @@ class Story with ChangeNotifier {
       DebugLogger.api('Error fetching featured seasons: $e');
       _featuredSeasons = [];
       notifyListeners();
+    } finally {
+      _isFetchingFeaturedSeasons = false;
     }
   }
 
-  Future<void> fetchSuggestedSeasons() async {
+  Future<void> fetchSuggestedSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingSuggestedSeasons) return;
+    if (!forceRefresh &&
+        _suggestedSeasons.isNotEmpty &&
+        _isFresh(_suggestedSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingSuggestedSeasons = true;
     try {
       final String apiUrl = Url.baakhapaaApi('/seasons/suggested-seasons');
       final Map<String, String> headers = Url.baakhapaaAuthHeaders(authToken);
@@ -356,6 +405,7 @@ class Story with ChangeNotifier {
 
           // Also update local variable
           _suggestedSeasons = typedCategories;
+          _suggestedSeasonsFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -364,10 +414,19 @@ class Story with ChangeNotifier {
       }
     } catch (e) {
       DebugLogger.error('Error fetching suggested seasons: $e');
+    } finally {
+      _isFetchingSuggestedSeasons = false;
     }
   }
 
-  Future<void> fetchDifficultSeasons() async {
+  Future<void> fetchDifficultSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingDifficultSeasons) return;
+    if (!forceRefresh &&
+        _difficultSeasons.isNotEmpty &&
+        _isFresh(_difficultSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingDifficultSeasons = true;
     try {
       final String apiUrl = Url.baakhapaaApi('/seasons/difficult-seasons');
       final Map<String, String> headers = Url.baakhapaaAuthHeaders(authToken);
@@ -385,6 +444,7 @@ class Story with ChangeNotifier {
 
           // Update local variable
           _difficultSeasons = categories.cast<Map<String, dynamic>>();
+          _difficultSeasonsFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -393,6 +453,8 @@ class Story with ChangeNotifier {
       }
     } catch (e) {
       DebugLogger.error('Error fetching difficult seasons: $e');
+    } finally {
+      _isFetchingDifficultSeasons = false;
     }
   }
 
@@ -577,6 +639,7 @@ class Story with ChangeNotifier {
     _syncSeasonInDirectList(_readableSeasons, seasonId, updates);
     _syncSeasonInWrappedList(_myListItems, seasonId, updates);
     _syncSeasonInWrappedList(_continueWatchingItems, seasonId, updates);
+    _syncSeasonInWrappedList(_ownedCourseItems, seasonId, updates);
     _syncSeasonInCategoryList(_suggestedSeasons, seasonId, updates);
     _syncSeasonInCategoryList(_difficultSeasons, seasonId, updates);
 
@@ -616,8 +679,7 @@ class Story with ChangeNotifier {
         headers: Url.baakhapaaAuthHeaders(authToken),
       );
 
-      DebugLogger.api(
-          '?? Episode API Response Status: ${response.statusCode}');
+      DebugLogger.api('?? Episode API Response Status: ${response.statusCode}');
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       DebugLogger.api('?? Episode API Response: ${responseData.toString()}');
 
@@ -862,8 +924,7 @@ class Story with ChangeNotifier {
             .map((e) => Map<String, dynamic>.from(e))
             .toList();
 
-        DebugLogger.info(
-            '?? Final list size after filtering: ${list.length}');
+        DebugLogger.info('?? Final list size after filtering: ${list.length}');
         DebugLogger.info('?? Returning list for creator $creatorId');
 
         if (!returnList) {
@@ -987,53 +1048,63 @@ class Story with ChangeNotifier {
     try {
       if (episodeCoinsUsers == 0) {
         // for baakhapaa episodes reward process
-        await http.post(
-          Uri.parse(Url.baakhapaaApi('/coin-transaction')),
-          headers: Url.baakhapaaAuthHeaders(authToken),
-          body: json.encode({
-            'user_id': userId,
-            'status': 'credited',
-            'coin': fallBackPoints,
-            'remarks':
-                'Episode "$episodeTitle" has been completed. You have received fallback points because the creator\'s allocated points have already been used.',
-          }),
-        );
-      } else {
-        // for creators episodes reward process
-        if (episodeCoinsUsers > 0) {
-          await http
-              .get(
-            Uri.parse(
-              Url.baakhapaaApi('/episode/$episodeId/deduct-coins-users'),
-            ),
-            headers: Url.baakhapaaAuthHeaders(authToken),
-          )
-              .then((_) async {
-            await http.post(
+        await http
+            .post(
               Uri.parse(Url.baakhapaaApi('/coin-transaction')),
               headers: Url.baakhapaaAuthHeaders(authToken),
               body: json.encode({
                 'user_id': userId,
                 'status': 'credited',
-                'coin': episodeRewardCoin,
-                'remarks': 'Episode "$episodeTitle" completed',
+                'coin': fallBackPoints,
+                'remarks':
+                    'Episode "$episodeTitle" has been completed. You have received fallback points because the creator\'s allocated points have already been used.',
               }),
-            );
+            )
+            .timeout(const Duration(seconds: 12));
+      } else {
+        // for creators episodes reward process
+        if (episodeCoinsUsers > 0) {
+          await http
+              .get(
+                Uri.parse(
+                  Url.baakhapaaApi('/episode/$episodeId/deduct-coins-users'),
+                ),
+                headers: Url.baakhapaaAuthHeaders(authToken),
+              )
+              .timeout(const Duration(seconds: 12))
+              .then((_) async {
+            await http
+                .post(
+                  Uri.parse(Url.baakhapaaApi('/coin-transaction')),
+                  headers: Url.baakhapaaAuthHeaders(authToken),
+                  body: json.encode({
+                    'user_id': userId,
+                    'status': 'credited',
+                    'coin': episodeRewardCoin,
+                    'remarks': 'Episode "$episodeTitle" completed',
+                  }),
+                )
+                .timeout(const Duration(seconds: 12));
           });
         }
       }
-      await http.get(
-        Uri.parse(Url.baakhapaaApi(
-            '/episode/$episodeId/watched?game_mode=${_selectedGameMode.toApiString()}')),
-        headers: Url.baakhapaaAuthHeaders(authToken),
-      );
+      await http
+          .get(
+            Uri.parse(Url.baakhapaaApi(
+                '/episode/$episodeId/watched?game_mode=${_selectedGameMode.toApiString()}')),
+            headers: Url.baakhapaaAuthHeaders(authToken),
+          )
+          .timeout(const Duration(seconds: 12));
     } catch (error) {
       throw error;
     }
   }
 
   static bool _isTruthy(dynamic value) {
-    return value == true || value == 1 || value == '1' || value == 'true';
+    return value == true ||
+        value == 1 ||
+        value == '1' ||
+        value?.toString().toLowerCase() == 'true';
   }
 
   void _mergeSeasonEpisodeSnapshot(
@@ -1084,7 +1155,8 @@ class Story with ChangeNotifier {
   }
 
   /// Completed challenge modes from GET /api/v2/episode/{id} and related fields.
-  List<GameMode> completedGameModesFromEpisode(Map<String, dynamic> episodeData) {
+  List<GameMode> completedGameModesFromEpisode(
+      Map<String, dynamic> episodeData) {
     final completed = <GameMode>{};
 
     if (isQuizCompletedFromEpisode(episodeData)) {
@@ -1165,8 +1237,7 @@ class Story with ChangeNotifier {
       return GameMode.values
           .where(
             (mode) =>
-                mode != GameMode.quiz ||
-                episodeHasQuizQuestions(episodeData),
+                mode != GameMode.quiz || episodeHasQuizQuestions(episodeData),
           )
           .toList();
     }
@@ -1370,7 +1441,14 @@ class Story with ChangeNotifier {
     }
   }
 
-  Future<void> fetchStorySlider() async {
+  Future<void> fetchStorySlider({bool forceRefresh = false}) async {
+    if (_isFetchingStorySlider) return;
+    if (!forceRefresh &&
+        _sliders.isNotEmpty &&
+        _isFresh(_storySliderFetchedAt)) {
+      return;
+    }
+    _isFetchingStorySlider = true;
     try {
       final response = await http
           .get(
@@ -1382,6 +1460,7 @@ class Story with ChangeNotifier {
       var responseData = json.decode(utf8.decode(response.bodyBytes));
       if (responseData['success'] == true) {
         _sliders = responseData['data']['items'];
+        _storySliderFetchedAt = DateTime.now();
         notifyListeners();
       } else {
         DebugLogger.error(
@@ -1390,6 +1469,8 @@ class Story with ChangeNotifier {
     } catch (error) {
       DebugLogger.error('Error fetching story slider: $error');
       // Don't rethrow ? caller should not crash for non-critical slider data
+    } finally {
+      _isFetchingStorySlider = false;
     }
   }
 
@@ -1416,7 +1497,12 @@ class Story with ChangeNotifier {
     }
   }
 
-  Future<void> fetchMyList() async {
+  Future<void> fetchMyList({bool forceRefresh = false}) async {
+    if (_isFetchingMyList) return;
+    if (!forceRefresh && _hasFetchedMyList && _isFresh(_myListFetchedAt)) {
+      return;
+    }
+    _isFetchingMyList = true;
     try {
       DebugLogger.api(
         '?? STARTING fetchMyList - authToken length: ${authToken.length}',
@@ -1441,6 +1527,7 @@ class Story with ChangeNotifier {
           _hasFetchedMyList = true;
           _syncMyListStatusAcrossCollections();
           DebugLogger.api('?? Loaded ${_myListItems.length} my list items');
+          _myListFetchedAt = DateTime.now();
           notifyListeners();
         } else {
           DebugLogger.api(
@@ -1449,6 +1536,7 @@ class Story with ChangeNotifier {
           _myListItems = [];
           _hasFetchedMyList = true;
           _syncMyListStatusAcrossCollections();
+          _myListFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -1458,6 +1546,7 @@ class Story with ChangeNotifier {
         _myListItems = [];
         _hasFetchedMyList = true;
         _syncMyListStatusAcrossCollections();
+        _myListFetchedAt = DateTime.now();
         notifyListeners();
       }
     } catch (e) {
@@ -1466,6 +1555,8 @@ class Story with ChangeNotifier {
       _hasFetchedMyList = true;
       _syncMyListStatusAcrossCollections();
       notifyListeners();
+    } finally {
+      _isFetchingMyList = false;
     }
   }
 
@@ -1524,8 +1615,7 @@ class Story with ChangeNotifier {
       DebugLogger.api(
         '?? My List Toggle API Response Status: ${response.statusCode}',
       );
-      DebugLogger.api(
-          '?? My List Toggle API Response Body: ${response.body}');
+      DebugLogger.api('?? My List Toggle API Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
@@ -1547,7 +1637,7 @@ class Story with ChangeNotifier {
           );
 
           // Refresh My List to get updated data
-          await fetchMyList();
+          await fetchMyList(forceRefresh: true);
 
           return true;
         } else {
@@ -1670,8 +1760,7 @@ class Story with ChangeNotifier {
 
   Future<Map<String, dynamic>?> fetchSeasonDetails(int seasonId) async {
     try {
-      DebugLogger.api(
-          '?? STARTING fetchSeasonDetails - Season ID: $seasonId');
+      DebugLogger.api('?? STARTING fetchSeasonDetails - Season ID: $seasonId');
 
       final String apiUrl = Url.baakhapaaApi('/season-details/$seasonId');
       DebugLogger.api('?? API URL: $apiUrl');
@@ -1711,7 +1800,13 @@ class Story with ChangeNotifier {
 
   // Add this method to your Story provider class
 
-  Future<void> fetchContinueWatching() async {
+  Future<void> fetchContinueWatching({bool forceRefresh = false}) async {
+    if (_isLoadingContinueWatching) return;
+    if (!forceRefresh &&
+        _continueWatchingItems.isNotEmpty &&
+        _isFresh(_continueWatchingFetchedAt)) {
+      return;
+    }
     _isLoadingContinueWatching = true;
     notifyListeners();
 
@@ -1773,6 +1868,7 @@ class Story with ChangeNotifier {
           }
 
           _isLoadingContinueWatching = false;
+          _continueWatchingFetchedAt = DateTime.now();
           notifyListeners();
         } else {
           DebugLogger.api(
@@ -1780,6 +1876,7 @@ class Story with ChangeNotifier {
           );
           _continueWatchingItems = [];
           _isLoadingContinueWatching = false;
+          _continueWatchingFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -1788,6 +1885,7 @@ class Story with ChangeNotifier {
         );
         _continueWatchingItems = [];
         _isLoadingContinueWatching = false;
+        _continueWatchingFetchedAt = DateTime.now();
         notifyListeners();
       }
     } catch (e) {
@@ -1798,7 +1896,83 @@ class Story with ChangeNotifier {
     }
   }
 
-  Future<void> fetchPremiumCreatorSeasons() async {
+  bool _isOwnedPaidSeason(Map<String, dynamic> season) {
+    final explicitlyPurchased = _isTruthy(season['purchased']) ||
+        _isTruthy(season['is_purchased']) ||
+        _isTruthy(season['has_purchased']);
+    if (explicitlyPurchased) return true;
+
+    final isLocked = _isTruthy(season['is_locked']);
+    final isUnlockedForUser =
+        _isTruthy(season['watched']) || _isTruthy(season['has_unlocked']);
+    final rawUnlockCost = season['coin_to_unlock'] ??
+        season['coins_to_unlock'] ??
+        season['unlock_points'];
+    final unlockCost = rawUnlockCost is num
+        ? rawUnlockCost.toInt()
+        : int.tryParse(rawUnlockCost?.toString() ?? '') ?? 0;
+
+    return isLocked && isUnlockedForUser && unlockCost > 0;
+  }
+
+  Future<void> fetchOwnedCourses({bool forceRefresh = false}) async {
+    if (_isLoadingOwnedCourses) return;
+    if (!forceRefresh &&
+        _ownedCourseItems.isNotEmpty &&
+        _isFresh(_ownedCoursesFetchedAt)) {
+      return;
+    }
+
+    _isLoadingOwnedCourses = true;
+    notifyListeners();
+
+    try {
+      await Future.wait([
+        fetchAllSeasons().catchError((e) {
+          DebugLogger.error('Owned courses: all seasons fetch failed: $e');
+        }),
+        fetchReadableSeasons(forceRefresh: forceRefresh).catchError((e) {
+          DebugLogger.error('Owned courses: readable seasons fetch failed: $e');
+        }),
+      ], eagerError: false);
+
+      final byId = <String, Map<String, dynamic>>{};
+      for (final item in [..._seasons, ..._readableSeasons]) {
+        if (item is! Map) continue;
+        final season = _normalizeSeasonData(Map<String, dynamic>.from(item));
+        final seasonId = season['id']?.toString();
+        if (seasonId == null || seasonId.isEmpty) continue;
+        if (!_isOwnedPaidSeason(season)) continue;
+        byId[seasonId] = season;
+      }
+
+      _ownedCourseItems = byId.values
+          .map((season) => {
+                'season': season,
+                'completion_percentage': season['completion_percentage'] ?? 0,
+                'owned_content': true,
+              })
+          .toList();
+
+      _ownedCoursesFetchedAt = DateTime.now();
+      DebugLogger.api('?? Loaded ${_ownedCourseItems.length} owned courses');
+    } catch (e) {
+      DebugLogger.error('?? Error fetching owned courses: $e');
+      _ownedCourseItems = [];
+    } finally {
+      _isLoadingOwnedCourses = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchPremiumCreatorSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingPremiumCreatorSeasons) return;
+    if (!forceRefresh &&
+        _premiumCreatorSeasons.isNotEmpty &&
+        _isFresh(_premiumCreatorSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingPremiumCreatorSeasons = true;
     try {
       DebugLogger.api(
         '?? STARTING fetchPremiumCreatorSeasons - authToken length: ${authToken.length}',
@@ -1835,12 +2009,14 @@ class Story with ChangeNotifier {
             '?? Loaded ${_premiumCreatorSeasons.length} premium creator seasons',
           );
 
+          _premiumCreatorSeasonsFetchedAt = DateTime.now();
           notifyListeners();
         } else {
           DebugLogger.api(
             '?? Premium Creator Seasons API Error: ${responseData['message'] ?? 'Unknown error'}',
           );
           _premiumCreatorSeasons = [];
+          _premiumCreatorSeasonsFetchedAt = DateTime.now();
           notifyListeners();
         }
       } else {
@@ -1848,17 +2024,27 @@ class Story with ChangeNotifier {
           '?? Premium Creator Seasons API Error: ${response.statusCode} - ${response.body}',
         );
         _premiumCreatorSeasons = [];
+        _premiumCreatorSeasonsFetchedAt = DateTime.now();
         notifyListeners();
       }
     } catch (e) {
       DebugLogger.api('?? Error fetching premium creator seasons: $e');
       _premiumCreatorSeasons = [];
       notifyListeners();
+    } finally {
+      _isFetchingPremiumCreatorSeasons = false;
     }
   }
 
   /// Fetch readable (book summary) seasons
-  Future<void> fetchReadableSeasons() async {
+  Future<void> fetchReadableSeasons({bool forceRefresh = false}) async {
+    if (_isFetchingReadableSeasons) return;
+    if (!forceRefresh &&
+        _readableSeasons.isNotEmpty &&
+        _isFresh(_readableSeasonsFetchedAt)) {
+      return;
+    }
+    _isFetchingReadableSeasons = true;
     try {
       final response = await http
           .get(
@@ -1915,12 +2101,15 @@ class Story with ChangeNotifier {
 
         DebugLogger.api(
             '?? Loaded ${_readableSeasons.length} readable seasons');
+        _readableSeasonsFetchedAt = DateTime.now();
         notifyListeners();
       }
     } catch (e) {
       DebugLogger.error('?? Error fetching readable seasons: $e');
       _readableSeasons = [];
       notifyListeners();
+    } finally {
+      _isFetchingReadableSeasons = false;
     }
   }
 

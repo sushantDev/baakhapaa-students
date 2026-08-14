@@ -23,6 +23,9 @@ class Challenge with ChangeNotifier {
 
   List<dynamic> _challenges = [];
   final String authToken;
+  DateTime? _challengesFetchedAt;
+  bool _isFetchingChallenges = false;
+  static const Duration _challengeCacheDuration = Duration(minutes: 5);
 
   // 🔥 Season challenge progression state
   Map<String, dynamic>? _seasonDetails;
@@ -39,7 +42,16 @@ class Challenge with ChangeNotifier {
     return _challenges;
   }
 
-  Future<void> fetchChallenges() async {
+  bool get hasFreshChallenges =>
+      _challengesFetchedAt != null &&
+      DateTime.now().difference(_challengesFetchedAt!) <
+          _challengeCacheDuration;
+
+  Future<void> fetchChallenges({bool forceRefresh = false}) async {
+    if (_isFetchingChallenges) return;
+    if (!forceRefresh && _challenges.isNotEmpty && hasFreshChallenges) return;
+
+    _isFetchingChallenges = true;
     try {
       final response = await http
           .get(Uri.parse(Url.baakhapaaApi('/challenges')),
@@ -49,10 +61,13 @@ class Challenge with ChangeNotifier {
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success']) {
         _challenges = responseData['data']['items'];
+        _challengesFetchedAt = DateTime.now();
         notifyListeners();
       }
     } catch (error) {
       debugPrint('Error fetching challenges: $error');
+    } finally {
+      _isFetchingChallenges = false;
     }
   }
 

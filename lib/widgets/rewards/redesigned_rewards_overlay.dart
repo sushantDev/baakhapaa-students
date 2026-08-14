@@ -3769,7 +3769,7 @@ class _RedesignedRewardsOverlayState extends State<RedesignedRewardsOverlay>
         var auth = Provider.of<Auth>(context, listen: false);
         final user = auth.user;
         final adsWatchedPoints =
-            int.tryParse(user['ads_watched_points']?.toString() ?? '0') ?? 0;
+            int.tryParse(user['ads_watched_points']?.toString() ?? '') ?? 5;
 
         await auth
             .coinTransaction(

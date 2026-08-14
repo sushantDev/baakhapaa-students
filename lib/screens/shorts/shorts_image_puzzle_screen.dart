@@ -16,6 +16,7 @@ import '../../providers/auth.dart';
 import '../../providers/video_state_provider.dart';
 import '../../utils/debug_logger.dart';
 import '../../utils/image_puzzle_generator.dart';
+import '../../widgets/footer.dart';
 import './shorts_win_screen.dart';
 import './shorts_loose_screen.dart';
 
@@ -772,6 +773,11 @@ class _ShortsImagePuzzleScreenState extends State<ShortsImagePuzzleScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final footerInset = Footer.contentBottomInset(
+      context,
+      child: widget,
+      routeName: ModalRoute.of(context)?.settings.name,
+    );
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey[50],
@@ -862,7 +868,9 @@ class _ShortsImagePuzzleScreenState extends State<ShortsImagePuzzleScreen>
           ),
         ],
       ),
-      body: _isLoading
+      body: Padding(
+        padding: EdgeInsets.only(bottom: footerInset),
+        child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _sourceImage == null
               ? Center(
@@ -944,6 +952,7 @@ class _ShortsImagePuzzleScreenState extends State<ShortsImagePuzzleScreen>
                       ),
                   ],
                 ),
+      ),
     );
   }
 

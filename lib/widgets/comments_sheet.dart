@@ -4,9 +4,12 @@ import 'package:provider/provider.dart';
 import 'skeleton_loading.dart';
 
 import 'comment_item.dart';
+import 'footer.dart';
 import '../utils/debug_logger.dart';
 
 class CommentsSheet extends StatefulWidget {
+  static const routeName = '/comments-sheet';
+
   final int shortsId;
 
   CommentsSheet({required this.shortsId});
@@ -80,6 +83,15 @@ class _CommentsSheetState extends State<CommentsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final shouldReserveFooter = Footer.shouldShowOnRoute(
+      context,
+      widget,
+      ModalRoute.of(context)?.settings.name,
+    );
+    final bottomClearance = shouldReserveFooter
+        ? Footer.estimatedHeight(context)
+        : MediaQuery.of(context).viewPadding.bottom;
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
@@ -100,9 +112,9 @@ class _CommentsSheetState extends State<CommentsSheet> {
         children: [
           _buildHeader(),
           Divider(color: Colors.grey.withValues(alpha: 0.2)),
-          _buildCommentsList(),
+          _buildCommentsList(bottomClearance),
           Divider(color: Colors.grey.withValues(alpha: 0.2)),
-          _buildCommentInput(),
+          _buildCommentInput(bottomClearance),
         ],
       ),
     );
@@ -177,7 +189,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
     );
   }
 
-  Widget _buildCommentsList() {
+  Widget _buildCommentsList(double bottomClearance) {
     return Consumer<Comments>(
       builder: (ctx, commentsData, _) {
         // Changed from isLoading to isFetching to match your provider
@@ -214,7 +226,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
           child: RefreshIndicator(
             onRefresh: _fetchComments,
             child: ListView.separated(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.fromLTRB(16, 0, 16, bottomClearance),
               itemCount: commentsData.comments.length,
               separatorBuilder: (context, index) => Divider(),
               itemBuilder: (context, index) {
@@ -230,10 +242,13 @@ class _CommentsSheetState extends State<CommentsSheet> {
     );
   }
 
-  Widget _buildCommentInput() {
+  Widget _buildCommentInput(double bottomClearance) {
+    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPadding =
+        keyboardInset > 0 ? keyboardInset + 24 : bottomClearance + 16;
+
     return Container(
-      padding: EdgeInsets.fromLTRB(
-          24, 16, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, bottomPadding),
       child: Row(
         children: [
           Expanded(

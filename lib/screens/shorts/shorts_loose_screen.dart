@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import './shorts_screen.dart';
 import './shorts_question_screen.dart';
+import '../../widgets/footer.dart';
 
 import '../../utils/debug_logger.dart';
 import '../../services/ad_service.dart';
@@ -196,6 +197,12 @@ class _ShortsLooseScreenState extends State<ShortsLooseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final footerInset = Footer.contentBottomInset(
+      context,
+      child: widget,
+      routeName: ModalRoute.of(context)?.settings.name,
+    );
+
     // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: () async {
@@ -204,7 +211,9 @@ class _ShortsLooseScreenState extends State<ShortsLooseScreen> {
       },
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: Container(
+        body: Padding(
+          padding: EdgeInsets.only(bottom: footerInset),
+          child: Container(
           width: double.infinity,
           height: double.infinity,
           color: Colors.black,
@@ -496,6 +505,7 @@ class _ShortsLooseScreenState extends State<ShortsLooseScreen> {
                 ],
               ),
             ),
+          ),
           ),
         ),
       ),

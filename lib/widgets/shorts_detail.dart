@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../screens/challenges/challenge_detail_screen.dart';
 import '../screens/story/video_screen.dart';
+import 'footer.dart';
 
 class ShortsDetail extends StatefulWidget {
   final String title;
@@ -651,7 +652,9 @@ class _ShortsDetailState extends State<ShortsDetail>
       ),
       builder: (ctx) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        return Container(
+        return Footer.wrapSheetContent(
+          ctx,
+          Container(
           padding: EdgeInsets.symmetric(vertical: 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -690,6 +693,7 @@ class _ShortsDetailState extends State<ShortsDetail>
                   .map((collab) => _buildCollaboratorTile(collab, isDark)),
             ],
           ),
+        ),
         );
       },
     );

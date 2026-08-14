@@ -33,6 +33,7 @@ import 'single_product_screen.dart';
 import '../../providers/puppet_interaction_provider.dart';
 import '../../utils/puppet_screen_mapping.dart';
 import '../../utils/debug_logger.dart';
+import '../../utils/guest_auth_helper.dart';
 import '../../services/ad_service.dart';
 import 'for_you_products_screen.dart';
 
@@ -1125,7 +1126,14 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
 
               // Search button
               InkWell(
-                onTap: () {
+                onTap: () async {
+                  final auth = Provider.of<Auth>(context, listen: false);
+                  if (auth.isGuest) {
+                    await GuestAuthHelper.showGuestLoginDialog(
+                        context, 'search products');
+                    return;
+                  }
+
                   Navigator.push(
                     context,
                     PageTransition(
@@ -1268,11 +1276,18 @@ class _ShopScreenState extends State<ShopScreen> with PuppetInteractionMixin {
     final isSelected = _selectedFilter == filterKey;
 
     return InkWell(
-      onTap: () {
+      onTap: () async {
+        final auth = Provider.of<Auth>(context, listen: false);
+        if (auth.isGuest) {
+          await GuestAuthHelper.showGuestLoginDialog(context, 'use filters');
+          return;
+        }
+
         if (isSpecial) {
           _showFilterModal();
           return;
         }
+
         setState(() {
           if (_selectedFilter == filterKey) {
             _selectedFilter = null; // Deselect if already selected
@@ -2259,8 +2274,17 @@ class _ForYouCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isGuest = Provider.of<Auth>(context, listen: false).isGuest;
     return GestureDetector(
       onTap: () {
+        if (isGuest) {
+          GuestAuthHelper.showGuestLoginDialog(
+            context,
+            'view product details',
+          );
+          return;
+        }
+
         Navigator.of(context).pushNamed(
           SingleProductScreen.routeName,
           arguments: product['id'],

@@ -162,6 +162,7 @@ import './config/app_credentials.dart';
 import '../utils/debug_logger.dart';
 import './deep_link_handler.dart';
 import 'package:baakhapaa/navigation/root_navigator_key.dart';
+import 'package:baakhapaa/navigation/tab_route_history.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -170,7 +171,18 @@ class _FooterRouteObserver extends NavigatorObserver {
   final ValueNotifier<String?> currentRouteName = ValueNotifier(null);
   final List<String?> _routeStack = [];
 
+  bool _isOverlayRoute(Route route) => route is PopupRoute;
+
+  String? _lastNamedRoute() {
+    for (var i = _routeStack.length - 1; i >= 0; i--) {
+      final name = _routeStack[i];
+      if (name != null) return name;
+    }
+    return null;
+  }
+
   void _updateCurrentRoute(String? routeName) {
+    TabRouteHistory.replaceStack(_routeStack);
     currentRouteName.value = routeName;
   }
 
@@ -178,7 +190,9 @@ class _FooterRouteObserver extends NavigatorObserver {
   void didPush(Route route, Route? previousRoute) {
     super.didPush(route, previousRoute);
     _routeStack.add(route.settings.name);
-    _updateCurrentRoute(route.settings.name);
+    if (!_isOverlayRoute(route)) {
+      _updateCurrentRoute(route.settings.name);
+    }
   }
 
   @override
@@ -187,8 +201,12 @@ class _FooterRouteObserver extends NavigatorObserver {
     if (_routeStack.isNotEmpty) {
       _routeStack.removeLast();
     }
-    _routeStack.add(newRoute?.settings.name);
-    _updateCurrentRoute(newRoute?.settings.name);
+    if (newRoute != null) {
+      _routeStack.add(newRoute.settings.name);
+      if (!_isOverlayRoute(newRoute)) {
+        _updateCurrentRoute(newRoute.settings.name);
+      }
+    }
   }
 
   @override
@@ -197,10 +215,13 @@ class _FooterRouteObserver extends NavigatorObserver {
     if (_routeStack.isNotEmpty) {
       _routeStack.removeLast();
     }
-    if (previousRoute != null) {
+    if (_isOverlayRoute(route)) {
+      return;
+    }
+    if (previousRoute != null && !_isOverlayRoute(previousRoute)) {
       _updateCurrentRoute(previousRoute.settings.name);
     } else {
-      _updateCurrentRoute(_routeStack.isNotEmpty ? _routeStack.last : null);
+      _updateCurrentRoute(_lastNamedRoute());
     }
   }
 
@@ -208,7 +229,9 @@ class _FooterRouteObserver extends NavigatorObserver {
   void didRemove(Route route, Route? previousRoute) {
     super.didRemove(route, previousRoute);
     _routeStack.remove(route.settings.name);
-    _updateCurrentRoute(_routeStack.isNotEmpty ? _routeStack.last : null);
+    if (!_isOverlayRoute(route)) {
+      _updateCurrentRoute(_lastNamedRoute());
+    }
   }
 }
 
@@ -801,28 +824,40 @@ class _MyAppState extends State<MyApp> {
         // ),
         // ignore: missing_required_param
         ChangeNotifierProxyProvider<Auth, Story>(
-          update: (ctx, auth, previousStory) => Story(
-            auth.token,
-            previousStory == null ? [] : previousStory.seasons,
-            // Preserve critical state from previous provider instance
-            selectedSeason: previousStory?.selectedSeason,
-            episode: previousStory?.episode,
-            featuredSeasons: previousStory?.featuredSeasons,
-            suggestedSeasons: previousStory?.suggestedSeasons,
-            difficultSeasons: previousStory?.difficultSeasons,
-            myListItems: previousStory?.myListItems,
-            continueWatchingItems: previousStory?.continueWatchingItems,
-            premiumCreatorSeasons: previousStory?.premiumCreatorSeasons,
-            creatorSeasons: previousStory?.creatorSeasons,
-            readableSeasons: previousStory?.readableSeasons,
-            readingStreak: previousStory?.readingStreak,
-          ),
+          update: (ctx, auth, previousStory) {
+            if (previousStory != null &&
+                previousStory.authToken == auth.token) {
+              return previousStory;
+            }
+            return Story(
+              auth.token,
+              previousStory == null ? [] : previousStory.seasons,
+              // Preserve critical state from previous provider instance
+              selectedSeason: previousStory?.selectedSeason,
+              episode: previousStory?.episode,
+              featuredSeasons: previousStory?.featuredSeasons,
+              suggestedSeasons: previousStory?.suggestedSeasons,
+              difficultSeasons: previousStory?.difficultSeasons,
+              myListItems: previousStory?.myListItems,
+              continueWatchingItems: previousStory?.continueWatchingItems,
+              ownedCourseItems: previousStory?.ownedCourseItems,
+              premiumCreatorSeasons: previousStory?.premiumCreatorSeasons,
+              creatorSeasons: previousStory?.creatorSeasons,
+              readableSeasons: previousStory?.readableSeasons,
+              readingStreak: previousStory?.readingStreak,
+            );
+          },
           create: (BuildContext context) => Story('', []),
         ),
         // ignore: missing_required_param
         ChangeNotifierProxyProvider<Auth, Shop>(
-          update: (ctx, auth, previousShop) =>
-              Shop(auth.token, previousShop == null ? {} : previousShop.shop),
+          update: (ctx, auth, previousShop) {
+            if (previousShop != null && previousShop.authToken == auth.token) {
+              return previousShop;
+            }
+            return Shop(
+                auth.token, previousShop == null ? {} : previousShop.shop);
+          },
           create: (BuildContext context) => Shop('', {}),
         ),
         ChangeNotifierProvider(
@@ -842,31 +877,51 @@ class _MyAppState extends State<MyApp> {
         ),
         // ignore: missing_required_param
         ChangeNotifierProxyProvider<Auth, Orders>(
-          update: (ctx, auth, previousOrders) => Orders(
-            auth.token,
-            previousOrders == null ? [] : previousOrders.orders,
-            auth.username!,
-          ),
+          update: (ctx, auth, previousOrders) {
+            if (previousOrders != null &&
+                previousOrders.authToken == auth.token) {
+              return previousOrders;
+            }
+            return Orders(
+              auth.token,
+              previousOrders == null ? [] : previousOrders.orders,
+              auth.username!,
+            );
+          },
           create: (BuildContext context) => Orders('', [], ''),
         ),
         // ignore: missing_required_param
         ChangeNotifierProxyProvider<Auth, Leaderboard>(
-          update: (ctx, auth, previousLeaderboard) => Leaderboard(
-            auth.token,
-            previousLeaderboard == null ? [] : previousLeaderboard.leaderboard,
-          ),
+          update: (ctx, auth, previousLeaderboard) {
+            if (previousLeaderboard != null &&
+                previousLeaderboard.authToken == auth.token) {
+              return previousLeaderboard;
+            }
+            return Leaderboard(
+              auth.token,
+              previousLeaderboard == null
+                  ? []
+                  : previousLeaderboard.leaderboard,
+            );
+          },
           create: (BuildContext context) => Leaderboard('', []),
         ),
         // ignore: missing_required_param
         ChangeNotifierProxyProvider<Auth, Announcement>(
-          update: (ctx, auth, previousNotification) => Announcement(
-            auth.token,
-            previousNotification == null
-                ? []
-                : previousNotification.notification,
-            onNotificationRead: () => auth.decrementNotificationCount(),
-            onAllNotificationsRead: () => auth.clearNotificationCount(),
-          ),
+          update: (ctx, auth, previousNotification) {
+            if (previousNotification != null &&
+                previousNotification.authToken == auth.token) {
+              return previousNotification;
+            }
+            return Announcement(
+              auth.token,
+              previousNotification == null
+                  ? []
+                  : previousNotification.notification,
+              onNotificationRead: () => auth.decrementNotificationCount(),
+              onAllNotificationsRead: () => auth.clearNotificationCount(),
+            );
+          },
           create: (BuildContext context) => Announcement('', []),
         ),
         // ignore: missing_required_param
@@ -877,23 +932,39 @@ class _MyAppState extends State<MyApp> {
         ),
         // ignore: missing_required_param
         ChangeNotifierProxyProvider<Auth, Challenge>(
-          update: (ctx, auth, previousChallenges) => Challenge(
-            auth.token,
-            previousChallenges == null ? [] : previousChallenges.challenges,
-          ),
+          update: (ctx, auth, previousChallenges) {
+            if (previousChallenges != null &&
+                previousChallenges.authToken == auth.token) {
+              return previousChallenges;
+            }
+            return Challenge(
+              auth.token,
+              previousChallenges == null ? [] : previousChallenges.challenges,
+            );
+          },
           create: (BuildContext context) => Challenge('', []),
         ),
         // Story Creation Provider
         ChangeNotifierProxyProvider<Auth, StoryCreation>(
-          update: (ctx, auth, previousStoryCreation) =>
-              StoryCreation(auth.token),
+          update: (ctx, auth, previousStoryCreation) {
+            if (previousStoryCreation != null &&
+                previousStoryCreation.authToken == auth.token) {
+              return previousStoryCreation;
+            }
+            return StoryCreation(auth.token);
+          },
           create: (BuildContext context) => StoryCreation(''),
         ),
         ChangeNotifierProvider(create: (_) => ConnectivityService()),
         ChangeNotifierProxyProvider<Auth, Comments>(
           create: (ctx) => Comments('', []),
-          update: (ctx, auth, previousComments) =>
-              Comments(auth.token, previousComments?.comments ?? []),
+          update: (ctx, auth, previousComments) {
+            if (previousComments != null &&
+                previousComments.authToken == auth.token) {
+              return previousComments;
+            }
+            return Comments(auth.token, previousComments?.comments ?? []);
+          },
         ),
         ChangeNotifierProvider(create: (_) => ChatbotProvider()),
         ChangeNotifierProvider(
@@ -926,7 +997,13 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProxyProvider<Auth, Vendor>(
           create: (_) => Vendor(''),
-          update: (ctx, auth, previousVendor) => Vendor(auth.token),
+          update: (ctx, auth, previousVendor) {
+            if (previousVendor != null &&
+                previousVendor.authToken == auth.token) {
+              return previousVendor;
+            }
+            return Vendor(auth.token);
+          },
         ),
         ChangeNotifierProxyProvider<Auth, CollaborationProvider>(
           update: (ctx, auth, previous) =>
@@ -944,7 +1021,12 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProxyProvider<Auth, DeliveryProvider>(
           create: (_) => DeliveryProvider(''),
-          update: (ctx, auth, previous) => DeliveryProvider(auth.token),
+          update: (ctx, auth, previous) {
+            if (previous != null && previous.authToken == auth.token) {
+              return previous;
+            }
+            return DeliveryProvider(auth.token);
+          },
         ),
       ],
       child: Consumer<LanguageProvider>(

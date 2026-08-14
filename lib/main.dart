@@ -171,6 +171,16 @@ class _FooterRouteObserver extends NavigatorObserver {
   final ValueNotifier<String?> currentRouteName = ValueNotifier(null);
   final List<String?> _routeStack = [];
 
+  bool _isOverlayRoute(Route route) => route is PopupRoute;
+
+  String? _lastNamedRoute() {
+    for (var i = _routeStack.length - 1; i >= 0; i--) {
+      final name = _routeStack[i];
+      if (name != null) return name;
+    }
+    return null;
+  }
+
   void _updateCurrentRoute(String? routeName) {
     TabRouteHistory.replaceStack(_routeStack);
     currentRouteName.value = routeName;
@@ -180,7 +190,9 @@ class _FooterRouteObserver extends NavigatorObserver {
   void didPush(Route route, Route? previousRoute) {
     super.didPush(route, previousRoute);
     _routeStack.add(route.settings.name);
-    _updateCurrentRoute(route.settings.name);
+    if (!_isOverlayRoute(route)) {
+      _updateCurrentRoute(route.settings.name);
+    }
   }
 
   @override
@@ -189,8 +201,12 @@ class _FooterRouteObserver extends NavigatorObserver {
     if (_routeStack.isNotEmpty) {
       _routeStack.removeLast();
     }
-    _routeStack.add(newRoute?.settings.name);
-    _updateCurrentRoute(newRoute?.settings.name);
+    if (newRoute != null) {
+      _routeStack.add(newRoute.settings.name);
+      if (!_isOverlayRoute(newRoute)) {
+        _updateCurrentRoute(newRoute.settings.name);
+      }
+    }
   }
 
   @override
@@ -199,10 +215,13 @@ class _FooterRouteObserver extends NavigatorObserver {
     if (_routeStack.isNotEmpty) {
       _routeStack.removeLast();
     }
-    if (previousRoute != null) {
+    if (_isOverlayRoute(route)) {
+      return;
+    }
+    if (previousRoute != null && !_isOverlayRoute(previousRoute)) {
       _updateCurrentRoute(previousRoute.settings.name);
     } else {
-      _updateCurrentRoute(_routeStack.isNotEmpty ? _routeStack.last : null);
+      _updateCurrentRoute(_lastNamedRoute());
     }
   }
 
@@ -210,7 +229,9 @@ class _FooterRouteObserver extends NavigatorObserver {
   void didRemove(Route route, Route? previousRoute) {
     super.didRemove(route, previousRoute);
     _routeStack.remove(route.settings.name);
-    _updateCurrentRoute(_routeStack.isNotEmpty ? _routeStack.last : null);
+    if (!_isOverlayRoute(route)) {
+      _updateCurrentRoute(_lastNamedRoute());
+    }
   }
 }
 

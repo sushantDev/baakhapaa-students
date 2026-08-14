@@ -14,6 +14,7 @@ import '../story/story_screen.dart';
 import './shorts_screen.dart';
 import '../../providers/shorts.dart';
 import '../../providers/auth.dart';
+import '../../widgets/footer.dart';
 
 import '../../utils/debug_logger.dart';
 import '../../services/ad_service.dart';
@@ -307,6 +308,11 @@ class _ShortsWinScreenState extends State<ShortsWinScreen> {
   Widget build(BuildContext context) {
     final arguments =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+    final footerInset = Footer.contentBottomInset(
+      context,
+      child: widget,
+      routeName: ModalRoute.of(context)?.settings.name,
+    );
 
     // Determine actual earned points: if coins_users == 0, user gets fallback points
     final int rawCoins = (arguments['coins'] ?? 0) is int
@@ -332,7 +338,9 @@ class _ShortsWinScreenState extends State<ShortsWinScreen> {
           )
         : Scaffold(
             backgroundColor: Colors.black,
-            body: Container(
+            body: Padding(
+              padding: EdgeInsets.only(bottom: footerInset),
+              child: Container(
               color: Colors.black,
               child: SafeArea(
                 child: Column(
@@ -715,6 +723,7 @@ class _ShortsWinScreenState extends State<ShortsWinScreen> {
                   ],
                 ),
               ),
+            ),
             ),
           );
   }

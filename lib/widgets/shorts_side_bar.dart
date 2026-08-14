@@ -16,6 +16,7 @@ import '../utils/guest_auth_helper.dart';
 import '../screens/shorts/shorts_question_screen.dart';
 import '../screens/shorts/shorts_image_puzzle_screen.dart';
 import '../../helpers/helpers.dart';
+import 'footer.dart';
 import 'skeleton_loading.dart';
 import '../../widgets/share_with_qr_modal.dart';
 import '../models/url.dart';
@@ -152,10 +153,13 @@ class _ShortsSideBarState extends State<ShortsSideBar>
 
   void _showShortsGameModeSheet() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final footerInset = Footer.estimatedHeight(context, fullBleed: true);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: footerInset),
+        child: Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -230,6 +234,7 @@ class _ShortsSideBarState extends State<ShortsSideBar>
               isDark: isDark,
             ),
           ],
+        ),
         ),
       ),
     );

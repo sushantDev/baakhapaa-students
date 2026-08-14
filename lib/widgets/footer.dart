@@ -44,6 +44,19 @@ class Footer extends StatefulWidget {
     '/shorts-image-puzzle-screen',
   };
 
+  static const Set<String> _quizChildKeywords = {
+    'questionscreen',
+    'shortsquestionscreen',
+    'shortsimagepuzzlescreen',
+    'shortswinscreen',
+    'shortsloosescreen',
+    'guestwinnerscreen',
+    'crosswordscreen',
+    'imagepuzzlescreen',
+    'winscreen',
+    'loosescreen',
+  };
+
   static const Set<String> _authRouteKeywords = {
     'login',
     'register',
@@ -107,6 +120,9 @@ class Footer extends StatefulWidget {
     if (normalizedRoute != null && _quizRoutes.contains(normalizedRoute)) {
       return false;
     }
+    if (_matchesAny(childType, _quizChildKeywords)) {
+      return false;
+    }
     if (_matchesAny(normalizedRoute, _authRouteKeywords) ||
         _matchesAny(childType, _authRouteKeywords)) {
       return false;
@@ -126,6 +142,19 @@ class Footer extends StatefulWidget {
       return false;
     }
     return true;
+  }
+
+  /// Extra bottom padding for content when the global footer is visible.
+  static double contentBottomInset(
+    BuildContext context, {
+    Widget? child,
+    String? routeName,
+    bool fullBleed = false,
+  }) {
+    if (!shouldShowOnRoute(context, child, routeName)) {
+      return 0;
+    }
+    return estimatedHeight(context, fullBleed: fullBleed);
   }
 
   static int indexForRoute(Widget? child, String? routeName) {

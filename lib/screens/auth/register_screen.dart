@@ -311,19 +311,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         SizedBox(height: 30),
 
-                        // Logo Section - Professional
+                        // Logo Section - Match login screen branding
                         Container(
-                          padding: EdgeInsets.symmetric(vertical: 25),
+                          padding: EdgeInsets.symmetric(vertical: 18),
                           child: Column(
                             children: [
                               Container(
-                                width: 85,
-                                height: 85,
+                                width: 110,
+                                height: 110,
                                 decoration: BoxDecoration(
                                   color: isDarkMode
                                       ? Colors.grey.shade800
                                       : Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(24),
                                   boxShadow: [
                                     BoxShadow(
                                       color: isDarkMode
@@ -339,38 +339,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(22),
                                   child: Image.asset(
-                                    'assets/images/logo-lony.png',
+                                    'assets/images/sikka2.jpeg',
                                     fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 18),
+                              SizedBox(height: 20),
                               Text(
-                                'BAAKHAPAA',
+                                'Skill Sikka',
                                 style: TextStyle(
-                                  fontSize: 26,
+                                  fontSize: 28,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Montserrat',
                                   color: isDarkMode
                                       ? Colors.white
                                       : Colors.grey.shade800,
-                                  letterSpacing: 1.1,
+                                  letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(height: 6),
+                              SizedBox(height: 8),
                               Container(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 5),
+                                    horizontal: 16, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: Colors.amber.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  'Join the Amazing Community!',
+                                  'Knowledge, Action & Rewards',
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 13,
                                     fontFamily: 'Montserrat',
                                     color: Colors.amber.shade600,
                                     fontWeight: FontWeight.w600,
@@ -397,34 +397,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         SizedBox(height: 12),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? Colors.black.withValues(alpha: 0.6)
-                                : Colors.white.withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.amber.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Text(
-                            context.l10n.startJourney,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontFamily: 'Montserrat',
-                              color: isDarkMode
-                                  ? Colors.white.withValues(alpha: 0.9)
-                                  : Colors.grey.shade800,
-                              height: 1.4,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                        // Container(
+                        //   padding: EdgeInsets.symmetric(
+                        //       horizontal: 20, vertical: 12),
+                        //   decoration: BoxDecoration(
+                        //     color: isDarkMode
+                        //         ? Colors.black.withValues(alpha: 0.6)
+                        //         : Colors.white.withValues(alpha: 0.85),
+                        //     borderRadius: BorderRadius.circular(16),
+                        //     border: Border.all(
+                        //       color: Colors.amber.withValues(alpha: 0.2),
+                        //     ),
+                        //   ),
+                        //   child: Text(
+                        //     context.l10n.startJourney,
+                        //     style: TextStyle(
+                        //       fontSize: 14,
+                        //       fontFamily: 'Montserrat',
+                        //       color: isDarkMode
+                        //           ? Colors.white.withValues(alpha: 0.9)
+                        //           : Colors.grey.shade800,
+                        //       height: 1.4,
+                        //       fontWeight: FontWeight.w500,
+                        //     ),
+                        //     textAlign: TextAlign.center,
+                        //     maxLines: 2,
+                        //     overflow: TextOverflow.ellipsis,
+                        //   ),
+                        // ),
 
                         SizedBox(height: 35),
 
@@ -796,49 +796,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
 
                         SizedBox(height: 25),
-
-                        // Login Link - Matching story_screen colors
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 16),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? Colors.black.withValues(alpha: 0.6)
-                                : Colors.white.withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.amber.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "${context.l10n.alreadyHaveAccount}",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontFamily: 'Montserrat',
-                                  color: isDarkMode
-                                      ? Colors.white.withValues(alpha: 0.9)
-                                      : Colors.grey.shade800,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: goToLoginScreen,
-                                child: Text(
-                                  '${context.l10n.signInTitle}',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontFamily: 'Montserrat',
-                                    color: Colors.amber.shade600,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
 
                         SizedBox(height: 35),
                       ],

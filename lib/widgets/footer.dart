@@ -72,28 +72,34 @@ class Footer extends StatefulWidget {
     return patterns.any((pattern) => normalized.contains(pattern));
   }
 
-  static bool _hasBottomNavigationBar(Widget? widget) {
-    if (widget == null) return false;
-    if (widget is Scaffold && widget.bottomNavigationBar != null) {
-      return true;
-    }
+  static Widget? _resolveScreenChild(Widget? widget) {
+    if (widget == null) return null;
     if (widget is PageTransition) {
       final dynamic dynamicWidget = widget;
       final childWidget = dynamicWidget.child;
-      if (childWidget is Scaffold && childWidget.bottomNavigationBar != null) {
-        return true;
-      }
+      if (childWidget is Widget) return childWidget;
+    }
+    return widget;
+  }
+
+  static bool _hasBottomNavigationBar(Widget? widget) {
+    final resolved = _resolveScreenChild(widget);
+    if (resolved == null) return false;
+    if (resolved is Scaffold && resolved.bottomNavigationBar != null) {
+      return true;
     }
     return false;
   }
 
   static bool shouldShowOnRoute(
       BuildContext context, Widget? child, String? routeName) {
-    if (_hasBottomNavigationBar(child)) {
+    final resolvedChild = _resolveScreenChild(child);
+    if (_hasBottomNavigationBar(resolvedChild)) {
       return false;
     }
     final normalizedRoute = routeName?.toLowerCase();
-    final childType = child?.runtimeType.toString().toLowerCase() ?? '';
+    final childType =
+        resolvedChild?.runtimeType.toString().toLowerCase() ?? '';
 
     if (_routesWithOwnFooter.contains(normalizedRoute)) {
       return false;

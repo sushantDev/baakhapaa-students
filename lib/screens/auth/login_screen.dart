@@ -172,6 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
         PageTransition(
           child: RegisterScreen(),
           type: PageTransitionType.rightToLeft,
+          settings: RouteSettings(name: RegisterScreen.routeName),
         ));
   }
 

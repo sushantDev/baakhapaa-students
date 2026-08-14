@@ -62,7 +62,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="baakhapaa" />
+                <data android:scheme="skill sikka" />
             </intent-filter>
 
             <!-- Wallet Scheme (baakhapaa_wallet://) -->

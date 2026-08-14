@@ -157,6 +157,20 @@ class Footer extends StatefulWidget {
     return estimatedHeight(context, fullBleed: fullBleed);
   }
 
+  /// Lifts modal sheet content above the global footer (e.g. on Shorts).
+  static Widget wrapSheetContent(
+    BuildContext context,
+    Widget child, {
+    bool fullBleed = true,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: estimatedHeight(context, fullBleed: fullBleed),
+      ),
+      child: child,
+    );
+  }
+
   static int indexForRoute(Widget? child, String? routeName) {
     final normalizedRoute = routeName?.toLowerCase() ?? '';
     final childType = child?.runtimeType.toString().toLowerCase() ?? '';

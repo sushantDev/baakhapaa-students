@@ -153,13 +153,12 @@ class _ShortsSideBarState extends State<ShortsSideBar>
 
   void _showShortsGameModeSheet() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final footerInset = Footer.estimatedHeight(context, fullBleed: true);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: footerInset),
-        child: Container(
+      builder: (ctx) => Footer.wrapSheetContent(
+        ctx,
+        Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -415,8 +414,10 @@ class _ShortsSideBarState extends State<ShortsSideBar>
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         backgroundColor: Colors.transparent,
-        builder: (BuildContext context) {
-          return Container(
+        builder: (BuildContext sheetContext) {
+          return Footer.wrapSheetContent(
+            sheetContext,
+            Container(
             decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark
                   ? Color(0xFF1E1E1E)
@@ -437,7 +438,7 @@ class _ShortsSideBarState extends State<ShortsSideBar>
                   left: 24,
                   right: 24,
                   top: 20,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                  bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -751,6 +752,7 @@ class _ShortsSideBarState extends State<ShortsSideBar>
                 ),
               ),
             ),
+          ),
           );
         },
       );
@@ -798,7 +800,9 @@ class _ShortsSideBarState extends State<ShortsSideBar>
                             BorderRadius.vertical(top: Radius.circular(24)),
                       ),
                       builder: (ctx) {
-                        return Container(
+                        return Footer.wrapSheetContent(
+                          ctx,
+                          Container(
                           padding: EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             color:
@@ -901,6 +905,7 @@ class _ShortsSideBarState extends State<ShortsSideBar>
                               ),
                             ],
                           ),
+                        ),
                         );
                       },
                     );
@@ -1015,8 +1020,11 @@ class _ShortsSideBarState extends State<ShortsSideBar>
                       borderRadius:
                           BorderRadius.vertical(top: Radius.circular(24)),
                     ),
-                    builder: (BuildContext context) {
-                      return _buildShareModal(context, shareText);
+                    builder: (BuildContext sheetContext) {
+                      return Footer.wrapSheetContent(
+                        sheetContext,
+                        _buildShareModal(sheetContext, shareText),
+                      );
                     },
                   ).then((_) {
                     // Resume video when modal is closed (optional - user can manually play)
@@ -1341,9 +1349,12 @@ class _ShortsSideBarState extends State<ShortsSideBar>
                     borderRadius:
                         BorderRadius.vertical(top: Radius.circular(24)),
                   ),
-                  builder: (context) => ShareWithQrModal(
-                    data: shareText,
-                    subject: "Join Skill Sikka and earn points!",
+                  builder: (sheetContext) => Footer.wrapSheetContent(
+                    sheetContext,
+                    ShareWithQrModal(
+                      data: shareText,
+                      subject: "Join Skill Sikka and earn points!",
+                    ),
                   ),
                 );
               },

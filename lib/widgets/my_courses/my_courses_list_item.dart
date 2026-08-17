@@ -401,7 +401,7 @@ class _MyCourseListItemState extends State<MyCourseListItem>
                                       ? 'Resume'
                                       : isReadable
                                           ? 'Read'
-                                          : 'Open',
+                                          : 'Continue',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,

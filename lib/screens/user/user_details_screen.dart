@@ -599,11 +599,151 @@ class _UserDetailsScreenState extends State<UserDetailsScreen>
                 },
               ),
 
+              // Delete Account
+              _buildInfoCard(
+                title: 'Delete Account',
+                icon: Icons.delete_forever,
+                color: Colors.red,
+                items: [
+                  _InfoItem(
+                    Icons.warning_amber_rounded,
+                    'Permanently delete your account and all data',
+                    '',
+                  ),
+                ],
+                onTap: () => _showDeleteAccountDialog(context),
+              ),
+
               SizedBox(height: 20),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    final authProvider = Provider.of<Auth>(context, listen: false);
+    final TextEditingController confirmController = TextEditingController();
+    bool isDeleting = false;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (stateContext, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xff222831)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(Icons.delete_forever, color: Colors.red),
+                  SizedBox(width: 8),
+                  Text('Delete Account', style: TextStyle(color: Colors.red)),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'This will permanently delete your account and all associated data including:\n\n'
+                    '• Points, achievements & history\n'
+                    '• All created content\n'
+                    '• Wallet balance & transaction history\n\n'
+                    'This action cannot be undone.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Type DELETE to confirm:',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                  SizedBox(height: 8),
+                  TextField(
+                    controller: confirmController,
+                    decoration: InputDecoration(
+                      hintText: 'DELETE',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    autocorrect: false,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () {
+                          Navigator.pop(dialogContext);
+                        },
+                  child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: isDeleting
+                      ? null
+                      : () async {
+                          if (confirmController.text.trim() != 'DELETE') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Please type DELETE to confirm'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                            return;
+                          }
+                          setDialogState(() => isDeleting = true);
+                          try {
+                            await authProvider.deleteAccount();
+                            Navigator.pop(dialogContext);
+                            if (context.mounted) {
+                              Navigator.of(context, rootNavigator: true)
+                                  .pushNamedAndRemoveUntil(
+                                '/',
+                                (route) => false,
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() => isDeleting = false);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Failed to delete account. Please try again or contact support at baakhapaa@gmail.com'),
+                                  backgroundColor: Colors.red,
+                                  duration: Duration(seconds: 5),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isDeleting
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
+                        )
+                      : Text('Delete Account'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 

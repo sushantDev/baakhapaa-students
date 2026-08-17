@@ -6,12 +6,7 @@ import 'package:baakhapaa/providers/auth.dart';
 import 'package:baakhapaa/providers/levels.dart';
 import 'package:baakhapaa/providers/rewards_provider.dart';
 import 'package:baakhapaa/providers/story.dart';
-import 'package:baakhapaa/screens/collaboration/collaborations_screen.dart';
-import 'package:baakhapaa/screens/gift/gift_screen.dart';
-import 'package:baakhapaa/screens/leaderboard/leaderboard_screen.dart';
-import 'package:baakhapaa/screens/messages/conversations_screen.dart';
 import 'package:baakhapaa/screens/level_map/level_map_screen.dart';
-import 'package:baakhapaa/screens/my_courses/my_courses_screen.dart';
 import 'package:baakhapaa/screens/user/points_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -22,7 +17,6 @@ import 'package:provider/provider.dart';
 
 import '../providers/video_state_provider.dart';
 import '../utils/debug_logger.dart';
-import '../utils/guest_auth_helper.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Design tokens
@@ -182,20 +176,6 @@ class _PuppetDashboardState extends State<PuppetDashboard>
       routeName,
       arguments: arguments,
     );
-  }
-
-  Future<void> _openMyCourses() async {
-    final auth = Provider.of<Auth>(context, listen: false);
-    final isUnauthenticated = auth.isGuest ||
-        !auth.isAuth ||
-        (auth.user.isEmpty && !auth.isLoadingUser);
-
-    if (isUnauthenticated) {
-      await GuestAuthHelper.showGuestLoginDialog(context, 'my courses');
-      return;
-    }
-
-    _pushNamed(MyCourses.routeName);
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -475,46 +455,6 @@ class _PuppetDashboardState extends State<PuppetDashboard>
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-
-            GestureDetector(
-              onTap: _openMyCourses,
-              child: Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF261B33), Color(0xFF17121F)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xFFD084FF).withOpacity(0.35),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.bookmark_rounded,
-                      size: 20,
-                      color: Color(0xFFD084FF),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      'My Courses',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: _kWhite.withOpacity(0.92),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -534,9 +474,6 @@ class _PuppetDashboardState extends State<PuppetDashboard>
     return Column(
       children: [
         const SizedBox(height: 10),
-        // Quick-navigate icon row
-        _buildQuickNavRow(),
-        const SizedBox(height: 10),
         // Home content always visible
         Expanded(
           child: Padding(
@@ -545,151 +482,6 @@ class _PuppetDashboardState extends State<PuppetDashboard>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildQuickNavRow() {
-    // Each entry: (IconData?, label, accentColor, destinationScreen, optionalImageUrl?)
-    final navItems = <(IconData?, String, Color, Widget, String?)>[
-      (
-        Icons.leaderboard_rounded,
-        'Ranks',
-        const Color(0xFFFF9800),
-        LeaderboardScreen(),
-        null,
-      ),
-      (Icons.redeem, 'Gifts', _kAccent, GiftScreen(), null),
-      (
-        Icons.people_rounded,
-        'Collabs',
-        const Color(0xFF2196F3),
-        CollaborationsScreen() as Widget,
-        null,
-      ),
-      (
-        Icons.mail_rounded,
-        'Messages',
-        const Color(0xFF4CAF50),
-        ConversationsScreen() as Widget,
-        null,
-      ),
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(
-        children: navItems.map((item) {
-          final isMessagesItem = item.$2 == 'Messages';
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => _navigateTo(item.$4),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      item.$3.withOpacity(0.15),
-                      item.$3.withOpacity(0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: item.$3.withOpacity(0.3)),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: item.$3.withOpacity(0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: item.$5 != null
-                              ? ClipOval(
-                                  child: SizedBox(
-                                    width: 28,
-                                    height: 28,
-                                    child: CachedNetworkImage(
-                                      imageUrl: item.$5!,
-                                      fit: BoxFit.cover,
-                                      errorWidget: (_, __, ___) => Icon(
-                                        Icons.card_giftcard_rounded,
-                                        size: 15,
-                                        color: item.$3,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : Icon(item.$1, size: 15, color: item.$3),
-                        ),
-                        if (isMessagesItem)
-                          Positioned(
-                            top: -4,
-                            right: -4,
-                            child: Consumer<Auth>(
-                              builder: (context, auth, _) {
-                                if (auth.unreadMessageCount <= 0) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                    vertical: 1,
-                                  ),
-                                  constraints: const BoxConstraints(
-                                    minWidth: 16,
-                                    minHeight: 16,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFF5A5F),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: const Color(0xFF0F0F0F),
-                                      width: 1.2,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    auth.unreadMessageCount > 99
-                                        ? '99+'
-                                        : auth.unreadMessageCount.toString(),
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.w700,
-                                      height: 1,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.$2,
-                      style: TextStyle(
-                        color: _kWhite.withOpacity(0.9),
-                        fontSize: 9,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 

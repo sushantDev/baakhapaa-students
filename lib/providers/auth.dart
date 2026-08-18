@@ -16,6 +16,12 @@ class Auth with ChangeNotifier {
   late Map<String, dynamic> _user = {};
   late List<dynamic> _advertisement = [];
   late List<dynamic> _creators = [];
+  // P0.5: Pagination for creators
+  int _creatorsPage = 1;
+  bool _creatorsHasMore = true;
+  static const int _creatorsPerPage = 10;
+  // P0.2: Request deduplication - prevent duplicate in-flight API calls
+  bool _isFetchingCreators = false;
   late bool _usernameExists;
   late Map<String, dynamic> _creatorPreferences = {};
   late Map<String, dynamic> _teamMember = {};
@@ -1159,24 +1165,86 @@ class Auth with ChangeNotifier {
     notifyListeners();
   }
 
+  /// P0.5: Pagination - Load first batch of creators
+  /// P0.2: Request deduplication - skip if already fetching
   Future<void> fetchCreators() async {
+    // P0.2: Avoid duplicate requests if already fetching
+    if (_isFetchingCreators) {
+      DebugLogger.api(
+          'Auth: Creators request already in progress, skipping duplicate (P0.2)');
+      return;
+    }
+
     try {
+      _isFetchingCreators = true;
+      _creatorsPage = 1;
+      _creatorsHasMore = true;
+
       final response = await http
           .get(
-            Uri.parse(Url.baakhapaaApi('/user/creators')),
+            Uri.parse(Url.baakhapaaApi(
+                '/user/creators?page=1&limit=$_creatorsPerPage')),
             headers: Url.baakhapaaAuthHeaders(_token),
           )
           .timeout(const Duration(seconds: 15));
 
       var responseData = json.decode(utf8.decode((response.bodyBytes)));
       if (responseData['success']) {
-        _creators = responseData['data']['items'];
+        final items = responseData['data']['items'] ?? [];
+        _creators = items is List ? items : [];
+        _creatorsHasMore =
+            items != null && (items as List).length >= _creatorsPerPage;
+        DebugLogger.api(
+            'Auth: Loaded ${_creators.length} creators (P0.5 Pagination, P0.2 Dedup)');
         notifyListeners();
       } else {
         throw ('Error');
       }
     } catch (error) {
       DebugLogger.error('Error fetching creators: $error');
+    } finally {
+      _isFetchingCreators = false;
+    }
+  }
+
+  /// P0.5: Load more creators on scroll (pagination)
+  Future<void> loadMoreCreators() async {
+    if (!_creatorsHasMore || _creators.length < _creatorsPerPage) {
+      DebugLogger.api('Auth: No more creators to load');
+      return;
+    }
+
+    try {
+      _creatorsPage++;
+      DebugLogger.api('Auth: Loading creators page $_creatorsPage (P0.5)');
+
+      final response = await http
+          .get(
+            Uri.parse(Url.baakhapaaApi(
+                '/user/creators?page=$_creatorsPage&limit=$_creatorsPerPage')),
+            headers: Url.baakhapaaAuthHeaders(_token),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      var responseData = json.decode(utf8.decode((response.bodyBytes)));
+      if (responseData['success']) {
+        final items = responseData['data']['items'] ?? [];
+        final newCreators = items is List ? items : [];
+
+        if (newCreators.isNotEmpty) {
+          _creators = [..._creators, ...newCreators];
+          _creatorsHasMore = newCreators.length >= _creatorsPerPage;
+          DebugLogger.api(
+              'Auth: Loaded ${newCreators.length} more creators, total: ${_creators.length}');
+          notifyListeners();
+        } else {
+          _creatorsHasMore = false;
+        }
+      }
+    } catch (error) {
+      DebugLogger.error('Error loading more creators: $error');
+      // Reset page on error
+      _creatorsPage--;
     }
   }
 

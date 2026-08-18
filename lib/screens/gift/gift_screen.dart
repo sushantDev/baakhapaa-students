@@ -533,10 +533,9 @@ class _GiftScreenState extends State<GiftScreen> with PuppetInteractionMixin {
               SizedBox(width: 12),
 
               // Points Chip
-              Consumer<Auth>(
-                builder: (context, auth, child) {
-                  final coins = auth.userAvailableCoins;
-
+              Selector<Auth, int>(
+                selector: (_, auth) => auth.userAvailableCoins,
+                builder: (context, coins, child) {
                   return InkWell(
                     onTap: () {
                       Navigator.of(context).pushNamed(PointsScreen.routeName);

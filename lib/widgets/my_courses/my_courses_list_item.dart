@@ -27,28 +27,30 @@ class MyCourseListItem extends StatefulWidget {
 class _MyCourseListItemState extends State<MyCourseListItem>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 600),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.3, 0),
-      end: Offset.zero,
-    ).animate(
-        CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
-
+    // Smooth fade animation
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
 
-    Future.delayed(Duration(milliseconds: widget.index * 100), () {
+    // Subtle scale animation for polish
+    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+
+    // Staggered delay with smoother progression
+    Future.delayed(Duration(milliseconds: (widget.index * 80).clamp(0, 400)),
+        () {
       if (mounted) _animationController.forward();
     });
   }
@@ -265,8 +267,8 @@ class _MyCourseListItemState extends State<MyCourseListItem>
     final watchedEpisodes =
         ((completionPercentage / 100) * episodesCount).toInt();
 
-    return SlideTransition(
-      position: _slideAnimation,
+    return ScaleTransition(
+      scale: _scaleAnimation,
       child: FadeTransition(
         opacity: _fadeAnimation,
         child: GestureDetector(

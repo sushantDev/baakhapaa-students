@@ -10,7 +10,7 @@ import '../../../utils/debug_logger.dart';
 class Gift extends StatelessWidget {
   final List<dynamic> _gifts;
 
-  Gift(this._gifts);
+  const Gift(this._gifts, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +67,7 @@ class Gift extends StatelessWidget {
 class GiftItem extends StatelessWidget {
   final Map<String, dynamic> _item;
 
-  GiftItem(this._item);
+  const GiftItem(this._item, {Key? key}) : super(key: key);
 
   String get productImageUrl {
     try {

@@ -10,6 +10,11 @@ class Levels with ChangeNotifier {
   Map<String, dynamic> _userProgress = {};
   List<dynamic> _allLevels = [];
   Map<String, dynamic> _selectedLevel = {};
+  bool _isFetchingUserProgress = false; // P0.2c: Request deduplication
+  Map<String, dynamic> _userProgressCache = {}; // P0.2d: Response caching
+  DateTime? _userProgressCacheTime; // P0.2d: Cache timestamp
+  static const Duration _userProgressCacheDuration =
+      Duration(seconds: 10); // P0.2d
 
   // Add level up notification data
   Map<String, dynamic>? _lastLevelUpData;
@@ -88,7 +93,28 @@ class Levels with ChangeNotifier {
 
   // Fetch user's level progress
   Future<void> fetchUserProgress() async {
+    // P0.2c: Skip if already fetching to prevent duplicate requests
+    if (_isFetchingUserProgress) {
+      DebugLogger.api(
+          'Levels: User progress request already in progress, skipping duplicate (P0.2c)');
+      return;
+    }
+
+    // P0.2d: Check if cache exists and is fresh
+    if (_userProgressCacheTime != null) {
+      final cacheAge = DateTime.now().difference(_userProgressCacheTime!);
+      if (cacheAge < _userProgressCacheDuration &&
+          _userProgressCache.isNotEmpty) {
+        DebugLogger.api(
+            'Levels: Using cached user progress (age: ${cacheAge.inSeconds}s, P0.2d)');
+        _userProgress = {..._userProgressCache};
+        notifyListeners();
+        return;
+      }
+    }
+
     try {
+      _isFetchingUserProgress = true;
       final response = await http.get(
         Uri.parse(Url.baakhapaaApi('/levels/user-progress')),
         headers: Url.baakhapaaAuthHeaders(authToken),
@@ -97,12 +123,18 @@ class Levels with ChangeNotifier {
       var responseData = json.decode(utf8.decode(response.bodyBytes));
       if (responseData['success']) {
         _userProgress = responseData['data'];
+        // P0.2d: Store in cache with timestamp
+        _userProgressCache = {..._userProgress};
+        _userProgressCacheTime = DateTime.now();
+        DebugLogger.api('Levels: Cached user progress (P0.2d)');
         notifyListeners();
       } else {
         throw responseData['message'] ?? 'Failed to fetch user progress';
       }
     } catch (error) {
       throw error;
+    } finally {
+      _isFetchingUserProgress = false;
     }
   }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class NoInternetBanner extends StatelessWidget {
+  const NoInternetBanner({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Container(

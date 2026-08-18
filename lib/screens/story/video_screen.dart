@@ -1516,8 +1516,7 @@ class _VideoScreenState extends State<VideoScreen>
     }
 
     final story = Provider.of<Story>(context, listen: false);
-    final availableModes =
-        await story.availableGameModesForEpisode(episodeId);
+    final availableModes = await story.availableGameModesForEpisode(episodeId);
     if (!mounted) return;
 
     if (availableModes.isEmpty) {
@@ -2398,14 +2397,17 @@ class _VideoScreenState extends State<VideoScreen>
                                     horizontal: 12, vertical: 8),
                                 child: Row(
                                   children: [
-                                    Consumer<Auth>(
-                                      builder: (context, auth, child) {
+                                    Selector<Auth, List<dynamic>?>(
+                                      selector: (context, auth) => auth.image,
+                                      builder: (context, image, child) {
                                         String imageUrl =
                                             'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg';
-                                        if (auth.image != null &&
-                                            auth.image!.isNotEmpty) {
+                                        if (image != null &&
+                                            // ignore: unnecessary_non_null_assertion
+                                            image!.isNotEmpty) {
                                           imageUrl =
-                                              auth.image!.first['thumbnail'] ??
+                                              // ignore: unnecessary_non_null_assertion
+                                              image!.first['thumbnail'] ??
                                                   imageUrl;
                                         }
                                         return Padding(
@@ -4360,14 +4362,14 @@ class _VideoScreenState extends State<VideoScreen>
           // Conversations grid: flexes & scrolls so the action tiles below
           // (incl. "Share using QR") always stay visible on any screen size.
           Flexible(
-            child: Consumer<Auth>(
-              builder: (ctx, auth, _) => FutureBuilder(
-                future: auth.fetchConversations(),
+            child: Selector<Auth, List<dynamic>>(
+              selector: (ctx, auth) => auth.conversations,
+              builder: (ctx, conversations, _) => FutureBuilder(
+                future: ctx.read<Auth>().fetchConversations(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const ListSkeleton(itemCount: 2);
                   }
-                  final conversations = auth.conversations;
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const ClampingScrollPhysics(),
@@ -4482,8 +4484,7 @@ class _VideoScreenState extends State<VideoScreen>
                 context: context,
                 isScrollControlled: true,
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 ),
                 builder: (context) => ShareWithQrModal(
                   data: shareText,

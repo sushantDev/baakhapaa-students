@@ -46,6 +46,11 @@ class Story with ChangeNotifier {
   Map<String, dynamic> _readingStreak = {};
   DateTime? _streakLastFetched;
   bool _isStreakFetching = false;
+  bool _isFetchingCreatorSeasons = false; // P0.2c: Request deduplication
+  Map<int, List<dynamic>> _creatorSeasonsCache = {}; // P0.2d: Response caching
+  Map<int, DateTime> _creatorSeasonsCacheTime = {}; // P0.2d: Cache timestamps
+  static const Duration _creatorSeasonsCacheDuration =
+      Duration(minutes: 5); // P0.2d
   List<Map<String, dynamic>> _readingHistory = [];
 
   static const Duration _homeSectionCacheDuration = Duration(minutes: 5);
@@ -866,7 +871,26 @@ class Story with ChangeNotifier {
 
   Future<List<dynamic>> fetchCreatorSeasons(int creatorId,
       {bool returnList = false}) async {
+    // P0.2c: Skip if already fetching to prevent duplicate requests
+    if (_isFetchingCreatorSeasons) {
+      DebugLogger.api(
+          'Story: Creator seasons request already in progress, skipping duplicate (P0.2c)');
+      return _creatorSeasons;
+    }
+
+    // P0.2d: Check if cache exists and is fresh
+    if (_creatorSeasonsCacheTime.containsKey(creatorId)) {
+      final cacheAge =
+          DateTime.now().difference(_creatorSeasonsCacheTime[creatorId]!);
+      if (cacheAge < _creatorSeasonsCacheDuration) {
+        DebugLogger.api(
+            'Story: Returning cached creator seasons for ID $creatorId (age: ${cacheAge.inSeconds}s, P0.2d)');
+        return _creatorSeasonsCache[creatorId] ?? [];
+      }
+    }
+
     try {
+      _isFetchingCreatorSeasons = true;
       DebugLogger.info(
           '?? Fetching creator seasons for creator ID: $creatorId');
       final url = Url.baakhapaaApi('/v3/seasons/$creatorId');
@@ -933,6 +957,12 @@ class Story with ChangeNotifier {
           notifyListeners();
         }
 
+        // P0.2d: Store in cache with timestamp
+        _creatorSeasonsCache[creatorId] = list;
+        _creatorSeasonsCacheTime[creatorId] = DateTime.now();
+        DebugLogger.api(
+            'Story: Cached ${list.length} creator seasons for ID $creatorId (P0.2d)');
+
         // Return the list so callers can use it directly (no global overwrite)
         return list;
       } else {
@@ -947,11 +977,13 @@ class Story with ChangeNotifier {
       DebugLogger.error('fetchCreatorSeasons error: $e\n$st');
       if (!returnList) {
         _creatorSeasons = [];
-        try {
-          notifyListeners();
-        } catch (_) {}
       }
+      try {
+        notifyListeners();
+      } catch (_) {}
       return [];
+    } finally {
+      _isFetchingCreatorSeasons = false;
     }
   }
 

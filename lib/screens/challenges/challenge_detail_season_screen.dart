@@ -13,6 +13,7 @@ import 'package:baakhapaa/screens/others/creator_request_screen.dart';
 import '../../services/subscription_service.dart';
 import '../../models/subscription.dart';
 // import 'package:baakhapaa/theme/theme_constants.dart';
+// ignore: unused_import
 import 'package:baakhapaa/widgets/footer.dart';
 import 'package:baakhapaa/widgets/header.dart';
 import 'package:baakhapaa/widgets/loading.dart';
@@ -570,12 +571,11 @@ class _ChallengeDetailSeasonScreenState
               ? const Loading()
               : challenge == null
                   ? const ErrorState()
-                  : SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(
-                          parent: AlwaysScrollableScrollPhysics()),
-                      child: Column(
-                        children: [
-                          ChallengeHeader(
+                  : Column(
+                      children: [
+                        Flexible(
+                          flex: 2,
+                          child: ChallengeHeader(
                             challenge: challenge!,
                             isDescriptionExpanded: _isDescriptionExpanded,
                             onToggleDescription: () {
@@ -585,302 +585,370 @@ class _ChallengeDetailSeasonScreenState
                               });
                             },
                           ),
-                          UnlockRewardsTabs(challengeData: challenge),
-                          Builder(
-                            builder: (context) {
-                              bool isExpired = false;
-                              final String? deadlineStr =
-                                  challenge?['deadline'];
-                              if (deadlineStr != null &&
-                                  deadlineStr.isNotEmpty) {
-                                String dateTimeStr = deadlineStr;
-                                if (!deadlineStr.contains('T')) {
-                                  dateTimeStr = '$deadlineStr 23:59:59';
-                                }
-                                final deadline = DateTime.tryParse(dateTimeStr);
-                                if (deadline != null &&
-                                    deadline.isBefore(DateTime.now())) {
-                                  isExpired = true;
-                                }
-                              }
+                        ),
+                        Flexible(
+                          flex: 1,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                UnlockRewardsTabs(challengeData: challenge),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          flex: 3,
+                          child: SingleChildScrollView(
+                            physics: const ClampingScrollPhysics(),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Builder(
+                                  builder: (context) {
+                                    bool isExpired = false;
+                                    final String? deadlineStr =
+                                        challenge?['deadline'];
+                                    if (deadlineStr != null &&
+                                        deadlineStr.isNotEmpty) {
+                                      String dateTimeStr = deadlineStr;
+                                      if (!deadlineStr.contains('T')) {
+                                        dateTimeStr = '$deadlineStr 23:59:59';
+                                      }
+                                      final deadline =
+                                          DateTime.tryParse(dateTimeStr);
+                                      if (deadline != null &&
+                                          deadline.isBefore(DateTime.now())) {
+                                        isExpired = true;
+                                      }
+                                    }
 
-                              final auth =
-                                  Provider.of<Auth>(context, listen: false);
-                              final int myUserId = auth.userId;
-                              final bool hasParticipated = challengeSeasons.any(
-                                (s) => s['user_id'] == myUserId,
-                              );
+                                    final auth = Provider.of<Auth>(context,
+                                        listen: false);
+                                    final int myUserId = auth.userId;
+                                    final bool hasParticipated =
+                                        challengeSeasons.any(
+                                      (s) => s['user_id'] == myUserId,
+                                    );
 
-                              if (isExpired && !hasParticipated) {
-                                DebugLogger.warning(
-                                    '🏆 Hiding season progress (expired + not participated)');
-                                return const SizedBox.shrink();
-                              }
+                                    if (isExpired && !hasParticipated) {
+                                      DebugLogger.warning(
+                                          '🏆 Hiding season progress (expired + not participated)');
+                                      return const SizedBox.shrink();
+                                    }
 
-                              final unlocked = challenge?['unlocked'] == true;
-                              final mySeason = challengeSeasons.firstWhere(
-                                (s) => s['user_id'] == myUserId,
-                                orElse: () => null,
-                              );
-                              final seasonProgress = getSeasonProgressState(
-                                unlocked: unlocked,
-                                seasonDetails: mySeason,
-                                isExpired: isExpired,
-                              );
-                              return Container(
-                                margin: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF1C1C1C),
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Challenge Progression',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w700)),
-                                    const SizedBox(height: 12),
-                                    ChallengeStepTile(
-                                        step: 1,
-                                        title: 'Unlock the Challenge',
-                                        status: seasonProgress.step1),
-                                    ChallengeStepTile(
-                                        step: 2,
-                                        title: 'Upload Season',
-                                        status: seasonProgress.step2),
-                                    ChallengeStepTile(
-                                      step: 3,
-                                      title: 'Result & Rewards',
-                                      status: seasonProgress.step3,
-                                    ),
-                                    const SizedBox(height: 14),
-                                    Builder(
-                                      builder: (context) {
-                                        if (seasonProgress.step1 ==
-                                                ChallengeStepStatus.completed &&
-                                            seasonProgress.step2 ==
-                                                ChallengeStepStatus.completed &&
-                                            seasonProgress.step3 ==
-                                                ChallengeStepStatus.completed) {
-                                          return Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 14),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF4CAF50),
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: const [
-                                                Icon(Icons.check_circle,
-                                                    color: Colors.white,
-                                                    size: 18),
-                                                SizedBox(width: 10),
-                                                Text('Completed',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                              ],
-                                            ),
-                                          );
-                                        }
-
-                                        if (!unlocked) {
-                                          return const SizedBox.shrink();
-                                        } else if (seasonProgress.step2 ==
-                                            ChallengeStepStatus.active) {
-                                          return GestureDetector(
-                                            onTap: () =>
-                                                navigateToCreateSeasonScreen(
-                                                    context),
-                                            child: Container(
-                                              width: double.infinity,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 14),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF3DDC84),
-                                                borderRadius:
-                                                    BorderRadius.circular(14),
-                                              ),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: const [
-                                                  Icon(Icons.movie_creation,
+                                    final unlocked =
+                                        challenge?['unlocked'] == true;
+                                    final mySeason =
+                                        challengeSeasons.firstWhere(
+                                      (s) => s['user_id'] == myUserId,
+                                      orElse: () => null,
+                                    );
+                                    final seasonProgress =
+                                        getSeasonProgressState(
+                                      unlocked: unlocked,
+                                      seasonDetails: mySeason,
+                                      isExpired: isExpired,
+                                    );
+                                    return Container(
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 8),
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1C1C1C),
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text('Challenge Progression',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleSmall
+                                                  ?.copyWith(
                                                       color: Colors.white,
-                                                      size: 18),
-                                                  SizedBox(width: 10),
-                                                  Text('Create Season',
-                                                      style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w700)),
+                                          const SizedBox(height: 8),
+                                          ChallengeStepTile(
+                                              step: 1,
+                                              title: 'Unlock the Challenge',
+                                              status: seasonProgress.step1),
+                                          ChallengeStepTile(
+                                              step: 2,
+                                              title: 'Upload Season',
+                                              status: seasonProgress.step2),
+                                          ChallengeStepTile(
+                                            step: 3,
+                                            title: 'Result & Rewards',
+                                            status: seasonProgress.step3,
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Builder(
+                                            builder: (context) {
+                                              if (seasonProgress.step1 == ChallengeStepStatus.completed &&
+                                                  seasonProgress.step2 ==
+                                                      ChallengeStepStatus
+                                                          .completed &&
+                                                  seasonProgress.step3 ==
+                                                      ChallengeStepStatus
+                                                          .completed) {
+                                                return Container(
+                                                  width: double.infinity,
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 10),
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        const Color(0xFF4CAF50),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            14),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: const [
+                                                      Icon(Icons.check_circle,
                                                           color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        } else {
-                                          return Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 14),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey.shade600,
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: const [
-                                                Icon(Icons.hourglass_top,
-                                                    color: Colors.white,
-                                                    size: 18),
-                                                SizedBox(width: 10),
-                                                Text('Waiting for Result',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                              ],
-                                            ),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  ],
+                                                          size: 16),
+                                                      SizedBox(width: 8),
+                                                      Text('Completed',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold)),
+                                                    ],
+                                                  ),
+                                                );
+                                              }
+
+                                              if (!unlocked) {
+                                                return const SizedBox.shrink();
+                                              } else if (seasonProgress.step2 ==
+                                                  ChallengeStepStatus.active) {
+                                                return GestureDetector(
+                                                  onTap: () =>
+                                                      navigateToCreateSeasonScreen(
+                                                          context),
+                                                  child: Container(
+                                                    width: double.infinity,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 10),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                          0xFF3DDC84),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              14),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: const [
+                                                        Icon(
+                                                            Icons
+                                                                .movie_creation,
+                                                            color: Colors.white,
+                                                            size: 16),
+                                                        SizedBox(width: 8),
+                                                        Text('Create Season',
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold)),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              } else {
+                                                return Container(
+                                                  width: double.infinity,
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 10),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey.shade600,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            14),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: const [
+                                                      Icon(Icons.hourglass_top,
+                                                          color: Colors.white,
+                                                          size: 16),
+                                                      SizedBox(width: 8),
+                                                      Text('Waiting for Result',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold)),
+                                                    ],
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ),
-                              );
-                            },
-                          ),
-                          if (mySeasonDetails != null)
-                            Builder(
-                              builder: (context) {
-                                final List episodes =
-                                    mySeasonDetails!['episodes'] ?? [];
-                                final mySeasonId = mySeasonDetails!['id'];
-                                final sortedSeasons = [...challengeSeasons]
-                                  ..sort((a, b) {
-                                    final aPoints =
-                                        (a['totalPoints'] as num?)?.toInt() ??
-                                            0;
-                                    final bPoints =
-                                        (b['totalPoints'] as num?)?.toInt() ??
-                                            0;
-                                    return bPoints.compareTo(aPoints);
-                                  });
+                                if (mySeasonDetails != null)
+                                  Builder(
+                                    builder: (context) {
+                                      final List episodes =
+                                          mySeasonDetails!['episodes'] ?? [];
+                                      final mySeasonId = mySeasonDetails!['id'];
+                                      final sortedSeasons = [
+                                        ...challengeSeasons
+                                      ]..sort((a, b) {
+                                          final aPoints =
+                                              (a['totalPoints'] as num?)
+                                                      ?.toInt() ??
+                                                  0;
+                                          final bPoints =
+                                              (b['totalPoints'] as num?)
+                                                      ?.toInt() ??
+                                                  0;
+                                          return bPoints.compareTo(aPoints);
+                                        });
 
-                                final myIndex = sortedSeasons
-                                    .indexWhere((s) => s['id'] == mySeasonId);
+                                      final myIndex = sortedSeasons.indexWhere(
+                                          (s) => s['id'] == mySeasonId);
 
-                                final myLeaderboardEntry = myIndex != -1
-                                    ? sortedSeasons[myIndex]
-                                    : null;
+                                      final myLeaderboardEntry = myIndex != -1
+                                          ? sortedSeasons[myIndex]
+                                          : null;
 
-                                final report = SeasonReport(
-                                  seasonImage:
-                                      mySeasonDetails!['thumbnail'] ?? '',
-                                  seasonTitle: mySeasonDetails!['title'] ?? '',
-                                  totalEpisodes: episodes.length,
-                                  uploadedEpisodes: episodes.length,
-                                  totalLikes: (myLeaderboardEntry?['totalLikes']
-                                              as num?)
-                                          ?.toInt() ??
-                                      0,
-                                  rank: myIndex != -1 ? myIndex + 1 : 0,
-                                  rewardEarned:
-                                      myLeaderboardEntry?['isWinner'] == true,
-                                );
+                                      final report = SeasonReport(
+                                        seasonImage:
+                                            mySeasonDetails!['thumbnail'] ?? '',
+                                        seasonTitle:
+                                            mySeasonDetails!['title'] ?? '',
+                                        totalEpisodes: episodes.length,
+                                        uploadedEpisodes: episodes.length,
+                                        totalLikes:
+                                            (myLeaderboardEntry?['totalLikes']
+                                                        as num?)
+                                                    ?.toInt() ??
+                                                0,
+                                        rank: myIndex != -1 ? myIndex + 1 : 0,
+                                        rewardEarned:
+                                            myLeaderboardEntry?['isWinner'] ==
+                                                true,
+                                      );
 
-                                return buildSeasonReportCard(report);
-                              },
+                                      return buildSeasonReportCard(report);
+                                    },
+                                  ),
+                                Builder(
+                                  builder: (context) {
+                                    bool isExpired = false;
+                                    final String? deadlineStr =
+                                        challenge?['deadline'];
+                                    if (deadlineStr != null &&
+                                        deadlineStr.isNotEmpty) {
+                                      String dateTimeStr = deadlineStr;
+                                      if (!deadlineStr.contains('T')) {
+                                        dateTimeStr = '$deadlineStr 23:59:59';
+                                      }
+                                      final deadline =
+                                          DateTime.tryParse(dateTimeStr);
+                                      if (deadline != null &&
+                                          deadline.isBefore(DateTime.now())) {
+                                        isExpired = true;
+                                      }
+                                    }
+
+                                    final auth = Provider.of<Auth>(context,
+                                        listen: false);
+                                    final int myUserId = auth.userId;
+                                    final bool hasParticipated =
+                                        challengeSeasons.any(
+                                      (s) => s['user_id'] == myUserId,
+                                    );
+
+                                    if (isExpired && !hasParticipated) {
+                                      return const SizedBox.shrink();
+                                    }
+
+                                    final sortedSeasons = [...challengeSeasons]
+                                      ..sort((a, b) {
+                                        final aPoints =
+                                            (a['totalPoints'] as num?)
+                                                    ?.toInt() ??
+                                                0;
+                                        final bPoints =
+                                            (b['totalPoints'] as num?)
+                                                    ?.toInt() ??
+                                                0;
+                                        return bPoints.compareTo(aPoints);
+                                      });
+
+                                    final List<SeasonLeaderboardItem> items =
+                                        sortedSeasons
+                                            .asMap()
+                                            .entries
+                                            .map((entry) {
+                                      final idx = entry.key;
+                                      final s = entry.value;
+                                      return SeasonLeaderboardItem(
+                                        rank: idx + 1,
+                                        username: s['title'] ?? 'Unknown',
+                                        totalUsersWatched:
+                                            (s['totalUsersWatched'] as num?)
+                                                    ?.toInt() ??
+                                                0,
+                                        totalUsersUnlocked:
+                                            (s['totalUsersUnlocked'] as num?)
+                                                    ?.toInt() ??
+                                                0,
+                                        totalDonations:
+                                            (s['totalDonations'] as num?)
+                                                    ?.toInt() ??
+                                                0,
+                                        totalPoints: (s['totalPoints'] as num?)
+                                                ?.toInt() ??
+                                            0,
+                                      );
+                                    }).toList();
+                                    return buildSeasonLeaderboard(items);
+                                  },
+                                ),
+                                if (challengeSeasons.isNotEmpty)
+                                  SizedBox(
+                                    height: 150,
+                                    child: ParticipatedSeasons(
+                                      challengeSeasons: sortedChallengeSeasons,
+                                    ),
+                                  ),
+                                ChallengeBottomUnlockButton(
+                                  challenge: challenge,
+                                  onUnlock: () =>
+                                      handleChallengeTap(context, challenge),
+                                ),
+                              ],
                             ),
-                          Builder(
-                            builder: (context) {
-                              bool isExpired = false;
-                              final String? deadlineStr =
-                                  challenge?['deadline'];
-                              if (deadlineStr != null &&
-                                  deadlineStr.isNotEmpty) {
-                                String dateTimeStr = deadlineStr;
-                                if (!deadlineStr.contains('T')) {
-                                  dateTimeStr = '$deadlineStr 23:59:59';
-                                }
-                                final deadline = DateTime.tryParse(dateTimeStr);
-                                if (deadline != null &&
-                                    deadline.isBefore(DateTime.now())) {
-                                  isExpired = true;
-                                }
-                              }
-
-                              final auth =
-                                  Provider.of<Auth>(context, listen: false);
-                              final int myUserId = auth.userId;
-                              final bool hasParticipated = challengeSeasons.any(
-                                (s) => s['user_id'] == myUserId,
-                              );
-
-                              if (isExpired && !hasParticipated) {
-                                return const SizedBox.shrink();
-                              }
-
-                              final sortedSeasons = [...challengeSeasons]
-                                ..sort((a, b) {
-                                  final aPoints =
-                                      (a['totalPoints'] as num?)?.toInt() ?? 0;
-                                  final bPoints =
-                                      (b['totalPoints'] as num?)?.toInt() ?? 0;
-                                  return bPoints.compareTo(aPoints);
-                                });
-
-                              final List<SeasonLeaderboardItem> items =
-                                  sortedSeasons.asMap().entries.map((entry) {
-                                final idx = entry.key;
-                                final s = entry.value;
-                                return SeasonLeaderboardItem(
-                                  rank: idx + 1,
-                                  username: s['title'] ?? 'Unknown',
-                                  totalUsersWatched:
-                                      (s['totalUsersWatched'] as num?)
-                                              ?.toInt() ??
-                                          0,
-                                  totalUsersUnlocked:
-                                      (s['totalUsersUnlocked'] as num?)
-                                              ?.toInt() ??
-                                          0,
-                                  totalDonations:
-                                      (s['totalDonations'] as num?)?.toInt() ??
-                                          0,
-                                  totalPoints:
-                                      (s['totalPoints'] as num?)?.toInt() ?? 0,
-                                );
-                              }).toList();
-                              return buildSeasonLeaderboard(items);
-                            },
                           ),
-                          if (challengeSeasons.isNotEmpty)
-                            ParticipatedSeasons(
-                              challengeSeasons: sortedChallengeSeasons,
-                            ),
-                          ChallengeBottomUnlockButton(
-                            challenge: challenge,
-                            onUnlock: () =>
-                                handleChallengeTap(context, challenge),
-                          ),
-                          Footer.scrollBottomSpacer(context),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
         ),
       ),
@@ -889,8 +957,8 @@ class _ChallengeDetailSeasonScreenState
 
   Widget buildSeasonReportCard(SeasonReport report) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: const Color(0xFF1C1C1C),
         borderRadius: BorderRadius.circular(18),

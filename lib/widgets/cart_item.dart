@@ -13,14 +13,15 @@ class CartItem extends StatelessWidget {
   final String title;
   final String image;
 
-  CartItem(
+  const CartItem(
     this.id,
     this.productId,
     this.price,
     this.quantity,
     this.title,
-    this.image,
-  );
+    this.image, {
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

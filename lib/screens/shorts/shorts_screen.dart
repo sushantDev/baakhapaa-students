@@ -1014,14 +1014,17 @@ class _ShortsScreenState extends State<ShortsScreen>
       child: Row(
         children: [
           // Puppet avatar circle
-          Consumer<Auth>(
-            builder: (context, auth, _) {
+          Selector<Auth, String?>(
+            selector: (context, auth) => auth.puppetImage,
+            builder: (context, puppetImage, _) {
               String puppetUrl = '${Url.mediaUrl}/assets/puppetdev.png';
               try {
-                if (auth.puppetImage != null && auth.puppetImage!.isNotEmpty) {
-                  puppetUrl = auth.puppetImage!;
+                // ignore: unnecessary_non_null_assertion
+                if (puppetImage != null && puppetImage!.isNotEmpty) {
+                  // ignore: unnecessary_non_null_assertion
+                  puppetUrl = puppetImage!;
                 } else {
-                  final puppet = auth.user['current_puppet'];
+                  final puppet = context.read<Auth>().user['current_puppet'];
                   if (puppet != null && puppet['image'] != null) {
                     puppetUrl = puppet['image'];
                   }
@@ -1030,6 +1033,7 @@ class _ShortsScreenState extends State<ShortsScreen>
 
               return GestureDetector(
                 onTap: () {
+                  final auth = context.read<Auth>();
                   if (auth.isGuest) {
                     GuestAuthHelper.showGuestLoginDialog(context, 'open menu');
                     return;

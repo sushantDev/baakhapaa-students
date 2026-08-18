@@ -1262,9 +1262,12 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
           width: 1,
         ),
       ),
-      child: Consumer<Auth>(
-        builder: (_, auth, __) {
-          final rankings = auth.creatorsRankings;
+      child: Selector<Auth, Map<String, dynamic>?>(
+        selector: (_, auth) => auth.creatorsRankings,
+        builder: (_, rankings, __) {
+          if (rankings == null || rankings.isEmpty) {
+            return const SizedBox.shrink();
+          }
           final roleValue = _resolveCreatorRoleValue(rankings);
           final creatorRoleLabel = _getRoleDisplayName(roleValue);
           final int bpts = _resolveCreatorPoints(rankings);
@@ -1286,7 +1289,7 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                 children: [
                   // Profile Picture with Overlays
                   GestureDetector(
-                    onTap: () => _showProfilePreview(auth),
+                    onTap: () => _showProfilePreview(context.read<Auth>()),
                     child: Transform.translate(
                       offset: const Offset(0, 6),
                       child: Stack(
@@ -1555,8 +1558,8 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
                               scale: 0.85,
                               child: _circleIconButton(
                                 icon: Icons.flag_outlined,
-                                onTap: () =>
-                                    _showReportCreatorDialog(context, auth),
+                                onTap: () => _showReportCreatorDialog(
+                                    context, context.read<Auth>()),
                               ),
                             ),
                           ],
@@ -1829,14 +1832,14 @@ class _CreatorStoryScreenState extends State<CreatorStoryScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            Consumer<Auth>(
-              builder: (ctx, auth, _) => FutureBuilder(
-                future: auth.fetchConversations(),
+            Selector<Auth, List<dynamic>>(
+              selector: (ctx, auth) => auth.conversations,
+              builder: (ctx, conversations, _) => FutureBuilder(
+                future: ctx.read<Auth>().fetchConversations(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const ListSkeleton(itemCount: 3);
                   }
-                  final conversations = auth.conversations;
                   if (conversations.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 20),

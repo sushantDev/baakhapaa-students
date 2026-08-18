@@ -685,14 +685,14 @@ class _EpisodeScreenState extends State<EpisodeScreen>
           // Conversations grid: flexes & scrolls so the action tiles below
           // (incl. "Share using QR") always stay visible on any screen size.
           Flexible(
-            child: Consumer<Auth>(
-              builder: (ctx, auth, _) => FutureBuilder(
-                future: auth.fetchConversations(),
+            child: Selector<Auth, List<dynamic>>(
+              selector: (ctx, auth) => auth.conversations,
+              builder: (ctx, conversations, _) => FutureBuilder(
+                future: ctx.read<Auth>().fetchConversations(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const GridSkeleton(crossAxisCount: 4, itemCount: 4);
                   }
-                  final conversations = auth.conversations;
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const ClampingScrollPhysics(),

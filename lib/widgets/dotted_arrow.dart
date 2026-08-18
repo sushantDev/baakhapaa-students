@@ -9,14 +9,15 @@ class CurvedDottedArrowWidget extends StatelessWidget {
   final Color color;
   final double strokeWidth;
 
-  CurvedDottedArrowWidget({
+  const CurvedDottedArrowWidget({
     required this.startX,
     required this.startY,
     required this.endX,
     required this.endY,
     this.color = Colors.orange,
     this.strokeWidth = 2.0,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

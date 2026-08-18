@@ -21,6 +21,8 @@ import '../screens/others/contact_us_screen.dart';
 import '../screens/user/points_screen.dart';
 
 class NavBar extends StatelessWidget {
+  const NavBar({Key? key}) : super(key: key);
+
   void launchMessengerApp() async {
     final url = Uri.parse("http://m.me/baakhapaa");
     if (await canLaunchUrl(url)) {

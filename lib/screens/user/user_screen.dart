@@ -722,14 +722,14 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
               ],
             ),
             SizedBox(height: 24),
-            Consumer<Auth>(
-              builder: (ctx, auth, _) => FutureBuilder(
-                future: auth.fetchConversations(),
+            Selector<Auth, List>(
+              selector: (_, auth) => auth.conversations,
+              builder: (ctx, conversations, _) => FutureBuilder(
+                future: context.read<Auth>().fetchConversations(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const ListSkeleton(itemCount: 3);
                   }
-                  final conversations = auth.conversations;
                   if (conversations.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -1967,13 +1967,13 @@ class _UserScreenState extends State<UserScreen> with PuppetInteractionMixin {
                   child: AnimatedOpacity(
                     opacity: 1.0,
                     duration: const Duration(milliseconds: 200),
-                    child: Consumer<Auth>(
-                      builder: (context, auth, child) {
+                    child: Selector<Auth, String?>(
+                      selector: (_, auth) => auth.puppetImage,
+                      builder: (context, puppetImage, child) {
                         String puppetImageUrl =
                             "${Url.mediaUrl}/assets/puppetdev.png";
-                        if (auth.puppetImage != null &&
-                            auth.puppetImage!.isNotEmpty) {
-                          puppetImageUrl = auth.puppetImage!;
+                        if (puppetImage != null && puppetImage.isNotEmpty) {
+                          puppetImageUrl = puppetImage;
                         }
                         return Container(
                           width: 150,

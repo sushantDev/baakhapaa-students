@@ -112,10 +112,9 @@ class _BlockedCreatorsScreenState extends State<BlockedCreatorsScreen> {
       appBar: header(context: context, titleText: 'Blocked Tutors'),
       body: RefreshIndicator(
         onRefresh: () => _loadBlockedUsers(forceRefresh: true),
-        child: Consumer<Auth>(
-          builder: (context, auth, _) {
-            final blockedUsers = auth.blockedUsers;
-
+        child: Selector<Auth, List<dynamic>>(
+          selector: (context, auth) => auth.blockedUsers,
+          builder: (context, blockedUsers, _) {
             if (_isLoading) {
               return const Center(child: CircularProgressIndicator());
             }

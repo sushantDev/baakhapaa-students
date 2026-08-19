@@ -40,6 +40,11 @@ class Shorts with ChangeNotifier {
   int _currentPage = 1;
   int _totalPages = 1;
   bool _isLoadingMore = false;
+  bool _isFetchingShorts =
+      false; // P0.2c: Request deduplication for initial fetch
+  DateTime? _shortsCacheTime; // P0.2d: Cache timestamp
+  static const Duration _shortsCacheDuration =
+      Duration(seconds: 30); // P0.2d: Shorter for shorts (more volatile)
   String _currentEndpoint = '/v2/shorts';
   Map<String, dynamic> _currentFilters = {};
 
@@ -151,23 +156,59 @@ class Shorts with ChangeNotifier {
   }
 
   Future<void> fetchShorts() async {
-    _resetPagination();
-    _currentEndpoint = '/v2/shorts';
-    _currentFilters = {};
-    DebugLogger.info(
-        '🚀 Shorts Provider: fetchShorts() starting - endpoint: $_currentEndpoint');
-    await _fetchShortsPage(_currentPage);
-    _deduplicateShorts(); // Clean up any duplicates
-    DebugLogger.info(
-        '✅ Shorts Provider: fetchShorts() complete - page: $_currentPage/$_totalPages, hasMore: $hasMorePages, items: ${_shorts.length}');
+    // P0.2c: Skip if already fetching to prevent duplicate requests
+    if (_isFetchingShorts) {
+      DebugLogger.api(
+          'Shorts: Initial fetch already in progress, skipping duplicate (P0.2c)');
+      return;
+    }
+
+    // P0.2d: Check if cache is still fresh (for rapid screen transitions)
+    if (_shortsCacheTime != null &&
+        _shorts.isNotEmpty &&
+        DateTime.now().difference(_shortsCacheTime!) < _shortsCacheDuration) {
+      DebugLogger.api(
+          'Shorts: Using cached shorts (age: ${DateTime.now().difference(_shortsCacheTime!).inSeconds}s, P0.2d)');
+      return;
+    }
+
+    try {
+      _isFetchingShorts = true;
+      _resetPagination();
+      _currentEndpoint = '/v2/shorts';
+      _currentFilters = {};
+      DebugLogger.info(
+          '🚀 Shorts Provider: fetchShorts() starting - endpoint: $_currentEndpoint');
+      await _fetchShortsPage(_currentPage);
+      _deduplicateShorts(); // Clean up any duplicates
+      // P0.2d: Update cache timestamp
+      _shortsCacheTime = DateTime.now();
+      DebugLogger.api('Shorts: Cached ${_shorts.length} shorts (P0.2d)');
+      DebugLogger.info(
+          '✅ Shorts Provider: fetchShorts() complete - page: $_currentPage/$_totalPages, hasMore: $hasMorePages, items: ${_shorts.length}');
+    } finally {
+      _isFetchingShorts = false;
+    }
   }
 
   Future<void> fetchShortsChallenges() async {
-    _resetPagination();
-    _currentEndpoint = '/v2/shorts-challenge';
-    _currentFilters = {};
-    await _fetchShortsPage(_currentPage);
-    _deduplicateShorts(); // Clean up any duplicates
+    // P0.2c: Skip if already fetching to prevent duplicate requests
+    if (_isFetchingShorts) {
+      DebugLogger.api(
+          'Shorts: Challenges fetch already in progress, skipping duplicate (P0.2c)');
+      return;
+    }
+
+    try {
+      _isFetchingShorts = true;
+      _resetPagination();
+      _currentEndpoint = '/v2/shorts-challenge';
+      _currentFilters = {};
+      await _fetchShortsPage(_currentPage);
+      _deduplicateShorts(); // Clean up any duplicates
+    } finally {
+      _isFetchingShorts = false;
+    }
   }
 
   // New method to fetch more shorts

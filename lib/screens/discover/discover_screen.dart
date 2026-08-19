@@ -36,12 +36,23 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     with PuppetInteractionMixin {
   bool _isLoading = false;
   bool _isDisposed = false;
+  bool _creatorsLoaded = false; // P0.3: Track section loading state
+  bool _challengesLoaded = false;
+  bool _loadingCreators = false;
+  bool _loadingChallenges = false;
+  late ScrollController
+      _scrollController; // P0.2: Infinite scroll for load-more
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     DebugLogger.info('DiscoverScreen: initState called');
+
+    // P0.2: Initialize scroll controller for infinite scroll
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+
     // Add a small delay to ensure providers are fully initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !_isDisposed) {
@@ -64,73 +75,66 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   void dispose() {
     _isDisposed = true;
 
+    // P0.2: Dispose scroll controller
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+
     // Clear puppet interactions when leaving screen
     clearPuppetInteractions();
 
     super.dispose();
   }
 
+  /// P0.2: Infinite scroll listener - Load more creators when scrolling near bottom
+  void _onScroll() {
+    if (!mounted || _isDisposed) return;
+
+    // Check if user scrolled near the bottom (within 500 pixels)
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 500) {
+      DebugLogger.api(
+          'DiscoverScreen: User scrolled near bottom, loading more creators (P0.2)');
+
+      final authProvider = Provider.of<Auth>(context, listen: false);
+      authProvider.loadMoreCreators();
+    }
+  }
+
+  /// P0.3: Progressive Loading - Load critical content first, then defer sections
+  /// P0.5: Pagination - Load creators in batches
   Future<void> _loadData() async {
     if (!mounted || _isDisposed) return;
 
-    DebugLogger.info('DiscoverScreen: _loadData called');
+    DebugLogger.info(
+        'DiscoverScreen: _loadData called (P0.3 Progressive Loading)');
 
-    if (mounted && !_isDisposed) {
-      setState(() {
-        _isLoading = true;
-      });
+    // Show loading state only on initial load
+    if (!_creatorsLoaded && !_challengesLoaded) {
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _isLoading = true;
+        });
+      }
     }
 
     try {
-      // Perform operations with mounted checks between each step
       if (!mounted || _isDisposed) return;
 
-      // Execute both API calls in parallel for better performance
-      final List<Future> futures = [];
-
-      // Add fetchCreators to futures
-      try {
-        final authProvider = Provider.of<Auth>(context, listen: false);
-        if (!mounted || _isDisposed) return;
-        DebugLogger.api('DiscoverScreen: Adding fetchCreators to futures');
-        futures.add(authProvider.fetchCreators());
-      } catch (e) {
-        DebugLogger.auth('DiscoverScreen: Error setting up Auth provider: $e');
-      }
-
-      // Add fetchChallenges to futures
-      try {
-        final challengeProvider =
-            Provider.of<Challenge>(context, listen: false);
-        if (!mounted || _isDisposed) return;
-        DebugLogger.api('DiscoverScreen: Adding fetchChallenges to futures');
-        futures.add(challengeProvider.fetchChallenges());
-      } catch (e) {
-        DebugLogger.error(
-            'DiscoverScreen: Error setting up Challenge provider: $e');
-      }
-
-      // Execute all API calls in parallel
-      if (futures.isNotEmpty) {
-        try {
-          DebugLogger.api(
-              'DiscoverScreen: Executing ${futures.length} API calls in parallel');
-          await Future.wait(futures);
-          DebugLogger.api(
-              'DiscoverScreen: All API calls completed successfully');
-        } catch (error) {
-          DebugLogger.api(
-              'DiscoverScreen: Error in parallel API calls: $error');
-        }
-      }
+      // PHASE 1: Load critical content (creators) immediately
+      // This unblocks the UI from showing the main section
+      await _loadCreators();
 
       if (!mounted || _isDisposed) return;
+
+      // PHASE 2: Load challenges in background (deferred)
+      // Don't wait for this to complete before rendering
+      _loadChallengesInBackground();
     } catch (error) {
       DebugLogger.error(
           'DiscoverScreen: Failed to load discover content: $error');
       if (mounted && !_isDisposed) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Failed to load content. Please try again.'),
             backgroundColor: Colors.red,
           ),
@@ -138,13 +142,82 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       }
     } finally {
       if (mounted && !_isDisposed) {
-        DebugLogger.info('DiscoverScreen: Setting loading state to false');
+        DebugLogger.info(
+            'DiscoverScreen: Discover data loading complete (progressive)');
         setState(() {
           _isLoading = false;
         });
-
-        // Refresh puppet suggestions when content loads
         refreshPuppetSuggestions();
+      }
+    }
+  }
+
+  /// Load creators with pagination (P0.5)
+  Future<void> _loadCreators() async {
+    if (_loadingCreators || _creatorsLoaded) return;
+
+    setState(() {
+      _loadingCreators = true;
+    });
+
+    try {
+      final authProvider = Provider.of<Auth>(context, listen: false);
+      if (!mounted || _isDisposed) return;
+
+      DebugLogger.api('DiscoverScreen: Loading creators (P0.5 Pagination)');
+      await authProvider.fetchCreators();
+
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _creatorsLoaded = true;
+          _loadingCreators = false;
+        });
+      }
+      DebugLogger.api('DiscoverScreen: Creators loaded successfully');
+    } catch (e) {
+      DebugLogger.auth('DiscoverScreen: Error loading creators: $e');
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _loadingCreators = false;
+        });
+      }
+    }
+  }
+
+  /// Load challenges in background without blocking UI (P0.3 deferred)
+  Future<void> _loadChallengesInBackground() async {
+    if (_loadingChallenges || _challengesLoaded) return;
+
+    setState(() {
+      _loadingChallenges = true;
+    });
+
+    try {
+      // Add small delay to prioritize creators rendering
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (!mounted || _isDisposed) return;
+
+      final challengeProvider = Provider.of<Challenge>(context, listen: false);
+
+      DebugLogger.api(
+          'DiscoverScreen: Loading challenges in background (P0.3)');
+      await challengeProvider.fetchChallenges();
+
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _challengesLoaded = true;
+          _loadingChallenges = false;
+        });
+      }
+      DebugLogger.api('DiscoverScreen: Challenges loaded successfully');
+    } catch (e) {
+      DebugLogger.error(
+          'DiscoverScreen: Error loading challenges in background: $e');
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _loadingChallenges = false;
+        });
       }
     }
   }
@@ -720,9 +793,11 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                 ],
               ),
             ),
-            child: _isLoading
+            child: _isLoading && !_creatorsLoaded
                 ? const DiscoverScreenSkeleton()
                 : SingleChildScrollView(
+                    controller:
+                        _scrollController, // P0.2: Enable infinite scroll
                     physics: const BouncingScrollPhysics(
                         parent: AlwaysScrollableScrollPhysics()),
                     child: Column(
@@ -742,20 +817,21 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                           },
                         ),
                         const SizedBox(height: 16),
-                        Consumer<Auth>(
-                          builder: (_, auth, __) {
+                        Selector<Auth, List>(
+                          selector: (_, auth) => auth.creators,
+                          builder: (_, creators, __) {
                             // Add safety check for disposed state
                             if (_isDisposed || !mounted) {
                               return const SizedBox(height: 50);
                             }
 
-                            // Show loading indicator if we're still loading and no data
-                            if (_isLoading && auth.creators.isEmpty) {
+                            // Show loading indicator if still loading creators
+                            if (_loadingCreators && creators.isEmpty) {
                               return const StorytellerCardsSkeleton(count: 3);
                             }
 
                             // Show message if no creators available
-                            if (auth.creators.isEmpty) {
+                            if (creators.isEmpty && _creatorsLoaded) {
                               return Container(
                                 height: 160,
                                 child: Center(
@@ -798,12 +874,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                                 scrollDirection: Axis.horizontal,
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 16),
-                                itemCount: auth.creators.length > 5
-                                    ? 5
-                                    : auth.creators.length,
+                                itemCount:
+                                    creators.length > 5 ? 5 : creators.length,
                                 itemBuilder: (_, index) {
-                                  return _buildStorytellerCard(
-                                      auth.creators[index]);
+                                  return _buildStorytellerCard(creators[index]);
                                 },
                               ),
                             );
@@ -812,7 +886,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
                         const SizedBox(height: 32),
 
-                        // Challenges Section
+                        // Challenges Section (P0.3: Deferred, may load in background)
                         _buildSectionHeader(
                           '${context.l10n.available} ${context.l10n.challenge}',
                           '${context.l10n.challengesDescription}',
@@ -831,14 +905,15 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                               return const SizedBox(height: 50);
                             }
 
-                            // Show loading indicator if we're still loading and no data
-                            if (_isLoading &&
+                            // Show loading indicator if still loading challenges (P0.3 deferred load)
+                            if (_loadingChallenges &&
                                 challengeProvider.challenges.isEmpty) {
                               return const ChallengeCardsSkeleton(count: 2);
                             }
 
                             // Show message if no challenges available
-                            if (challengeProvider.challenges.isEmpty) {
+                            if (challengeProvider.challenges.isEmpty &&
+                                _challengesLoaded) {
                               return Container(
                                 height: 120,
                                 child: Center(

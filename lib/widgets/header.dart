@@ -11,6 +11,7 @@ import '../models/url.dart';
 import '../providers/story.dart';
 import '../screens/others/notification_screen.dart';
 import '../screens/story/reading_streak_screen.dart';
+import '../screens/leaderboard/leaderboard_screen.dart';
 import '../providers/auth.dart';
 
 const bool _disablePuppetDrawerPanel = false;
@@ -220,6 +221,23 @@ AppBar header({
                   ),
                 );
               },
+            ),
+            GestureDetector(
+              onTap: () => Navigator.of(context).pushNamed(
+                LeaderboardScreen.routeName,
+              ),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 6,
+                ),
+                child: Icon(
+                  Icons.leaderboard_rounded,
+                  size: 24,
+                  color: Colors.white,
+                ),
+              ),
             ),
             // Notification Icon with alert indicator
             Container(

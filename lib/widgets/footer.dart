@@ -11,6 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/auth.dart';
 import '../screens/story/story_screen.dart';
 import '../screens/shorts/shorts_screen.dart';
+import '../screens/my_courses/my_courses_screen.dart';
 import '../screens/challenges/all_challenges_screen.dart';
 import '../screens/others/creator_request_screen.dart';
 import '../utils/guest_auth_helper.dart';
@@ -111,8 +112,7 @@ class Footer extends StatefulWidget {
       return false;
     }
     final normalizedRoute = routeName?.toLowerCase();
-    final childType =
-        resolvedChild?.runtimeType.toString().toLowerCase() ?? '';
+    final childType = resolvedChild?.runtimeType.toString().toLowerCase() ?? '';
 
     if (_routesWithOwnFooter.contains(normalizedRoute)) {
       return false;
@@ -177,6 +177,11 @@ class Footer extends StatefulWidget {
 
     if (normalizedRoute.contains('challenge') ||
         childType.contains('challenge')) {
+      return 3;
+    }
+    if (normalizedRoute.contains('my-courses') ||
+        normalizedRoute.contains('my_courses') ||
+        childType.contains('mycourses')) {
       return 2;
     }
     if (normalizedRoute.contains('shorts') || childType.contains('shorts')) {
@@ -215,13 +220,16 @@ class Footer extends StatefulWidget {
         childType.contains('chat') ||
         childType.contains('analytics') ||
         childType.contains('affiliate')) {
-      return 3;
+      return 4;
     }
     return 0;
   }
 
-  /// Extra space below the nav pill (system nav inset is added separately).
-  static const double extraBottomSpace = 8.0;
+  /// Extra space below the nav bar (system nav inset is added separately).
+  static const double extraBottomSpace = 0.0;
+
+  /// Core tab bar height (labels included), excluding system bottom inset.
+  static const double tabBarHeight = 56.0;
 
   /// Full-screen feeds (shorts) overlay the footer; no extra gap under the nav pill.
   static bool isFullBleedRoute(String? routeName, Widget? child) {
@@ -239,35 +247,9 @@ class Footer extends StatefulWidget {
 
   static double estimatedHeight(BuildContext context,
       {bool fullBleed = false}) {
-    final screenWidth = MediaQuery.of(context).size.width;
     final bottomNavBarPadding = MediaQuery.of(context).viewPadding.bottom;
-    final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
-    final bool hasThreeButtonNav = isAndroid && bottomNavBarPadding >= 40;
-
-    double containerHeight;
-    if (Theme.of(context).platform == TargetPlatform.android) {
-      containerHeight = screenWidth <= 380
-          ? 0.175 * screenWidth
-          : screenWidth <= 480
-              ? 0.15 * screenWidth
-              : 0.1 * screenWidth;
-    } else if (screenWidth >= 768 && screenWidth <= 834) {
-      containerHeight = 0.07 * screenWidth;
-    } else {
-      containerHeight = screenWidth <= 320
-          ? 0.15 * screenWidth
-          : screenWidth <= 375
-              ? 0.175 * screenWidth
-              : screenWidth <= 414
-                  ? 0.2 * screenWidth
-                  : 0.22 * screenWidth;
-    }
-
-    final double adjustedHeight = (containerHeight + 16).clamp(70.0, 92.0);
-    final double totalBottomPadding =
-        hasThreeButtonNav ? bottomNavBarPadding : 0.0;
     final double extra = fullBleed ? 0.0 : extraBottomSpace;
-    return adjustedHeight + totalBottomPadding + extra;
+    return tabBarHeight + bottomNavBarPadding + extra;
   }
 
   @override
@@ -379,12 +361,14 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         !auth.isAuth ||
         (auth.user.isEmpty && !auth.isLoadingUser);
 
-    // Protect Challenges/Profile for all unauthenticated states.
-    if ((index == 2 || index == 3) && isUnauthenticated) {
-      await GuestAuthHelper.showGuestLoginDialog(
-        _dialogContext,
-        index == 2 ? 'challenges' : 'user profile',
-      );
+    // Protect My Courses, Challenges, and Profile for unauthenticated users.
+    if ((index == 2 || index == 3 || index == 4) && isUnauthenticated) {
+      final feature = index == 2
+          ? 'my courses'
+          : index == 3
+              ? 'challenges'
+              : 'user profile';
+      await GuestAuthHelper.showGuestLoginDialog(_dialogContext, feature);
       return;
     }
 
@@ -393,7 +377,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     // If user data is still loading during initial authentication, don't allow navigation
     if (auth.isLoadingUser &&
         auth.user.isEmpty &&
-        (index == 0 || index == 2 || index == 3)) {
+        (index == 0 || index == 2 || index == 3 || index == 4)) {
       return;
     }
 
@@ -441,6 +425,13 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
         );
         break;
       case 2:
+        HapticFeedback.selectionClick();
+        openTab(
+          routeName: MyCourses.routeName,
+          child: const MyCourses(),
+        );
+        break;
+      case 3:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
         openTab(
@@ -448,7 +439,7 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
           child: const AllChallengesScreen(),
         );
         break;
-      case 3:
+      case 4:
         // small haptic feedback on tab switch
         HapticFeedback.selectionClick();
         openTab(
@@ -462,30 +453,17 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
   Color _getIconColor(int index) {
     switch (index) {
       case 0:
-        return const Color(0xFFA435F0);
+        return const Color(0xFFB4690E);
       case 1:
-        return const Color(0xFF6D28D9);
+        return const Color(0xFFB4690E);
       case 2:
         return const Color(0xFFB4690E);
       case 3:
-        return const Color(0xFF1C1D1F);
+        return const Color(0xFFB4690E);
+      case 4:
+        return const Color(0xFFB4690E);
       default:
-        return const Color(0xFFA435F0);
-    }
-  }
-
-  Color _getGlowColor(int index) {
-    switch (index) {
-      case 0:
-        return const Color(0xFFA435F0).withValues(alpha: 0.22);
-      case 1:
-        return const Color(0xFF6D28D9).withValues(alpha: 0.20);
-      case 2:
-        return const Color(0xFFB4690E).withValues(alpha: 0.18);
-      case 3:
-        return const Color(0xFF1C1D1F).withValues(alpha: 0.14);
-      default:
-        return const Color(0xFFA435F0).withValues(alpha: 0.20);
+        return const Color(0xFFB4690E);
     }
   }
 
@@ -560,101 +538,54 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
     required bool tutorialCondition,
   }) {
     final iconColor = _getIconColor(index);
-    final glowColor = _getGlowColor(index);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final selectedColor = isDark ? const Color(0xFFEDE5F9) : iconColor;
-    final idleColor =
-        isDark ? Colors.white.withValues(alpha: 0.66) : const Color(0xFF6A6F73);
-    final selectedTextColor = isDark ? const Color(0xFF1C1D1F) : Colors.white;
+    final activeColor = iconColor;
+    final inactiveColor =
+        isDark ? Colors.white.withValues(alpha: 0.55) : const Color(0xFF65676B);
 
     return Stack(
       clipBehavior: Clip.none,
+      alignment: Alignment.center,
       children: [
         Consumer<Auth>(
           builder: (context, auth, child) {
-            // Check if this item should show loading state
-            // Only show loading if user data is loading AND user data is empty (initial load)
-            bool shouldShowLoading = auth.isLoadingUser &&
+            final shouldShowLoading = auth.isLoadingUser &&
                 auth.user.isEmpty &&
-                (index == 0 || index == 2 || index == 3);
+                (index == 0 || index == 2 || index == 3 || index == 4);
 
-            return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => _onItemTapped(index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 260),
-                curve: Curves.easeOutCubic,
-                height: 46,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                padding: EdgeInsets.symmetric(
-                  horizontal: isSelected ? 10 : 6,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? selectedColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(999),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: glowColor,
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Center(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildNavIcon(
-                          icon: icon,
-                          imageUrl: imageUrl,
-                          color: isSelected ? selectedTextColor : idleColor,
-                          size: 20,
-                          shouldShowLoading: shouldShowLoading,
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _onItemTapped(index),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildNavIcon(
+                        icon: icon,
+                        imageUrl: imageUrl,
+                        color: isSelected ? activeColor : inactiveColor,
+                        size: 24,
+                        shouldShowLoading: shouldShowLoading,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                          height: 1.1,
+                          color: isSelected ? activeColor : inactiveColor,
                         ),
-                        AnimatedSize(
-                          duration: const Duration(milliseconds: 220),
-                          curve: Curves.easeOutCubic,
-                          alignment: Alignment.centerLeft,
-                          child: isSelected
-                              ? Padding(
-                                  padding: const EdgeInsets.only(left: 7),
-                                  child: Text(
-                                    label,
-                                    maxLines: 1,
-                                    textScaler: const TextScaler.linear(1.0),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1,
-                                      letterSpacing: 0,
-                                      color: selectedTextColor,
-                                    ),
-                                  ),
-                                )
-                              : const SizedBox.shrink(),
-                        ),
-                        if (!isSelected) ...[
-                          const SizedBox(width: 4),
-                          Text(
-                            label,
-                            maxLines: 1,
-                            textScaler: const TextScaler.linear(1.0),
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              height: 1,
-                              letterSpacing: 0,
-                              color: idleColor,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -662,9 +593,9 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
           },
         ),
         if (tutorialCondition)
-          Positioned(
-            top: -10,
-            right: -10,
+          const Positioned(
+            top: -6,
+            right: 4,
             child: TutorialIndicator(),
           ),
       ],
@@ -673,114 +604,90 @@ class _FooterState extends State<Footer> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    // Get the bottom padding for system navigation bar (back, home, recent buttons)
     final bottomNavBarPadding = MediaQuery.of(context).viewPadding.bottom;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final adjustedHeight = screenWidth <= 360 ? 72.0 : 78.0;
-
-    // Only add extra padding for Android devices with 3-button software navigation bar
-    final bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
-    final bool hasThreeButtonNav = isAndroid && bottomNavBarPadding >= 40;
-    final totalBottomPadding = hasThreeButtonNav ? bottomNavBarPadding : 0.0;
-    final extra = widget.fullBleed ? 15.0 : 0.0;
+    final barColor = isDark ? const Color(0xFF111827) : Colors.white;
+    final borderColor =
+        isDark ? Colors.white.withValues(alpha: 0.10) : const Color(0xFFD1D7DC);
 
     return ColoredBox(
-      color: Colors.transparent,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: totalBottomPadding),
-        child: SizedBox(
-          height: adjustedHeight + extra,
-          child: Consumer<TutorialFlowProvider>(
-            builder: (context, tutorial, _) {
-              return Align(
-                alignment: Alignment.bottomCenter,
-                child: Stack(
-                  clipBehavior: Clip.none,
+      color: barColor,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: Footer.tabBarHeight,
+            decoration: BoxDecoration(
+              color: barColor,
+              border: Border(top: BorderSide(color: borderColor)),
+            ),
+            child: Consumer<TutorialFlowProvider>(
+              builder: (context, tutorial, _) {
+                return Row(
                   children: [
-                    Container(
-                      height: adjustedHeight - 8,
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 4,
+                    Expanded(
+                      child: _buildNavItem(
+                        index: 0,
+                        icon: Icons.home_rounded,
+                        label: AppLocalizations.of(context)!.courses,
+                        isSelected: widget.index == 0,
+                        tutorial: tutorial,
+                        tutorialCondition:
+                            tutorial.currentStep == 0 && tutorial.isActive,
                       ),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF111827) : Colors.white,
-                        borderRadius: BorderRadius.circular(999),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.18),
-                            blurRadius: 22,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.10)
-                              : const Color(0xFFD1D7DC),
-                          width: 1,
-                        ),
+                    ),
+                    Expanded(
+                      child: _buildNavItem(
+                        index: 1,
+                        icon: Icons.play_circle_filled_rounded,
+                        label: AppLocalizations.of(context)!.shorts,
+                        isSelected: widget.index == 1,
+                        tutorial: tutorial,
+                        tutorialCondition:
+                            tutorial.currentStep == 4 && tutorial.isActive,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 5,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: _buildNavItem(
-                                index: 0,
-                                imageUrl: 'assets/images/sikka.png',
-                                label: AppLocalizations.of(context)!.courses,
-                                isSelected: widget.index == 0,
-                                tutorial: tutorial,
-                                tutorialCondition: tutorial.currentStep == 0 &&
-                                    tutorial.isActive,
-                              ),
-                            ),
-                            Expanded(
-                              child: _buildNavItem(
-                                index: 1,
-                                icon: Icons.play_circle_filled_rounded,
-                                label: AppLocalizations.of(context)!.shorts,
-                                isSelected: widget.index == 1,
-                                tutorial: tutorial,
-                                tutorialCondition: tutorial.currentStep == 4 &&
-                                    tutorial.isActive,
-                              ),
-                            ),
-                            Expanded(
-                              child: _buildNavItem(
-                                index: 2,
-                                icon: Icons.emoji_events_rounded,
-                                label: AppLocalizations.of(context)!.challenges,
-                                isSelected: widget.index == 2,
-                                tutorial: tutorial,
-                                tutorialCondition: false,
-                              ),
-                            ),
-                            Expanded(
-                              child: _buildNavItem(
-                                index: 3,
-                                icon: Icons.person_rounded,
-                                label: AppLocalizations.of(context)!.profile,
-                                isSelected: widget.index == 3,
-                                tutorial: tutorial,
-                                tutorialCondition: false,
-                              ),
-                            ),
-                          ],
-                        ),
+                    ),
+                    Expanded(
+                      child: _buildNavItem(
+                        index: 2,
+                        icon: Icons.bookmark_rounded,
+                        label: 'My Courses',
+                        isSelected: widget.index == 2,
+                        tutorial: tutorial,
+                        tutorialCondition: false,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildNavItem(
+                        index: 3,
+                        icon: Icons.emoji_events_rounded,
+                        label: AppLocalizations.of(context)!.challenges,
+                        isSelected: widget.index == 3,
+                        tutorial: tutorial,
+                        tutorialCondition: false,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildNavItem(
+                        index: 4,
+                        icon: Icons.person_rounded,
+                        label: AppLocalizations.of(context)!.profile,
+                        isSelected: widget.index == 4,
+                        tutorial: tutorial,
+                        tutorialCondition: false,
                       ),
                     ),
                   ],
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
+          if (bottomNavBarPadding > 0)
+            SizedBox(
+              height: bottomNavBarPadding,
+              child: ColoredBox(color: barColor),
+            ),
+        ],
       ),
     );
   }

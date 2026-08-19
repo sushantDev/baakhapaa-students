@@ -2652,14 +2652,14 @@ class _SingleProductScreenState extends State<SingleProductScreen>
             ],
           ),
           SizedBox(height: 24),
-          Consumer<Auth>(
-            builder: (ctx, auth, _) => FutureBuilder(
-              future: auth.fetchConversations(),
+          Selector<Auth, List<dynamic>>(
+            selector: (ctx, auth) => auth.conversations,
+            builder: (ctx, conversations, _) => FutureBuilder(
+              future: ctx.read<Auth>().fetchConversations(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const GridSkeleton(crossAxisCount: 4, itemCount: 8);
                 }
-                final conversations = auth.conversations;
                 return Container(
                   height: 200,
                   child: GridView.builder(

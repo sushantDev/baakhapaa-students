@@ -119,14 +119,16 @@ class LevelTimelineItem extends StatelessWidget {
                       Positioned(
                         top: 70.0,
                         left: 0,
-                        child: Consumer<Auth>(
-                          builder: (context, auth, child) {
+                        child: Selector<Auth, List<dynamic>?>(
+                          selector: (context, auth) => auth.image,
+                          builder: (context, image, child) {
                             String imageUrl =
                                 'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg';
 
-                            if (auth.image != null && auth.image!.isNotEmpty) {
-                              imageUrl =
-                                  auth.image!.first['thumbnail'] ?? imageUrl;
+                            // ignore: unnecessary_non_null_assertion
+                            if (image != null && image!.isNotEmpty) {
+                              // ignore: unnecessary_non_null_assertion
+                              imageUrl = image!.first['thumbnail'] ?? imageUrl;
                             }
 
                             return Container(

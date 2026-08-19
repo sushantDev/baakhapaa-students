@@ -3188,9 +3188,10 @@ class _StoryScreenState extends State<StoryScreen>
             const SizedBox(height: 10),
 
             // Storytellers List
-            Consumer<Auth>(
-              builder: (_, auth, __) {
-                if (auth.creators.isEmpty) {
+            Selector<Auth, List<dynamic>>(
+              selector: (_, auth) => auth.creators,
+              builder: (_, creators, __) {
+                if (creators.isEmpty) {
                   return Container(
                     height: 80,
                     child: Center(
@@ -3206,10 +3207,9 @@ class _StoryScreenState extends State<StoryScreen>
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount:
-                        auth.creators.length > 10 ? 10 : auth.creators.length,
+                    itemCount: creators.length > 10 ? 10 : creators.length,
                     itemBuilder: (_, index) {
-                      return _buildStorytellerCard(auth.creators[index]);
+                      return _buildStorytellerCard(creators[index]);
                     },
                   ),
                 );

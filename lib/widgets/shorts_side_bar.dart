@@ -383,381 +383,6 @@ class _ShortsSideBarState extends State<ShortsSideBar>
       _showShortsGameModeSheet();
     }
 
-    void donate() async {
-      if (_formKey.currentState!.validate()) {
-        await Provider.of<Auth>(context, listen: false)
-            .donation(
-          int.parse(donationController.text),
-          widget.shortsId,
-          commentController.text,
-          'shorts',
-        )
-            .then((value) {
-          Navigator.pop(context);
-          donationController.clear();
-          commentController.clear();
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Thank you for your donation.'),
-          ));
-        });
-      }
-    }
-
-    void openDonateModal() {
-      final userAvailableCoins =
-          Provider.of<Auth>(context, listen: false).userAvailableCoins;
-      showModalBottomSheet<void>(
-        isScrollControlled: true,
-        context: context,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        backgroundColor: Colors.transparent,
-        builder: (BuildContext sheetContext) {
-          return Footer.wrapSheetContent(
-            sheetContext,
-            Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Color(0xFF1E1E1E)
-                  : Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 20,
-                  spreadRadius: 0,
-                  offset: Offset(0, -5),
-                ),
-              ],
-            ),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 24,
-                  right: 24,
-                  top: 20,
-                  bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    // Handle bar
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    SizedBox(height: 24),
-
-                    // Header section
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.pink.shade400,
-                                Colors.red.shade400
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Icon(
-                            Icons.favorite_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                context.l10n.supportCreator,
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black87,
-                                ),
-                              ),
-                              Text(
-                                'Help support this content creator',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.close_rounded,
-                            color:
-                                Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white54
-                                    : Colors.grey.shade600,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                          tooltip: 'Close',
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 32),
-
-                    // Available points info
-                    Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.amber.shade200),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset(
-                            'assets/images/coins.png',
-                            width: 24,
-                            height: 24,
-                          ),
-                          SizedBox(width: 12),
-                          Text(
-                            'Available Points: ',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.amber.shade800,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            '$userAvailableCoins',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.amber.shade800,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 24),
-
-                    // Form
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            '${context.l10n.supportCreator} ${context.l10n.points}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black87,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          TextFormField(
-                            autofocus: true,
-                            keyboardType: TextInputType.number,
-                            textInputAction: TextInputAction.next,
-                            controller: donationController,
-                            decoration: InputDecoration(
-                              hintText: 'Enter points amount',
-                              prefixIcon: Padding(
-                                padding: EdgeInsets.all(12),
-                                child: Image.asset(
-                                  'assets/images/coins.png',
-                                  width: 20,
-                                  height: 20,
-                                ),
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                    color: Colors.amber.shade400, width: 2),
-                              ),
-                              filled: true,
-                              fillColor: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey.shade800
-                                  : Colors.grey.shade50,
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter points amount';
-                              }
-                              if (int.tryParse(value) == null) {
-                                return 'Please enter a valid number';
-                              }
-                              if (int.parse(value) <= 0) {
-                                return 'Please enter a positive amount';
-                              }
-                              if (int.parse(value) > userAvailableCoins) {
-                                return 'Insufficient points. Maximum: $userAvailableCoins';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            'Support Message (Optional)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black87,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          TextFormField(
-                            controller: commentController,
-                            maxLines: 3,
-                            decoration: InputDecoration(
-                              hintText: 'Write a supportive message...',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade300),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                    color: Colors.amber.shade400, width: 2),
-                              ),
-                              filled: true,
-                              fillColor: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey.shade800
-                                  : Colors.grey.shade50,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 32),
-
-                    // Action buttons
-                    Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: donate,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.pink.shade400,
-                                    Colors.red.shade400
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.pink.withValues(alpha: 0.3),
-                                    blurRadius: 10,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.favorite_rounded,
-                                        color: Colors.white, size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      context.l10n.sendButton,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              side: BorderSide(
-                                color: Colors.pinkAccent.shade100,
-                                width: 1.5,
-                              ),
-                              foregroundColor: Colors.pinkAccent,
-                            ),
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          );
-        },
-      );
-    }
-
     return Container(
       width: 70,
       margin: EdgeInsets.only(right: 8), // Reduced right padding
@@ -987,7 +612,7 @@ class _ShortsSideBarState extends State<ShortsSideBar>
               padding: const EdgeInsets.only(bottom: 14.0),
               child: GestureDetector(
                 onTap: () => _handleAuthenticatedAction(
-                  () => openDonateModal(),
+                  () => _showVoteCreatorDialog(context),
                   'donations',
                 ),
                 child: Icon(
@@ -1085,6 +710,192 @@ class _ShortsSideBarState extends State<ShortsSideBar>
           width: 44,
           height: 44,
         ),
+      ),
+    );
+  }
+
+  void _showVoteCreatorDialog(BuildContext context) {
+    final userAvailableCoins =
+        Provider.of<Auth>(context, listen: false).userAvailableCoins;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.favorite_rounded, color: Colors.pink.shade400),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                context.l10n.supportCreator,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Help support this content creator',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.amber.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'assets/images/coins.png',
+                        width: 20,
+                        height: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Available: $userAvailableCoins',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.amber.shade800,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '${context.l10n.supportCreator} ${context.l10n.points}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  controller: donationController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter points amount',
+                    isDense: true,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Image.asset(
+                        'assets/images/coins.png',
+                        width: 18,
+                        height: 18,
+                      ),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor:
+                        isDark ? Colors.grey.shade800 : Colors.grey.shade50,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter points amount';
+                    }
+                    if (int.tryParse(value) == null) {
+                      return 'Please enter a valid number';
+                    }
+                    if (int.parse(value) <= 0) {
+                      return 'Please enter a positive amount';
+                    }
+                    if (int.parse(value) > userAvailableCoins) {
+                      return 'Insufficient points. Maximum: $userAvailableCoins';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Support Message (Optional)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: commentController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'Write a supportive message...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor:
+                        isDark ? Colors.grey.shade800 : Colors.grey.shade50,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.pink.shade400,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              if (!_formKey.currentState!.validate()) {
+                return;
+              }
+
+              try {
+                await Provider.of<Auth>(context, listen: false).donation(
+                  int.parse(donationController.text),
+                  widget.shortsId,
+                  commentController.text,
+                  'shorts',
+                );
+                if (!context.mounted) return;
+                Navigator.pop(dialogContext);
+                donationController.clear();
+                commentController.clear();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Thank you for your donation.'),
+                  ),
+                );
+              } catch (e) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      e.toString().replaceFirst('Exception: ', ''),
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: Text(context.l10n.sendButton),
+          ),
+        ],
       ),
     );
   }

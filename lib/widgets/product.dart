@@ -249,7 +249,7 @@ void showCartAddedDialog(
 class Product extends StatelessWidget {
   final List<dynamic> _product;
 
-  Product(this._product);
+  const Product(this._product, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

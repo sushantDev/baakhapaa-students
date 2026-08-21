@@ -308,17 +308,15 @@ class StoryCreation with ChangeNotifier {
       );
 
       final responseData = json.decode(utf8.decode(response.bodyBytes));
-      final message = (responseData['message'] ?? 'Content generation failed')
-          .toString();
+      final message =
+          (responseData['message'] ?? 'Content generation failed').toString();
       final code = (responseData['code'] ?? '').toString().toUpperCase();
 
       if (response.statusCode == 200 && responseData['success'] == true) {
         final data = responseData['data'] as Map<String, dynamic>? ?? {};
-        final content =
-            data['content'] as Map<String, dynamic>? ??
+        final content = data['content'] as Map<String, dynamic>? ??
             (data.isNotEmpty ? data : <String, dynamic>{});
-        final meta =
-            data['meta'] as Map<String, dynamic>? ??
+        final meta = data['meta'] as Map<String, dynamic>? ??
             (responseData['meta'] as Map<String, dynamic>? ??
                 <String, dynamic>{});
 
@@ -886,22 +884,22 @@ class StoryCreation with ChangeNotifier {
 
       if (affiliateProductIds != null && affiliateProductIds.isNotEmpty) {
         for (int i = 0; i < affiliateProductIds.length; i++) {
-          request.fields['affiliate_product_ids[$i]'] = affiliateProductIds[i]
-              .toString();
+          request.fields['affiliate_product_ids[$i]'] =
+              affiliateProductIds[i].toString();
         }
       }
 
       if (relatedShortsIds != null && relatedShortsIds.isNotEmpty) {
         for (int i = 0; i < relatedShortsIds.length; i++) {
-          request.fields['related_shorts_ids[$i]'] = relatedShortsIds[i]
-              .toString();
+          request.fields['related_shorts_ids[$i]'] =
+              relatedShortsIds[i].toString();
         }
       }
 
       if (relatedEpisodeIds != null && relatedEpisodeIds.isNotEmpty) {
         for (int i = 0; i < relatedEpisodeIds.length; i++) {
-          request.fields['related_episode_ids[$i]'] = relatedEpisodeIds[i]
-              .toString();
+          request.fields['related_episode_ids[$i]'] =
+              relatedEpisodeIds[i].toString();
         }
       }
 
@@ -1056,8 +1054,7 @@ class StoryCreation with ChangeNotifier {
 
       var responseData = json.decode(utf8.decode(response.bodyBytes));
       if (response.statusCode == 200) {
-        final questions =
-            responseData['data']?['questions'] ??
+        final questions = responseData['data']?['questions'] ??
             responseData['questions'] ??
             [];
         DebugLogger.success('✅ Loaded ${questions.length} questions');
@@ -1254,22 +1251,22 @@ class StoryCreation with ChangeNotifier {
 
       if (affiliateProductIds != null && affiliateProductIds.isNotEmpty) {
         for (int i = 0; i < affiliateProductIds.length; i++) {
-          request.fields['affiliate_product_ids[$i]'] = affiliateProductIds[i]
-              .toString();
+          request.fields['affiliate_product_ids[$i]'] =
+              affiliateProductIds[i].toString();
         }
       }
 
       if (relatedShortsIds != null && relatedShortsIds.isNotEmpty) {
         for (int i = 0; i < relatedShortsIds.length; i++) {
-          request.fields['related_shorts_ids[$i]'] = relatedShortsIds[i]
-              .toString();
+          request.fields['related_shorts_ids[$i]'] =
+              relatedShortsIds[i].toString();
         }
       }
 
       if (relatedEpisodeIds != null && relatedEpisodeIds.isNotEmpty) {
         for (int i = 0; i < relatedEpisodeIds.length; i++) {
-          request.fields['related_episode_ids[$i]'] = relatedEpisodeIds[i]
-              .toString();
+          request.fields['related_episode_ids[$i]'] =
+              relatedEpisodeIds[i].toString();
         }
       }
 

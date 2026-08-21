@@ -229,14 +229,12 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
       }
 
       // Settings
-      _isJumpAvailable =
-          _existingSeason!['is_jump_available'] == 1 ||
+      _isJumpAvailable = _existingSeason!['is_jump_available'] == 1 ||
           _existingSeason!['is_jump_available'] == true;
       _coinToJump = _existingSeason!['coin_to_jump'];
       _coinToJumpController.text = _coinToJump?.toString() ?? '';
 
-      _isLocked =
-          _existingSeason!['is_locked'] == 1 ||
+      _isLocked = _existingSeason!['is_locked'] == 1 ||
           _existingSeason!['is_locked'] == true;
       _coinToUnlock = _existingSeason!['coin_to_unlock'];
       _coinToUnlockController.text = _coinToUnlock?.toString() ?? '';
@@ -812,8 +810,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
           _isChallenge == true
               ? 'Create Season (Challenge)'
               : _isEditMode
-              ? 'Edit Season'
-              : 'Create Season',
+                  ? 'Edit Season'
+                  : 'Create Season',
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -847,8 +845,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                 color: isCompleted
                     ? Colors.amber
                     : isActive
-                    ? Colors.amber.withValues(alpha: 0.6)
-                    : Colors.grey.withValues(alpha: 0.3),
+                        ? Colors.amber.withValues(alpha: 0.6)
+                        : Colors.grey.withValues(alpha: 0.3),
               ),
             ),
           );
@@ -1299,9 +1297,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                                 'This season will be submitted under your accepted collaboration. Collaborators are already set by the collaboration invitation.',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: isDark
-                                      ? Colors.white70
-                                      : Colors.black54,
+                                  color:
+                                      isDark ? Colors.white70 : Colors.black54,
                                   height: 1.4,
                                 ),
                               ),
@@ -1323,8 +1320,7 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                         } else if (collaborator['offer_type'] == 'gift') {
                           offerText = ' (Gift)';
                         }
-                        final hasImage =
-                            collaborator['image'] != null &&
+                        final hasImage = collaborator['image'] != null &&
                             (collaborator['image'] as String).isNotEmpty;
                         return Chip(
                           avatar: CircleAvatar(
@@ -1366,8 +1362,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                               setState(() {
                                 _selectedCollaborators =
                                     List<Map<String, dynamic>>.from(
-                                      collaborators,
-                                    );
+                                  collaborators,
+                                );
                               });
                             },
                           ),
@@ -1699,9 +1695,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                         color: isDark ? Colors.white54 : Colors.grey.shade500,
                       ),
                       filled: true,
-                      fillColor: isDark
-                          ? Colors.grey.shade900
-                          : Colors.grey.shade50,
+                      fillColor:
+                          isDark ? Colors.grey.shade900 : Colors.grey.shade50,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -1780,9 +1775,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                         color: isDark ? Colors.white54 : Colors.grey.shade500,
                       ),
                       filled: true,
-                      fillColor: isDark
-                          ? Colors.grey.shade900
-                          : Colors.grey.shade50,
+                      fillColor:
+                          isDark ? Colors.grey.shade900 : Colors.grey.shade50,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -1839,18 +1833,17 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => CreatorContentSelector(
-                  onSelected:
-                      ({
-                        required List<AffiliateProduct> affiliateProducts,
-                        required List<dynamic> episodes,
-                        required List<dynamic> seasons,
-                        required List<dynamic> shorts,
-                      }) {
-                        setState(() {
-                          _selectedShorts.clear();
-                          _selectedShorts.addAll(shorts);
-                        });
-                      },
+                  onSelected: ({
+                    required List<AffiliateProduct> affiliateProducts,
+                    required List<dynamic> episodes,
+                    required List<dynamic> seasons,
+                    required List<dynamic> shorts,
+                  }) {
+                    setState(() {
+                      _selectedShorts.clear();
+                      _selectedShorts.addAll(shorts);
+                    });
+                  },
                   initialSelectedShorts: _selectedShorts,
                   initialSelectedEpisodes: const [],
                   initialSelectedSeasons: const [],
@@ -1942,9 +1935,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
 
     final isExpanded = _expandedSections[title] ?? false;
 
-    final visibleItems = isExpanded
-        ? allItems
-        : allItems.take(initialItemCount).toList();
+    final visibleItems =
+        isExpanded ? allItems : allItems.take(initialItemCount).toList();
 
     final canExpand = allItems.length > initialItemCount;
 
@@ -2000,9 +1992,8 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                         }
                       });
                     },
-              backgroundColor: isDisabled && !isSelected
-                  ? Colors.grey.shade200
-                  : null,
+              backgroundColor:
+                  isDisabled && !isSelected ? Colors.grey.shade200 : null,
               disabledColor: isSelected ? Colors.amber.shade100 : null,
             );
           }).toList(),

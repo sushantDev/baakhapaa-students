@@ -652,6 +652,9 @@ class _StoryScreenState extends State<StoryScreen>
           DebugLogger.error(
               'Background premium creator seasons API failed: $e');
         });
+        backgroundStoryProvider.fetchPaidCourses().catchError((e) {
+          DebugLogger.error('Background paid courses API failed: $e');
+        });
         backgroundStoryProvider.fetchReadableSeasons().catchError((e) {
           DebugLogger.error('Background readable seasons API failed: $e');
         });
@@ -1787,6 +1790,29 @@ class _StoryScreenState extends State<StoryScreen>
                     ),
                   ),
                 ), // Gradient overlay and content
+
+              // Khalti price badge for purchasable premium courses
+              // (top-right, since the lock icon already occupies top-left)
+              if (!isReadable && seasonPriceNpr(season) > 0)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Color(0xFF5C2D91).withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'NPR ${seasonPriceNpr(season).toStringAsFixed(0)}',
+                      style: GoogleFonts.inter(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -3410,6 +3436,9 @@ class _StoryScreenState extends State<StoryScreen>
           // 2. Storytellers Section
           _buildStorytellersSection(),
 
+          // 2.5 Premium / Paid Courses (Khalti purchase)
+          _buildPremiumCoursesSection(),
+
           // 3. Continue Watching Section
           // _buildContinueWatchingSection(),
 
@@ -3446,6 +3475,24 @@ class _StoryScreenState extends State<StoryScreen>
           const SizedBox(height: 100),
         ],
       ),
+    );
+  }
+
+  // Dedicated section for seasons purchasable directly via Khalti (price_npr set)
+  Widget _buildPremiumCoursesSection() {
+    return Selector<Story, List<dynamic>>(
+      selector: (context, story) => story.paidCourses,
+      builder: (context, paidCourses, child) {
+        if (paidCourses.isEmpty) {
+          return SizedBox.shrink();
+        }
+        return _buildUnifiedSeasonCategory(
+          title: 'Premium Courses',
+          seasons: paidCourses,
+          isWatchTitle: false,
+          showDifficulty: false,
+        );
+      },
     );
   }
 

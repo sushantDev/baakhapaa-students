@@ -846,6 +846,7 @@ class _MyAppState extends State<MyApp> {
               continueWatchingItems: previousStory?.continueWatchingItems,
               ownedCourseItems: previousStory?.ownedCourseItems,
               premiumCreatorSeasons: previousStory?.premiumCreatorSeasons,
+              paidCourses: previousStory?.paidCourses,
               creatorSeasons: previousStory?.creatorSeasons,
               readableSeasons: previousStory?.readableSeasons,
               readingStreak: previousStory?.readingStreak,

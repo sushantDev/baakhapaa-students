@@ -38,6 +38,7 @@ class Story with ChangeNotifier {
   late List<dynamic> _continueWatchingItems = [];
   late List<dynamic> _ownedCourseItems = [];
   late List<dynamic> _premiumCreatorSeasons = [];
+  late List<dynamic> _paidCourses = [];
   late List<dynamic> _readableSeasons = [];
   late List<dynamic> _episodePages = [];
   bool _isLoadingPages = false;
@@ -61,6 +62,7 @@ class Story with ChangeNotifier {
   DateTime? _continueWatchingFetchedAt;
   DateTime? _ownedCoursesFetchedAt;
   DateTime? _premiumCreatorSeasonsFetchedAt;
+  DateTime? _paidCoursesFetchedAt;
   DateTime? _readableSeasonsFetchedAt;
   DateTime? _storySliderFetchedAt;
   bool _isFetchingFeaturedSeasons = false;
@@ -68,6 +70,7 @@ class Story with ChangeNotifier {
   bool _isFetchingDifficultSeasons = false;
   bool _isFetchingMyList = false;
   bool _isFetchingPremiumCreatorSeasons = false;
+  bool _isFetchingPaidCourses = false;
   bool _isFetchingReadableSeasons = false;
   bool _isFetchingStorySlider = false;
 
@@ -125,6 +128,7 @@ class Story with ChangeNotifier {
     List<dynamic>? continueWatchingItems,
     List<dynamic>? ownedCourseItems,
     List<dynamic>? premiumCreatorSeasons,
+    List<dynamic>? paidCourses,
     List<dynamic>? creatorSeasons,
     List<dynamic>? readableSeasons,
     Map<String, dynamic>? readingStreak,
@@ -139,6 +143,7 @@ class Story with ChangeNotifier {
     _continueWatchingItems = continueWatchingItems ?? [];
     _ownedCourseItems = ownedCourseItems ?? [];
     _premiumCreatorSeasons = premiumCreatorSeasons ?? [];
+    _paidCourses = paidCourses ?? [];
     _creatorSeasons = creatorSeasons ?? [];
     _readableSeasons = readableSeasons ?? [];
     _episodePages = [];
@@ -224,6 +229,10 @@ class Story with ChangeNotifier {
 
   List<dynamic> get premiumCreatorSeasons {
     return _premiumCreatorSeasons;
+  }
+
+  List<dynamic> get paidCourses {
+    return _paidCourses;
   }
 
   List<dynamic> get readableSeasons {
@@ -642,6 +651,7 @@ class Story with ChangeNotifier {
 
     _syncSeasonInDirectList(_featuredSeasons, seasonId, updates);
     _syncSeasonInDirectList(_readableSeasons, seasonId, updates);
+    _syncSeasonInDirectList(_paidCourses, seasonId, updates);
     _syncSeasonInWrappedList(_myListItems, seasonId, updates);
     _syncSeasonInWrappedList(_continueWatchingItems, seasonId, updates);
     _syncSeasonInWrappedList(_ownedCourseItems, seasonId, updates);
@@ -1064,6 +1074,39 @@ class Story with ChangeNotifier {
           notify: true,
         );
       }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Unlocks a season via a server-verified Khalti payment (no coins involved).
+  Future<void> purchaseSeasonWithKhalti(
+    int seasonId,
+    String pidx,
+    String? transactionToken,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse(Url.baakhapaaApi('/season/$seasonId/purchase-khalti')),
+        headers: Url.baakhapaaAuthHeaders(authToken),
+        body: json.encode({
+          'idx': pidx,
+          'token': transactionToken ?? pidx,
+        }),
+      );
+      var responseData = json.decode(response.body);
+      if (responseData['success'] != true) {
+        throw responseData['message'] ?? 'Failed to verify Khalti payment';
+      }
+
+      _syncSeasonStateAcrossCollections(
+        {
+          'id': seasonId,
+          'is_locked': false,
+          'watched': true,
+        },
+        notify: true,
+      );
     } catch (error) {
       throw error;
     }
@@ -2065,6 +2108,56 @@ class Story with ChangeNotifier {
       notifyListeners();
     } finally {
       _isFetchingPremiumCreatorSeasons = false;
+    }
+  }
+
+  // Seasons directly purchasable via Khalti (price_npr > 0), for the
+  // "Premium Courses" section — independent of the points/coins economy.
+  Future<void> fetchPaidCourses({bool forceRefresh = false}) async {
+    if (_isFetchingPaidCourses) return;
+    if (!forceRefresh &&
+        _paidCourses.isNotEmpty &&
+        _isFresh(_paidCoursesFetchedAt)) {
+      return;
+    }
+    _isFetchingPaidCourses = true;
+    try {
+      final String apiUrl = Url.baakhapaaApi('/seasons/paid-courses');
+      final Map<String, String> headers = Url.baakhapaaAuthHeaders(authToken);
+
+      var response = await http
+          .get(Uri.parse(apiUrl), headers: headers)
+          .timeout(Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = json.decode(response.body);
+
+        if (responseData['success'] == true &&
+            responseData['data'] != null &&
+            responseData['data']['items'] != null) {
+          _paidCourses = List<dynamic>.from(
+            (responseData['data']['items'] as List).map((item) {
+              final Map<String, dynamic> season =
+                  Map<String, dynamic>.from(item);
+              season['rewards'] = season['rewards'] ?? {'reward_points': 0};
+              season['watched'] = season['watched'] ?? false;
+              return season;
+            }).toList(),
+          );
+        } else {
+          _paidCourses = [];
+        }
+      } else {
+        _paidCourses = [];
+      }
+      _paidCoursesFetchedAt = DateTime.now();
+      notifyListeners();
+    } catch (e) {
+      DebugLogger.api('Error fetching paid courses: $e');
+      _paidCourses = [];
+      notifyListeners();
+    } finally {
+      _isFetchingPaidCourses = false;
     }
   }
 

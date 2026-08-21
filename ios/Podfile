@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '14.0'  # Required for ffmpeg_kit_flutter_new/full-gpl package
+platform :ios, '15.0'  # Required for App Store distribution from Spring 2027
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -127,7 +127,7 @@ fi
         # 'PERMISSION_CRITICAL_ALERTS=1'
       ]
       config.build_settings['SWIFT_VERSION'] = '5.0'  # Ensure Swift 5
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'  # Required for ffmpeg_kit_flutter_new/full-gpl package
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       
       # Add WebKit support explicitly
       config.build_settings['OTHER_LDFLAGS'] ||= '$(inherited) -framework WebKit'
@@ -144,7 +144,7 @@ fi
       # Updated WebView configuration
       if target.name == 'webview_flutter_wkwebview'
         config.build_settings['SWIFT_VERSION'] = '5.0'
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       end
 
       # Add this to fix PIF transfer issues
@@ -168,7 +168,7 @@ fi
       
       # Fix for ffmpeg_kit_flutter_new deployment target issues
       if target.name.include?('ffmpeg_kit_flutter')
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       end
 
     xcconfig_path = config.base_configuration_reference.real_path

@@ -13,6 +13,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:share_plus/share_plus.dart';
+import 'package:khalti_checkout_flutter/khalti_checkout_flutter.dart';
 
 import './video_screen.dart';
 import './readable_episode_screen.dart';
@@ -31,6 +32,7 @@ import '../../utils/season_unlock_helper.dart';
 import 'package:http/http.dart' as http;
 import '../../services/subscription_service.dart';
 import '../../services/ad_service.dart';
+import '../../services/khalti_service.dart' as app_khalti;
 import '../../models/subscription.dart';
 import '../../models/url.dart';
 
@@ -68,6 +70,8 @@ class _EpisodeScreenState extends State<EpisodeScreen>
   bool _isLoading = true;
   String _errorMessage = '';
   bool _isInit = true;
+  bool _isPurchasingKhalti = false;
+  String? _currentSeasonPidx;
 
   // Getter to access episodes from child widgets
   List<dynamic> get episodes => _episodes;
@@ -855,6 +859,12 @@ class _EpisodeScreenState extends State<EpisodeScreen>
             ? int.tryParse(coinValue) ?? 0
             : (coinValue?.toInt() ?? 0));
 
+    // Extract price_npr for the optional "Buy with Khalti" option
+    final dynamic priceValue = seasonData['price_npr'];
+    final double priceNpr = priceValue is num
+        ? priceValue.toDouble()
+        : (priceValue is String ? double.tryParse(priceValue) ?? 0 : 0);
+
     // Debug logging to track coin extraction
     DebugLogger.api(
         '🎬 Unlock Dialog - Raw coin value: $coinValue (${coinValue.runtimeType})');
@@ -886,11 +896,11 @@ class _EpisodeScreenState extends State<EpisodeScreen>
       return;
     }
 
-    // Validate coin requirement
-    if (coinToUnlock <= 0) {
+    // Only block if neither a points price nor a Khalti price is set.
+    if (coinToUnlock <= 0 && priceNpr <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('This season does not require coins to unlock'),
+          content: Text('This season does not require unlocking'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -939,7 +949,7 @@ class _EpisodeScreenState extends State<EpisodeScreen>
             return Consumer2<Auth, Story>(
               builder: (context, auth, storyProvider, child) {
                 final userCoins = auth.userAvailableCoins;
-                final canAfford = userCoins >= coinToUnlock;
+                final canAfford = coinToUnlock > 0 && userCoins >= coinToUnlock;
 
                 // Check if benefit can be used
                 final bool hasBenefit = storyBenefit != null &&
@@ -959,29 +969,31 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'This season requires $coinToUnlock points to unlock.',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(height: 12),
-                      Row(
-                        children: [
-                          FaIcon(
-                            FontAwesomeIcons.coins,
-                            size: 16,
-                            color: canAfford ? Colors.amber : Colors.red,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Your available points: $userCoins',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: canAfford ? Colors.green : Colors.red,
-                              fontWeight: FontWeight.bold,
+                      if (coinToUnlock > 0) ...[
+                        Text(
+                          'This season requires $coinToUnlock points to unlock.',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            FaIcon(
+                              FontAwesomeIcons.coins,
+                              size: 16,
+                              color: canAfford ? Colors.amber : Colors.red,
                             ),
-                          ),
-                        ],
-                      ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Your available points: $userCoins',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: canAfford ? Colors.green : Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       if (hasBenefit) ...[
                         SizedBox(height: 16),
                         Container(
@@ -1027,7 +1039,10 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                           ],
                         ),
                       ],
-                      if (!canAfford && !hasBenefit && !isCheckingBenefit) ...[
+                      if (coinToUnlock > 0 &&
+                          !canAfford &&
+                          !hasBenefit &&
+                          !isCheckingBenefit) ...[
                         SizedBox(height: 12),
                         Text(
                           'You need ${coinToUnlock - userCoins} more points to unlock this season.',
@@ -1143,7 +1158,10 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                         ),
                         child: const Text('Unlock with Benefit'),
                       ),
-                    if (!canAfford && !hasBenefit && !isCheckingBenefit)
+                    if (coinToUnlock > 0 &&
+                        !canAfford &&
+                        !hasBenefit &&
+                        !isCheckingBenefit)
                       ElevatedButton(
                         onPressed: () {
                           Navigator.of(context).pop();
@@ -1356,6 +1374,40 @@ class _EpisodeScreenState extends State<EpisodeScreen>
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
+                    if (priceNpr > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: ElevatedButton.icon(
+                          onPressed: _isPurchasingKhalti
+                              ? null
+                              : () => _payWithKhaltiForSeason(
+                                    context,
+                                    validSeasonId,
+                                    seasonTitle,
+                                    priceNpr,
+                                  ),
+                          icon: _isPurchasingKhalti
+                              ? SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Icon(Icons.payment, size: 18),
+                          label: Text(
+                            'Buy with Khalti — NPR ${priceNpr.toStringAsFixed(0)}',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF5C2D91),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 );
               },
@@ -1364,6 +1416,155 @@ class _EpisodeScreenState extends State<EpisodeScreen>
         );
       },
     );
+  }
+
+  // Initiates a direct Khalti purchase for a season, bypassing coins entirely.
+  Future<void> _payWithKhaltiForSeason(
+    BuildContext dialogContext,
+    int seasonId,
+    String seasonTitle,
+    double priceNpr,
+  ) async {
+    if (!mounted) return;
+
+    setState(() {
+      _isPurchasingKhalti = true;
+    });
+
+    try {
+      final auth = Provider.of<Auth>(context, listen: false);
+      final orderId =
+          'season_${seasonId}_${DateTime.now().millisecondsSinceEpoch}';
+
+      app_khalti.KhaltiService.clearPaymentState();
+
+      final pidx = await app_khalti.KhaltiService.initiatePaymentServer(
+        amount: priceNpr,
+        orderName: 'Season - $seasonTitle',
+        orderId: orderId,
+        customerName: auth.userName,
+        customerEmail: auth.user['email'],
+        customerPhone: auth.user['phone_number'] as String?,
+      );
+
+      if (pidx.isEmpty) {
+        throw Exception('Failed to get valid PIDX from server');
+      }
+
+      _currentSeasonPidx = pidx;
+
+      await app_khalti.KhaltiService.makePayment(
+        context,
+        pidx,
+        (payload) => _khaltiSeasonPaymentSuccess(
+          payload,
+          seasonId,
+          seasonTitle,
+          dialogContext,
+        ),
+      );
+    } catch (e) {
+      DebugLogger.api(
+          '🎬 Khalti Season Purchase - Error initiating payment: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error processing payment: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      _currentSeasonPidx = null;
+      app_khalti.KhaltiService.clearPaymentState();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isPurchasingKhalti = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _khaltiSeasonPaymentSuccess(
+    PaymentPayload payload,
+    int seasonId,
+    String seasonTitle,
+    BuildContext dialogContext,
+  ) async {
+    if (_currentSeasonPidx != null && _currentSeasonPidx != payload.pidx) {
+      DebugLogger.api(
+          '🎬 Khalti Season Purchase - Ignoring payment for different PIDX: ${payload.pidx}');
+      return;
+    }
+
+    final pidx = payload.pidx ?? _currentSeasonPidx;
+    if (pidx == null) {
+      DebugLogger.api('🎬 Khalti Season Purchase - Missing pidx on payload');
+      return;
+    }
+
+    try {
+      final storyProviderInstance = Provider.of<Story>(context, listen: false);
+      await storyProviderInstance.purchaseSeasonWithKhalti(
+        seasonId,
+        pidx,
+        payload.transactionId,
+      );
+
+      _currentSeasonPidx = null;
+      app_khalti.KhaltiService.clearPaymentState();
+
+      if (!mounted) return;
+
+      try {
+        final updatedStory =
+            Map<String, dynamic>.from(storyProviderInstance.selectedSeason);
+        updatedStory['is_locked'] = false;
+        updatedStory['watched'] = true;
+        await storyProviderInstance.setSelectedSeason(updatedStory);
+      } catch (providerError) {
+        DebugLogger.api(
+            '🎬 Khalti Season Purchase - Provider disposed during selectedSeason update: $providerError');
+      }
+
+      if (!mounted) return;
+
+      try {
+        Navigator.of(dialogContext).pop();
+      } catch (_) {}
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Season "$seasonTitle" unlocked successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      setState(() {
+        _isLoading = true;
+      });
+      await _refreshSeasonWithId(seasonId, seasonTitle);
+    } catch (e) {
+      DebugLogger.api(
+          '🎬 Khalti Season Purchase - Error verifying payment: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to verify Khalti payment: $e'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } finally {
+      app_khalti.KhaltiService.clearPaymentState();
+      if (mounted) {
+        setState(() {
+          _isPurchasingKhalti = false;
+        });
+      }
+    }
   }
 }
 

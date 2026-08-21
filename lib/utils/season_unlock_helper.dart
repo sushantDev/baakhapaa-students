@@ -41,3 +41,11 @@ bool isSeasonUnlocked(Map<String, dynamic> season) {
     return false; // Default to locked on error for safety
   }
 }
+
+/// Extracts a season's Khalti purchase price (NPR), or 0 if not purchasable.
+double seasonPriceNpr(Map<String, dynamic> season) {
+  final dynamic value = season['price_npr'];
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0;
+  return 0;
+}

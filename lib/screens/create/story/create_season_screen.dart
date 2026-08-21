@@ -80,6 +80,7 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
   // Controllers for coin fields
   final _coinToUnlockController = TextEditingController();
   final _coinToJumpController = TextEditingController();
+  final _priceNprController = TextEditingController();
 
   // Multi-select lists
   final List<int> _selectedHeadings = [];
@@ -96,6 +97,7 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
   int? _coinToJump;
   bool _isLocked = false;
   int? _coinToUnlock;
+  double? _priceNpr;
   DateTime _publishDate = DateTime.now();
 
   // Metadata from API
@@ -238,6 +240,10 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
           _existingSeason!['is_locked'] == true;
       _coinToUnlock = _existingSeason!['coin_to_unlock'];
       _coinToUnlockController.text = _coinToUnlock?.toString() ?? '';
+      _priceNpr = _existingSeason!['price_npr'] is num
+          ? (_existingSeason!['price_npr'] as num).toDouble()
+          : double.tryParse(_existingSeason!['price_npr']?.toString() ?? '');
+      _priceNprController.text = _priceNpr?.toString() ?? '';
 
       // Publish date
       if (_existingSeason!['publish_date'] != null) {
@@ -624,6 +630,7 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
           coinToJump: _coinToJump,
           isLocked: _isLocked,
           coinToUnlock: _coinToUnlock,
+          priceNpr: _priceNpr,
           publishDate: DateFormat('yyyy-MM-dd').format(_publishDate),
           achievements: null,
           imageFile: _imageFile, // Can be null to keep existing image
@@ -656,6 +663,7 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
           coinToJump: _coinToJump,
           isLocked: _isLocked,
           coinToUnlock: _coinToUnlock,
+          priceNpr: _priceNpr,
           publishDate: DateFormat('yyyy-MM-dd').format(_publishDate),
           achievements: null,
           imageFile: _imageFile,
@@ -1165,6 +1173,16 @@ class _CreateSeasonScreenState extends State<CreateSeasonScreen>
                     isDark: isDark,
                     keyboardType: TextInputType.number,
                     onChanged: (v) => _coinToUnlock = int.tryParse(v),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInstagramTextField(
+                    controller: _priceNprController,
+                    label: 'Price in NPR (Khalti, optional)',
+                    hint: 'e.g. 100 — leave empty for points-only',
+                    icon: Icons.payment_rounded,
+                    isDark: isDark,
+                    keyboardType: TextInputType.number,
+                    onChanged: (v) => _priceNpr = double.tryParse(v),
                   ),
                 ],
                 const SizedBox(height: 24),

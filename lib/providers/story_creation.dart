@@ -364,6 +364,7 @@ class StoryCreation with ChangeNotifier {
     int? coinToJump,
     required bool isLocked,
     int? coinToUnlock,
+    double? priceNpr,
     required String publishDate,
     List<int>? achievements,
     File? imageFile,
@@ -438,6 +439,9 @@ class StoryCreation with ChangeNotifier {
       }
       if (coinToUnlock != null) {
         request.fields['coin_to_unlock'] = coinToUnlock.toString();
+      }
+      if (priceNpr != null) {
+        request.fields['price_npr'] = priceNpr.toString();
       }
       if (achievements != null && achievements.isNotEmpty) {
         request.fields['achievements'] = jsonEncode(achievements);
@@ -609,6 +613,7 @@ class StoryCreation with ChangeNotifier {
     int? coinToJump,
     required bool isLocked,
     int? coinToUnlock,
+    double? priceNpr,
     required String publishDate,
     List<int>? achievements,
     File? imageFile,
@@ -659,6 +664,9 @@ class StoryCreation with ChangeNotifier {
       }
       if (coinToUnlock != null) {
         request.fields['coin_to_unlock'] = coinToUnlock.toString();
+      }
+      if (priceNpr != null) {
+        request.fields['price_npr'] = priceNpr.toString();
       }
       if (achievements != null && achievements.isNotEmpty) {
         request.fields['achievements'] = jsonEncode(achievements);

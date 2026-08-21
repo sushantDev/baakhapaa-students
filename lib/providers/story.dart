@@ -651,6 +651,7 @@ class Story with ChangeNotifier {
 
     _syncSeasonInDirectList(_featuredSeasons, seasonId, updates);
     _syncSeasonInDirectList(_readableSeasons, seasonId, updates);
+    _syncSeasonInDirectList(_paidCourses, seasonId, updates);
     _syncSeasonInWrappedList(_myListItems, seasonId, updates);
     _syncSeasonInWrappedList(_continueWatchingItems, seasonId, updates);
     _syncSeasonInWrappedList(_ownedCourseItems, seasonId, updates);

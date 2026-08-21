@@ -113,6 +113,10 @@ import './screens/user/point_logs_screen.dart';
 import './screens/others/referrals_screen.dart';
 import './screens/others/ads_screen.dart';
 import './screens/shorts/shorts_screen.dart';
+import './screens/bootcamp/bootcamp_screen.dart';
+import './screens/bootcamp/bootcamp_detail_screen.dart';
+import './screens/bootcamp/bootcamp_video_screen.dart';
+import './models/bootcamp.dart';
 import './screens/shorts/challenges_screen.dart';
 import './screens/shorts/shorts_loose_screen.dart';
 import './screens/shorts/shorts_question_screen.dart';
@@ -1131,6 +1135,25 @@ class _MyAppState extends State<MyApp> {
               RegisterWithReferralScreen.routeName: (ctx) =>
                   RegisterWithReferralScreen(),
               StoryScreen.routeName: (ctx) => StoryScreen(),
+              BootcampScreen.routeName: (ctx) => const BootcampScreen(),
+              BootcampDetailScreen.routeName: (ctx) {
+                final bootcamp = ModalRoute.of(ctx)?.settings.arguments;
+                if (bootcamp is! Bootcamp) {
+                  return const BootcampScreen();
+                }
+                return BootcampDetailScreen(bootcamp: bootcamp);
+              },
+              BootcampVideoScreen.routeName: (ctx) {
+                final arguments = ModalRoute.of(ctx)?.settings.arguments;
+                if (arguments is! Map || arguments['bootcamp'] is! Bootcamp) {
+                  return const BootcampScreen();
+                }
+                return BootcampVideoScreen(
+                  bootcamp: arguments['bootcamp'] as Bootcamp,
+                  location: arguments['location']?.toString() ??
+                      'Location to be announced',
+                );
+              },
               ShopScreen.routeName: (ctx) => ShopScreen(),
               LeaderboardScreen.routeName: (ctx) => LeaderboardScreen(),
               GiftScreen.routeName: (ctx) => GiftScreen(),

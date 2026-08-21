@@ -54,6 +54,9 @@ import '../story/creators_screen.dart';
 import '../challenges/all_challenges_screen.dart';
 import '../../utils/season_unlock_helper.dart';
 import '../../services/ad_service.dart';
+import '../../screens/bootcamp/bootcamp_screen.dart';
+import '../../models/bootcamp.dart';
+import '../../screens/bootcamp/bootcamp_detail_screen.dart';
 
 class StoryScreen extends StatefulWidget {
   static const routeName = '/story-screen';
@@ -2972,6 +2975,84 @@ class _StoryScreenState extends State<StoryScreen>
     );
   }
 
+  Widget _buildBootcampSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF171717);
+
+    return _buildSectionSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'AI & ICT Bootcamp Courses',
+              style: GoogleFonts.poppins(
+                color: textColor,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: BootcampCatalog.all.map((bootcamp) {
+                final accent = bootcamp.durationDays == 4
+                    ? const Color(0xFF2E7D6B)
+                    : bootcamp.durationDays == 7
+                        ? const Color(0xFF2864A8)
+                        : const Color(0xFFB56A2D);
+
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Material(
+                      color: accent.withValues(alpha: isDark ? 0.2 : 0.1),
+                      borderRadius: BorderRadius.circular(14),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () => Navigator.of(context).pushNamed(
+                          BootcampDetailScreen.routeName,
+                          arguments: bootcamp,
+                        ),
+                        child: SizedBox(
+                          height: 92,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${bootcamp.durationDays}-days',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    color: accent,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                // Icon(Icons.arrow_forward_rounded,
+                                //     color: accent, size: 17),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
@@ -3322,6 +3403,9 @@ class _StoryScreenState extends State<StoryScreen>
 
           // 1. Stories Section
           _buildStoriesSection(),
+
+          // 1.5. Bootcamp Section
+          _buildBootcampSection(),
 
           // 2. Storytellers Section
           _buildStorytellersSection(),
